@@ -1,64 +1,99 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity } from 'react-native';
-import { MapPin, Clock, Tag } from 'lucide-react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { MapPin, Clock, Heart, Star, Navigation } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../theme/colors';
 
 const OfferCard = ({ offer, onPress }) => {
     return (
         <TouchableOpacity
             onPress={onPress}
-            activeOpacity={0.9}
-            className="bg-white rounded-xl mb-4 shadow-sm border border-border overflow-hidden"
+            activeOpacity={0.95}
+            style={styles.container}
+            className="bg-white rounded-[24px] mb-5 shadow-lg overflow-hidden border border-border/50"
         >
-            {/* Offer Image */}
             <View className="relative">
                 <Image
                     source={{ uri: offer.image || 'https://via.placeholder.com/400x200' }}
-                    className="w-full h-44 bg-surface"
+                    className="w-full h-52 bg-surface"
                     resizeMode="cover"
                 />
-                {/* Discount Badge */}
-                <View className="absolute top-3 left-3 bg-secondary px-2 py-1 rounded-md">
-                    <Text className="text-white font-bold text-xs">{offer.discount}% OFF</Text>
+
+                {/* Image Overlays */}
+                <LinearGradient
+                    colors={['transparent', 'rgba(0,0,0,0.4)']}
+                    className="absolute inset-0"
+                />
+
+                {/* Badges - Top Row */}
+                <View className="absolute top-3 left-3 flex-row space-x-2">
+                    <LinearGradient
+                        colors={[colors.secondary, '#FB923C']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                        className="px-3 py-1.5 rounded-full shadow-sm"
+                    >
+                        <Text className="text-white font-black text-xs uppercase tracking-tighter">
+                            {offer.discount}% OFF
+                        </Text>
+                    </LinearGradient>
+
+                    {offer.isTrending && (
+                        <View className="bg-white/95 px-2.5 py-1.5 rounded-full flex-row items-center shadow-sm">
+                            <Star size={10} color="#F59E0B" fill="#F59E0B" />
+                            <Text className="text-[#F59E0B] font-bold text-[10px] ml-1 uppercase">Top Deal</Text>
+                        </View>
+                    )}
                 </View>
-                {/* Distance Badge */}
-                <View className="absolute bottom-3 right-3 bg-white/90 px-2 py-1 rounded-md flex-row items-center">
-                    <MapPin size={12} color={colors.primary} />
-                    <Text className="text-primary font-bold text-[10px] ml-1">{offer.distance} km</Text>
+
+                {/* Like Button */}
+                <TouchableOpacity
+                    className="absolute top-3 right-3 w-9 h-9 bg-white/30 rounded-full items-center justify-center backdrop-blur-md"
+                >
+                    <Heart size={18} color="white" />
+                </TouchableOpacity>
+
+                {/* Quick Info Bar - Floating */}
+                <View className="absolute bottom-3 left-3 right-3 flex-row justify-between items-center">
+                    <View className="bg-white/95 px-3 py-1.5 rounded-full flex-row items-center shadow-sm">
+                        <Navigation size={12} color={colors.secondary} strokeWidth={2.5} />
+                        <Text className="text-primary font-bold text-[10px] ml-1.5">{offer.distance}km away</Text>
+                    </View>
+
+                    <View className="bg-primary px-3 py-1.5 rounded-full flex-row items-center shadow-sm">
+                        <Clock size={12} color="white" />
+                        <Text className="text-white font-bold text-[10px] ml-1.5">{offer.expiryHours}h left</Text>
+                    </View>
                 </View>
             </View>
 
-            <View className="p-3">
-                {/* Title and Category */}
-                <View className="flex-row justify-between items-start mb-1">
-                    <Text className="text-primary font-bold text-lg flex-1 mr-2" numberOfLines={1}>
-                        {offer.title}
-                    </Text>
-                    <View className="bg-surface px-2 py-0.5 rounded border border-border">
-                        <Text className="text-textSecondary text-[10px] font-medium uppercase tracking-wider">
-                            {offer.category}
+            <View className="p-4 bg-white">
+                <View className="flex-row justify-between items-start">
+                    <View className="flex-1">
+                        <Text className="text-primary font-black text-lg leading-6" numberOfLines={1}>
+                            {offer.title}
                         </Text>
+
+                        <View className="flex-row items-center mt-1">
+                            <Text className="text-textSecondary text-sm font-medium">at</Text>
+                            <Text className="text-secondary font-bold text-sm ml-1.5 decoration-secondary" numberOfLines={1}>
+                                {offer.storeName}
+                            </Text>
+                        </View>
                     </View>
                 </View>
 
-                {/* Vendor/Store Name */}
-                <Text className="text-textSecondary text-xs mb-3 font-medium">
-                    at {offer.storeName}
-                </Text>
-
-                {/* Stock and Expiry */}
-                <View className="flex-row items-center justify-between border-t border-border pt-3">
+                <View className="flex-row items-center justify-between mt-4 pt-4 border-t border-surface">
                     <View className="flex-row items-center">
-                        <Clock size={14} color={colors.error} />
-                        <Text className="text-error font-bold text-xs ml-1">
-                            Expires in {offer.expiryHours}h
+                        <View className="w-2.5 h-2.5 bg-warning rounded-full" />
+                        <Text className="text-warning font-black text-[11px] ml-2 uppercase tracking-wide">
+                            {offer.stock} Stocks Left
                         </Text>
                     </View>
 
-                    <View className="flex-row items-center">
-                        <View className="w-2 h-2 rounded-full bg-warning mr-1.5" />
-                        <Text className="text-warning font-bold text-xs">
-                            Only {offer.stock} Left!
+                    <View className="bg-surface px-3 py-1.5 rounded-lg">
+                        <Text className="text-primary/70 font-bold text-[10px] uppercase tracking-widest">
+                            {offer.category}
                         </Text>
                     </View>
                 </View>
@@ -67,4 +102,15 @@ const OfferCard = ({ offer, onPress }) => {
     );
 };
 
+const styles = StyleSheet.create({
+    container: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.1,
+        shadowRadius: 15,
+        elevation: 8,
+    }
+});
+
 export default OfferCard;
+

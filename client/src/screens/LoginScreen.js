@@ -8,7 +8,9 @@ import {
     Platform
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import FloatingInput from '../components/FloatingInput';
+
 import CustomButton from '../components/CustomButton';
 import TabSwitcher from '../components/TabSwitcher';
 import { useNavigation } from '@react-navigation/native';
@@ -32,6 +34,7 @@ const LoginScreen = () => {
         }
 
         setLoading(true);
+        console.log("Attempting login at:", `${API_BASE_URL}/auth/login`);
         try {
             const response = await fetch(`${API_BASE_URL}/auth/login`, {
                 method: 'POST',
@@ -39,24 +42,30 @@ const LoginScreen = () => {
                 body: JSON.stringify({ mobile, password })
             });
 
+            console.log("Response status:", response.status);
             const data = await response.json();
+
             setLoading(false);
 
             if (data.success) {
-                // If it's a vendor, we might want to go to a different screen, 
-                // but for now let's go to Home or ActivationStatus based on verification
+                // Save JWT Token in local storage
+                await AsyncStorage.setItem('userToken', data.token);
+
                 if (data.user.role === 'vendor' && !data.user.isVerified) {
                     navigation.navigate('ActivationStatus');
                 } else {
                     navigation.navigate('Main');
                 }
             } else {
+
                 alert(data.message || "Login failed");
             }
         } catch (error) {
             setLoading(false);
-            alert("Server connection failed");
+            console.error("Login connection error:", error);
+            alert("Server connection failed: " + error.message);
         }
+
     };
 
     return (

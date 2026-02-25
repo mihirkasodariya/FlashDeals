@@ -14,7 +14,9 @@ import * as Location from 'expo-location';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Upload, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react-native';
 import FloatingInput from '../components/FloatingInput';
+import AddressAutocomplete from '../components/AddressAutocomplete';
 import CustomButton from '../components/CustomButton';
+
 import ProgressSteps from '../components/ProgressSteps';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -271,12 +273,12 @@ const VendorRegisterScreen = () => {
                             />
 
                             <View className="mb-4">
-                                <FloatingInput
+                                <AddressAutocomplete
                                     label="Full Shop / Store Address"
                                     value={formData.storeAddress}
                                     onChangeText={(val) => setFormData({ ...formData, storeAddress: val })}
-                                    multiline={true}
                                 />
+
                                 <TouchableOpacity
                                     onPress={getCurrentLocation}
                                     className="mt-2 flex-row items-center border border-accent/20 bg-accent/5 py-3 rounded-lg px-4"

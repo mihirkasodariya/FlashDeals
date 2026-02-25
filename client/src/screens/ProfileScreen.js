@@ -1,36 +1,78 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, useWindowDimensions, Modal, Pressable } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image, useWindowDimensions, Modal, Pressable, Alert, ActivityIndicator, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
-import { User, Settings, Bell, Shield, HelpCircle, LogOut, ChevronRight, MapPin, Package, Store, Map as MapIcon, Edit3 } from 'lucide-react-native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Location from 'expo-location';
+import { LinearGradient } from 'expo-linear-gradient';
+import { User, Settings, Bell, Shield, HelpCircle, LogOut, ChevronRight, MapPin, Package, Store, Map as MapIcon, Edit3, Navigation } from 'lucide-react-native';
+
+
 import { colors } from '../theme/colors';
+import { API_BASE_URL } from '../config';
 
 const ProfileScreen = () => {
+
     const navigation = useNavigation();
     const { width } = useWindowDimensions();
     const [isLogoutModalVisible, setIsLogoutModalVisible] = React.useState(false);
 
-    // Mock user data - in real app would come from AuthContext
-    const [user, setUser] = React.useState({
-        _id: '65dad723924372001c8a1234',
-        name: 'Mihir Kasodariya',
-        mobile: '+91 98765 43210',
-        role: 'user', // Change this to 'vendor' to see store details
-        storeName: 'Mihir Store & Stationery',
-        storeAddress: 'Shop G-12, Platinum Plaza, Near Iscon Circle, Ahmedabad, Gujarat 380015',
-        stats: {
-            activeDeals: 12,
-            savedMoney: '4.5k',
-            totalImpressions: '1.2k'
+    // Dynamic user data
+    const [user, setUser] = React.useState(null);
+    const [loading, setLoading] = React.useState(true);
+    const [locationLoading, setLocationLoading] = React.useState(false);
+
+    const fetchProfile = async () => {
+
+        try {
+            const token = await AsyncStorage.getItem('userToken');
+            if (!token) {
+                navigation.replace('Login');
+                return;
+            }
+
+            const response = await fetch(`${API_BASE_URL}/auth/me`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                setUser({
+                    ...data.user,
+                    stats: data.user.stats || {
+                        activeDeals: 0,
+                        savedMoney: '0',
+                        totalImpressions: '0'
+                    }
+                });
+            } else {
+                // If token invalid, logout
+                await AsyncStorage.removeItem('userToken');
+                navigation.replace('Login');
+            }
+        } catch (error) {
+            console.error("Fetch profile error:", error);
+        } finally {
+            setLoading(false);
         }
-    });
+    };
+
+    useFocusEffect(
+        React.useCallback(() => {
+            fetchProfile();
+        }, [])
+    );
 
     const isVendor = user && user.role === 'vendor';
+
     const isTablet = width > 768;
     const contentWidth = isTablet ? 600 : '100%';
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
         setIsLogoutModalVisible(false);
+        await AsyncStorage.removeItem('userToken');
         // Reset navigation to Login screen
         navigation.reset({
             index: 0,
@@ -38,17 +80,76 @@ const ProfileScreen = () => {
         });
     };
 
+    const handleUpdateLocation = async () => {
+        setLocationLoading(true);
+        try {
+            let { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') {
+                Alert.alert('Permission Denied', 'Please allow location access to update your store position.');
+                setLocationLoading(false);
+                return;
+            }
+
+            let loc = await Location.getCurrentPositionAsync({});
+            const token = await AsyncStorage.getItem('userToken');
+
+            const response = await fetch(`${API_BASE_URL}/vendor/update/${user._id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    location: {
+                        latitude: loc.coords.latitude,
+                        longitude: loc.coords.longitude
+                    }
+                })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                Alert.alert('Success', 'Store location updated successfully to your current position!');
+            } else {
+                Alert.alert('Error', data.message || 'Failed to update location');
+            }
+        } catch (error) {
+            console.error(error);
+            Alert.alert('Error', 'Failed to get current location');
+        } finally {
+            setLocationLoading(false);
+        }
+    };
+
+
+
     const menuItems = [
-        ...(isVendor ? [{ icon: Store, label: 'Store Analytics', color: colors.secondary }] : []),
-        { icon: Package, label: isVendor ? 'Manage Offers' : 'My Redemptions', color: colors.secondary },
-        { icon: MapPin, label: isVendor ? 'Business Location' : 'Saved Addresses', color: colors.accent },
+        ...(isVendor ? [
+            { icon: Store, label: 'Store Analytics', color: colors.secondary },
+            { icon: Package, label: 'Manage Offers', color: colors.secondary },
+            { icon: MapPin, label: 'Business Location', color: colors.accent }
+        ] : [
+            { icon: Package, label: 'My Redemptions', color: colors.secondary },
+            { icon: MapPin, label: 'Saved Addresses', color: colors.accent }
+        ]),
         { icon: Bell, label: 'Notifications', color: colors.warning },
         { icon: Shield, label: 'Privacy Policy', color: colors.primary },
         { icon: HelpCircle, label: 'Help & Support', color: '#6366F1' },
     ];
 
+    if (loading) {
+        return (
+            <SafeAreaView className="flex-1 bg-white items-center justify-center">
+                <Text className="text-primary font-bold">Loading Profile...</Text>
+            </SafeAreaView>
+        );
+    }
+
+    if (!user) return null;
+
     return (
         <SafeAreaView className="flex-1 bg-white items-center">
+
             <ScrollView showsVerticalScrollIndicator={false} style={{ width: contentWidth }}>
                 {/* Header Profile Info */}
                 <View className="px-6 py-8 items-center border-b border-surface">
@@ -75,55 +176,107 @@ const ProfileScreen = () => {
                     </View>
                 </View>
 
-                {/* Vendor Store Details Section */}
+                {/* Vendor Store Details Section - Ultra Modern Refresh */}
                 {isVendor && (
-                    <View className="px-6 py-6 border-b border-surface">
-                        <View className="flex-row items-center justify-between mb-4">
-                            <Text className="text-sm font-bold text-textSecondary uppercase tracking-widest">Store Information</Text>
+                    <View className="px-6 py-4">
+                        <View className="flex-row items-center justify-between mb-6">
+                            <View>
+                                <Text className="text-[10px] font-black text-secondary uppercase tracking-[3px] mb-1">Business Portal</Text>
+                                <Text className="text-2xl font-black text-primary">Store Terminal</Text>
+                            </View>
                             <TouchableOpacity
-                                className="flex-row items-center"
+                                className="w-12 h-12 bg-white rounded-2xl items-center justify-center shadow-xl border border-surface"
                                 onPress={() => navigation.navigate('EditStore', { vendorData: user })}
                             >
-                                <Edit3 size={14} color={colors.secondary} />
-                                <Text className="text-secondary text-xs font-bold ml-1">Edit</Text>
+                                <Edit3 size={18} color={colors.primary} />
                             </TouchableOpacity>
                         </View>
 
-                        <View className="bg-surface/50 rounded-2xl p-5 border border-border border-dashed">
-                            <View className="flex-row items-center mb-4">
-                                <View className="w-12 h-12 bg-white rounded-xl items-center justify-center shadow-sm border border-border">
-                                    <Store size={24} color={colors.primary} />
-                                </View>
-                                <View className="ml-4 flex-1">
-                                    <Text className="text-lg font-bold text-primary">{user.storeName}</Text>
-                                    <View className="flex-row items-center mt-1">
-                                        <View className="px-2 py-0.5 bg-green-100 rounded">
-                                            <Text className="text-[10px] text-green-700 font-bold uppercase">Verified Store</Text>
+                        <View
+                            style={styles.premiumCard}
+                            className="bg-white rounded-[40px] p-1 border border-surface"
+                        >
+                            {/* Inner Content with slight padding */}
+                            <View className="p-6">
+                                {/* Store Brand Identity */}
+                                <View className="flex-row items-center justify-between mb-8">
+                                    <View className="flex-row items-center flex-1">
+                                        <View className="w-16 h-16 bg-primary/5 rounded-[24px] items-center justify-center border border-primary/10">
+                                            <Store size={32} color={colors.primary} strokeWidth={1.5} />
+                                        </View>
+                                        <View className="ml-4 flex-1">
+                                            <Text className="text-primary font-black text-2xl tracking-tight leading-7" numberOfLines={1}>
+                                                {user.storeName}
+                                            </Text>
+                                            <View className="flex-row items-center mt-1.5">
+                                                <View className="bg-green-500/10 px-2 py-0.5 rounded-full flex-row items-center border border-green-500/20">
+                                                    <Shield size={10} color="#10B981" />
+                                                    <Text className="text-[#10B981] text-[9px] font-black uppercase ml-1 tracking-wider">Verified Identity</Text>
+                                                </View>
+                                            </View>
                                         </View>
                                     </View>
                                 </View>
-                            </View>
 
-                            <View className="flex-row items-start mb-4">
-                                <MapPin size={18} color={colors.textSecondary} className="mt-0.5" />
-                                <View className="ml-3 flex-1">
-                                    <Text className="text-xs font-bold text-textSecondary uppercase mb-1">Full Address</Text>
-                                    <Text className="text-primary text-sm leading-5">
-                                        {user.storeAddress}
-                                    </Text>
+                                {/* Stats Bar */}
+                                <View className="flex-row justify-between mb-8 bg-surface/50 rounded-3xl p-5 border border-surface">
+                                    <View className="items-center flex-1 border-r border-border/50">
+                                        <Text className="text-primary font-black text-lg">{user.stats?.activeDeals || 0}</Text>
+                                        <Text className="text-textSecondary text-[9px] font-bold uppercase tracking-widest mt-1">Live Deals</Text>
+                                    </View>
+                                    <View className="items-center flex-1 border-r border-border/50">
+                                        <Text className="text-primary font-black text-lg">{user.stats?.totalImpressions || '2.4k'}</Text>
+                                        <Text className="text-textSecondary text-[9px] font-bold uppercase tracking-widest mt-1">Footfall</Text>
+                                    </View>
+                                    <View className="items-center flex-1">
+                                        <Text className="text-primary font-black text-lg">4.8</Text>
+                                        <Text className="text-textSecondary text-[9px] font-bold uppercase tracking-widest mt-1">Rating</Text>
+                                    </View>
+                                </View>
+
+                                {/* Location Details */}
+                                <View className="space-y-4">
+                                    <View className="flex-row items-start mb-6">
+                                        <View className="w-10 h-10 bg-secondary/5 rounded-2xl items-center justify-center">
+                                            <MapPin size={18} color={colors.secondary} />
+                                        </View>
+                                        <View className="ml-4 flex-1">
+                                            <Text className="text-textSecondary text-[10px] font-black uppercase tracking-widest mb-1.5 opacity-60">Operations Base</Text>
+                                            <Text className="text-primary font-bold text-sm leading-6">
+                                                {user.storeAddress || 'Not provided'}
+                                            </Text>
+                                        </View>
+                                    </View>
+
+                                    <TouchableOpacity
+                                        activeOpacity={0.9}
+                                        onPress={handleUpdateLocation}
+                                        disabled={locationLoading}
+                                        className="relative"
+                                    >
+                                        <LinearGradient
+                                            colors={[colors.secondary, '#F97316']}
+                                            start={{ x: 0, y: 0 }}
+                                            end={{ x: 1, y: 0 }}
+                                            className="py-4 rounded-[24px] flex-row items-center justify-center shadow-lg"
+                                        >
+                                            {locationLoading ? (
+                                                <ActivityIndicator size="small" color="white" />
+                                            ) : (
+                                                <>
+                                                    <Navigation size={18} color="white" strokeWidth={2.5} />
+                                                    <Text className="ml-3 font-black text-white text-sm uppercase tracking-wide">Sync GPS Location</Text>
+                                                </>
+                                            )}
+                                        </LinearGradient>
+                                    </TouchableOpacity>
                                 </View>
                             </View>
-
-                            <TouchableOpacity
-                                className="flex-row items-center justify-center bg-white border border-border py-3 rounded-xl shadow-sm"
-                                activeOpacity={0.7}
-                            >
-                                <MapIcon size={18} color={colors.primary} />
-                                <Text className="ml-2 font-bold text-primary">Update Location on Map</Text>
-                            </TouchableOpacity>
                         </View>
                     </View>
                 )}
+
+
 
                 {/* Settings Menu */}
                 <View className="px-6 py-6">

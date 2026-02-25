@@ -1,7 +1,11 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
 require('dotenv').config();
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_key_flashdeals';
+
 
 const app = express();
 const path = require('path');
@@ -50,11 +54,42 @@ app.post('/api/auth/login', async (req, res) => {
         if (!user) {
             return res.status(401).json({ success: false, message: 'Invalid credentials' });
         }
-        res.json({ success: true, message: 'Login successful', user });
+
+        // Generate Token
+        const token = jwt.sign(
+            { userId: user._id, role: user.role },
+            JWT_SECRET,
+            { expiresIn: '30d' }
+        );
+
+        res.json({ success: true, message: 'Login successful', user, token });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 });
+
+// Get Current User Profile API
+app.get('/api/auth/me', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ success: false, message: 'No token provided' });
+        }
+
+        const token = authHeader.split(' ')[1];
+        const decoded = jwt.verify(token, JWT_SECRET);
+
+        const user = await User.findById(decoded.userId).select('-password');
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        res.json({ success: true, user });
+    } catch (error) {
+        res.status(401).json({ success: false, message: 'Invalid or expired token' });
+    }
+});
+
 
 app.post('/api/auth/register', async (req, res) => {
     try {
@@ -158,6 +193,20 @@ app.put('/api/vendor/update/:userId', async (req, res) => {
         const { userId } = req.params;
         const { storeName, storeAddress, location } = req.body;
 
+        // Verify Token
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ success: false, message: 'Unauthorized' });
+        }
+
+        const token = authHeader.split(' ')[1];
+        const decoded = jwt.verify(token, JWT_SECRET);
+
+        // Security check: Ensure user is updating their own profile
+        if (decoded.userId !== userId) {
+            return res.status(403).json({ success: false, message: 'Forbidden' });
+        }
+
         console.log("!!! ATTEMPTING VENDOR UPDATE FOR ID:", userId, "!!!");
 
         const user = await User.findByIdAndUpdate(
@@ -192,6 +241,6 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Server running on port ${PORT} [VERSION 2.2 - MULTER FIX]`);
 });

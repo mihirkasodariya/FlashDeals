@@ -10,8 +10,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Save, MapPin, Store } from 'lucide-react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import FloatingInput from '../components/FloatingInput';
+import AddressAutocomplete from '../components/AddressAutocomplete';
 import CustomButton from '../components/CustomButton';
+
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { API_BASE_URL } from '../config';
 import { colors } from '../theme/colors';
@@ -35,12 +38,25 @@ const EditStoreScreen = () => {
 
         setLoading(true);
         try {
-            // Priority given to _id as it comes from MongoDB
-            const userId = vendorData?._id || vendorData?.userId || '65dad723924372001c8a1234';
+            const token = await AsyncStorage.getItem('userToken');
+            if (!token) {
+                Alert.alert("Error", "Session expired. Please login again.");
+                navigation.replace('Login');
+                return;
+            }
+
+            const userId = vendorData?._id;
+            if (!userId) {
+                Alert.alert("Error", "User data not found");
+                return;
+            }
 
             const response = await fetch(`${API_BASE_URL}/vendor/update/${userId}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify(formData)
             });
 
@@ -61,17 +77,16 @@ const EditStoreScreen = () => {
         }
     };
 
+
     return (
         <SafeAreaView className="flex-1 bg-white">
-            <View className="flex-row items-center justify-between px-4 py-3 border-b border-surface">
+            <View className="flex-row items-center px-4 py-3 border-b border-surface">
                 <TouchableOpacity onPress={() => navigation.goBack()}>
                     <ChevronLeft size={28} color={colors.primary} />
                 </TouchableOpacity>
-                <Text className="text-lg font-bold text-primary">Edit Store Details</Text>
-                <TouchableOpacity onPress={handleUpdate} disabled={loading}>
-                    <Text className={`font-bold ${loading ? 'text-gray-400' : 'text-secondary'}`}>Save</Text>
-                </TouchableOpacity>
+                <Text className="text-lg font-bold text-primary ml-4">Edit Store Details</Text>
             </View>
+
 
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -101,20 +116,14 @@ const EditStoreScreen = () => {
                     </View>
 
                     <View className="mb-8">
-                        <View className="flex-row items-center justify-between mb-4">
-                            <Text className="text-sm font-bold text-textSecondary uppercase tracking-widest">Location Info</Text>
-                            <TouchableOpacity className="flex-row items-center">
-                                <MapPin size={14} color={colors.secondary} />
-                                <Text className="text-secondary text-xs font-bold ml-1">Pin on Map</Text>
-                            </TouchableOpacity>
-                        </View>
-                        <FloatingInput
-                            label="Full Store Address"
+                        <AddressAutocomplete
+                            label="Full Shop / Store Address"
                             value={formData.storeAddress}
                             onChangeText={(val) => setFormData({ ...formData, storeAddress: val })}
-                            multiline={true}
                         />
                     </View>
+
+
 
                     <CustomButton
                         title="Update Store Details"
