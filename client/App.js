@@ -30,6 +30,7 @@ import StoreScreen from './src/screens/StoreScreen';
 import EditStoreScreen from './src/screens/EditStoreScreen';
 import AddOfferScreen from './src/screens/AddOfferScreen';
 import VendorOffersScreen from './src/screens/VendorOffersScreen';
+import PublicStoreProfileScreen from './src/screens/PublicStoreProfileScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -148,6 +149,7 @@ function RootStack() {
       <Stack.Screen name="EditStore" component={EditStoreScreen} />
       <Stack.Screen name="AddOffer" component={AddOfferScreen} />
       <Stack.Screen name="VendorOffers" component={VendorOffersScreen} />
+      <Stack.Screen name="PublicStoreProfile" component={PublicStoreProfileScreen} />
     </Stack.Navigator>
   );
 }

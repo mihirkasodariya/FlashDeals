@@ -84,7 +84,7 @@ const LoginScreen = () => {
                                 Flash<Text className="text-secondary">Deals</Text>
                             </Text>
                         </View>
-                        <Text className="text-2xl font-bold text-primary mb-2">Welcome back!</Text>
+                        <Text className="text-2xl font-bold text-primary mb-2">Welcome Back!</Text>
                         <Text className="text-sm text-gray-500 text-center">Login to access the best deals nearby.</Text>
                     </View>
 

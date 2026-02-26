@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Image, TouchableOpacity, Share, useWindowDimensions, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, Image, TouchableOpacity, Share, useWindowDimensions, Alert, ActivityIndicator, StatusBar, Platform, Linking } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ChevronLeft, Share2, Heart, MapPin, Clock, Store, Info, Phone, Map, Sparkles } from 'lucide-react-native';
+import { ChevronLeft, Share2, Heart, MapPin, Clock, Store, Info, Phone, Map, Sparkles, ChevronRight } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { colors } from '../theme/colors';
@@ -14,7 +14,7 @@ const OfferDetailsScreen = ({ route, navigation }) => {
     if (!offer) {
         return (
             <SafeAreaView className="flex-1 bg-white items-center justify-center">
-                <Text className="text-primary font-black">Offer not found</Text>
+                <Text className="text-primary font-black">Offer Not Found</Text>
             </SafeAreaView>
         );
     }
@@ -35,6 +35,11 @@ const OfferDetailsScreen = ({ route, navigation }) => {
 
     const storeName = offer.vendorId?.storeName || 'Local Store';
     const storeAddress = offer.vendorId?.storeAddress || 'Address available at store';
+
+    const defaultLogo = require('../../assets/logos/storeLogo.png');
+    const storeLogoSource = offer.vendorId?.storeImage
+        ? { uri: (offer.vendorId.storeImage.startsWith('http') ? offer.vendorId.storeImage : `${STATIC_BASE_URL}${offer.vendorId.storeImage}`) }
+        : defaultLogo;
 
     const calculateExpiry = () => {
         if (!offer.endDate) return '24';
@@ -62,14 +67,49 @@ const OfferDetailsScreen = ({ route, navigation }) => {
             Alert.alert(
                 "Offer Activated",
                 "Flash Code: FD-9921\n\nShow this at the counter to claim your discount!",
-                [{ text: "Great, Got it!" }]
+                [{ text: "Great, Got It!" }]
             );
         }, 1500);
     };
 
+    const handleGetDirections = () => {
+        const location = offer.vendorId?.location;
+        if (!location || !location.latitude || !location.longitude) {
+            Alert.alert("Location Not Found", "The store location is not available.");
+            return;
+        }
+
+        const { latitude, longitude } = location;
+        const label = storeName;
+
+        const url = Platform.select({
+            ios: `maps:0,0?q=${label}@${latitude},${longitude}`,
+            android: `geo:0,0?q=${latitude},${longitude}(${label})`
+        });
+
+        Linking.canOpenURL(url).then(supported => {
+            if (supported) {
+                Linking.openURL(url);
+            } else {
+                const browserUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+                Linking.openURL(browserUrl);
+            }
+        }).catch(() => {
+            Alert.alert("Error", "Could not open map application.");
+        });
+    };
+
     return (
         <View className="flex-1 bg-white">
-            <View className="absolute top-0 left-0 right-0 z-20 px-6 pt-12 pb-6 flex-row justify-between items-center">
+            <StatusBar barStyle="dark-content" backgroundColor="white" />
+
+            {/* White Status Bar Line */}
+            <View style={{ height: Platform.OS === 'ios' ? insets.top - 12 : insets.top, backgroundColor: 'white' }} />
+
+            <View
+                style={{ top: insets.top + (Platform.OS === 'ios' ? 0 : 12) }}
+                className="absolute left-0 right-0 z-20 px-6 pb-6 flex-row justify-between items-center"
+            >
                 <TouchableOpacity
                     onPress={() => navigation.goBack()}
                     className="w-12 h-12 bg-white/90 rounded-2xl items-center justify-center shadow-lg"
@@ -107,31 +147,38 @@ const OfferDetailsScreen = ({ route, navigation }) => {
 
                     <View className="absolute bottom-10 left-6 right-6 flex-row justify-end items-end">
                         <View className="bg-white/90 px-4 py-2 rounded-2xl shadow-lg border border-white/20">
-                            <Text className="text-error font-black text-xs uppercase tracking-widest">Expires in {calculateExpiry()}h</Text>
+                            <Text className="text-error font-black text-xs tracking-widest">Expires In {calculateExpiry()}h</Text>
                         </View>
                     </View>
                 </View>
 
                 <View className="px-6 py-8">
                     <View className="mb-8">
-                        <Text className="text-[10px] font-black text-secondary uppercase tracking-[4px] mb-2">{offer.category}</Text>
+                        <Text className="text-[10px] font-black text-secondary tracking-[4px] mb-2">
+                            {offer.category ? offer.category.charAt(0).toUpperCase() + offer.category.slice(1).toLowerCase() : ''}
+                        </Text>
                         <Text className="text-4xl font-black text-primary tracking-tighter leading-[44px]">
                             {offer.title}
                         </Text>
                     </View>
 
-                    <View className="bg-[#FAFAFA] rounded-[32px] p-6 mb-8 border border-surface shadow-sm">
+                    <TouchableOpacity
+                        activeOpacity={0.7}
+                        onPress={() => navigation.navigate('PublicStoreProfile', { vendorId: offer.vendorId?._id })}
+                        className="bg-[#FAFAFA] rounded-[32px] p-6 mb-8 border border-surface shadow-sm"
+                    >
                         <View className="flex-row items-center mb-6">
-                            <View className="w-14 h-14 bg-white rounded-2xl items-center justify-center shadow-md border border-surface">
-                                <Store size={28} color={colors.primary} strokeWidth={1.5} />
+                            <View className="w-14 h-14 bg-white rounded-2xl items-center justify-center shadow-md border border-surface overflow-hidden">
+                                <Image source={storeLogoSource} className="w-full h-full" resizeMode="cover" />
                             </View>
                             <View className="ml-4 flex-1">
                                 <Text className="text-primary font-black text-lg">{storeName}</Text>
                                 <View className="flex-row items-center mt-1">
                                     <MapPin size={14} color={colors.textSecondary} />
-                                    <Text className="text-textSecondary text-xs font-bold ml-1">{offer.distance || 'Near'} km away</Text>
+                                    <Text className="text-textSecondary text-xs font-bold ml-1">{offer.distance || 'Nearby'} km Away</Text>
                                 </View>
                             </View>
+                            <ChevronRight size={20} color={colors.primary} opacity={0.3} />
                         </View>
 
                         <Text className="text-textSecondary text-sm font-medium leading-6 mb-6">
@@ -139,16 +186,15 @@ const OfferDetailsScreen = ({ route, navigation }) => {
                         </Text>
 
                         <View className="flex-row gap-3">
-                            <TouchableOpacity className="flex-1 bg-white border border-surface py-4 rounded-2xl flex-row items-center justify-center shadow-sm">
-                                <Phone size={18} color={colors.primary} />
-                                <Text className="ml-2 font-black text-primary text-xs uppercase tracking-widest">Call Now</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity className="flex-1 bg-white border border-surface py-4 rounded-2xl flex-row items-center justify-center shadow-sm">
+                            <TouchableOpacity
+                                onPress={handleGetDirections}
+                                className="flex-1 bg-white border border-surface py-4 rounded-2xl flex-row items-center justify-center shadow-sm"
+                            >
                                 <Map size={18} color={colors.primary} />
-                                <Text className="ml-2 font-black text-primary text-xs uppercase tracking-widest">Directions</Text>
+                                <Text className="ml-2 font-black text-primary text-xs tracking-widest">Directions</Text>
                             </TouchableOpacity>
                         </View>
-                    </View>
+                    </TouchableOpacity>
 
                     <View className="mb-10">
                         <View className="flex-row items-center mb-4">
@@ -163,7 +209,7 @@ const OfferDetailsScreen = ({ route, navigation }) => {
                     <View className="bg-primary/5 p-8 rounded-[40px] border border-primary/5">
                         <View className="flex-row items-center mb-6">
                             <Sparkles size={16} color={colors.primary} strokeWidth={2} />
-                            <Text className="font-black text-primary text-sm uppercase tracking-[3px] ml-3">Verified Offer</Text>
+                            <Text className="font-black text-primary text-sm tracking-[3px] ml-3">Verified Offer</Text>
                         </View>
                         <View className="flex-row items-start mb-4">
                             <View className="w-6 h-6 rounded-full bg-white items-center justify-center mr-4 shadow-sm">
@@ -174,46 +220,8 @@ const OfferDetailsScreen = ({ route, navigation }) => {
                     </View>
                 </View>
 
-                <View className="h-48" />
+                <View className="h-20" />
             </ScrollView>
-
-            <View
-                style={{ paddingBottom: Math.max(insets.bottom, 24) }}
-                className="absolute bottom-0 left-0 right-0 bg-white/95 p-6 pt-4 border-t border-surface shadow-2xl"
-            >
-
-                <View className="flex-row items-center justify-between mb-5">
-                    <View>
-                        <Text className="text-[10px] font-black text-textSecondary uppercase tracking-widest opacity-60">Offer Status</Text>
-                        <View className="flex-row items-center mt-1">
-                            <View className="w-2 h-2 bg-success rounded-full mr-2" />
-                            <Text className="text-success font-black text-base uppercase">Available Now</Text>
-                        </View>
-                    </View>
-                    <View className="items-end">
-                        <Text className="text-primary font-black text-2xl tracking-tighter">Activated</Text>
-                    </View>
-                </View>
-
-                <TouchableOpacity
-                    activeOpacity={0.9}
-                    onPress={handleRedeem}
-                    disabled={isRedeeming}
-                >
-                    <LinearGradient
-                        colors={[colors.primary, '#1e293b']}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 0 }}
-                        className="py-5 rounded-[24px] items-center shadow-xl"
-                    >
-                        {isRedeeming ? (
-                            <ActivityIndicator size="small" color="white" />
-                        ) : (
-                            <Text className="text-white font-black text-sm uppercase tracking-[4px]">Activate Flash Pass</Text>
-                        )}
-                    </LinearGradient>
-                </TouchableOpacity>
-            </View>
         </View>
     );
 };

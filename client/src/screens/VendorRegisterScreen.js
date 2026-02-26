@@ -274,7 +274,7 @@ const VendorRegisterScreen = () => {
                                 <View className="mt-6">
                                     <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-3 ml-1 opacity-50">Communication Hub</Text>
                                     <FloatingInput
-                                        label="Mobile Access Number"
+                                        label="Mobile No"
                                         value={formData.mobile}
                                         onChangeText={(val) => setFormData({ ...formData, mobile: val })}
                                         keyboardType="phone-pad"
@@ -412,7 +412,7 @@ const VendorRegisterScreen = () => {
 
                         <View className="mt-12">
                             <CustomButton
-                                title={step === 0 ? "Verify Via Otp" : "Finalize Portal"}
+                                title={step === 0 ? "Verify Via OTP" : "Finalize Portal"}
                                 onPress={handleNext}
                                 loading={loading}
                             />

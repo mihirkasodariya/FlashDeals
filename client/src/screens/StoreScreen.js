@@ -156,7 +156,7 @@ const StoreScreen = () => {
                                 <View className="ml-4 flex-1">
                                     <Text className="text-textSecondary text-[9px] font-black tracking-widest mb-1.5 opacity-50">Operational Base</Text>
                                     <Text className="text-primary font-bold text-sm leading-6">
-                                        {user.storeAddress || 'Setup details in edit'}
+                                        {user.storeAddress || 'Setup Details In Edit'}
                                     </Text>
                                 </View>
                             </View>

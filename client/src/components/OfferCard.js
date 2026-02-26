@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
-import { MapPin, Clock, Heart, Store } from 'lucide-react-native';
+import { MapPin, Clock, Heart } from 'lucide-react-native';
 import { colors } from '../theme/colors';
 import { API_BASE_URL } from '../config';
 
