@@ -111,7 +111,7 @@ const OTPScreen = () => {
                 </View>
 
                 <CustomButton
-                    title="Verify & Proceed"
+                    title="Verify & proceed"
                     onPress={handleVerify}
                     loading={loading}
                     className="mt-2.5"

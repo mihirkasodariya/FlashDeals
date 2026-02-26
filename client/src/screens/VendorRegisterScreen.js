@@ -14,6 +14,7 @@ import * as Location from 'expo-location';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Upload, CheckCircle2, AlertCircle, RefreshCw, Shield } from 'lucide-react-native';
+import { colors } from '../theme/colors';
 
 import FloatingInput from '../components/FloatingInput';
 import AddressAutocomplete from '../components/AddressAutocomplete';
@@ -232,6 +233,7 @@ const VendorRegisterScreen = () => {
                                         value={formData.mobile}
                                         onChangeText={(val) => setFormData({ ...formData, mobile: val })}
                                         keyboardType="phone-pad"
+                                        maxLength={10}
                                     />
                                 </View>
 
@@ -364,26 +366,11 @@ const VendorRegisterScreen = () => {
                         )}
 
                         <View className="mt-12">
-                            <TouchableOpacity
-                                activeOpacity={0.9}
+                            <CustomButton
+                                title={step === 0 ? "Verify via Otp" : "Finalize portal"}
                                 onPress={handleNext}
-                                disabled={loading}
-                            >
-                                <LinearGradient
-                                    colors={[colors.primary, '#1e293b']}
-                                    start={{ x: 0, y: 0 }}
-                                    end={{ x: 1, y: 0 }}
-                                    className="py-5 rounded-[24px] items-center shadow-xl shadow-primary/30"
-                                >
-                                    {loading ? (
-                                        <ActivityIndicator size="small" color="white" />
-                                    ) : (
-                                        <Text className="text-white font-black text-sm uppercase tracking-[3px]">
-                                            {step === 0 ? "Verify via OTP" : "Finalize Portal"}
-                                        </Text>
-                                    )}
-                                </LinearGradient>
-                            </TouchableOpacity>
+                                loading={loading}
+                            />
                         </View>
                     </View>
 

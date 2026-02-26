@@ -1,16 +1,17 @@
 import React from 'react';
 import { TouchableOpacity, Text, ActivityIndicator } from 'react-native';
+import { colors } from '../theme/colors';
 
 const CustomButton = ({ title, onPress, loading, variant = 'primary', style, textStyle }) => {
     const isSecondary = variant === 'secondary';
     const isOutline = variant === 'outline';
 
-    let containerClasses = "h-[54px] rounded-lg justify-center items-center w-full my-2.5 shadow-sm";
-    if (variant === 'primary') containerClasses += " bg-primary";
-    if (variant === 'secondary') containerClasses += " bg-secondary";
+    let containerClasses = "h-[52px] rounded-[36px] justify-center items-center w-full my-3 shadow-2xl";
+    if (variant === 'primary') containerClasses += " bg-primary shadow-primary/40";
+    if (variant === 'secondary') containerClasses += " bg-secondary shadow-secondary/40";
     if (variant === 'outline') containerClasses += " bg-transparent border-2 border-primary";
 
-    let textClasses = "text-base font-bold tracking-wide";
+    let textClasses = "text-base font-bold tracking-tight";
     if (variant === 'outline') textClasses += " text-primary";
     else textClasses += " text-white";
 

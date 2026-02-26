@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { View, TextInput, Text, Animated, TouchableOpacity } from 'react-native';
 import { Eye, EyeOff } from 'lucide-react-native';
 
-const FloatingInput = ({ label, value, onChangeText, secureTextEntry, keyboardType, error }) => {
+const FloatingInput = ({ label, value, onChangeText, secureTextEntry, keyboardType, error, ...props }) => {
     const [isFocused, setIsFocused] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const animatedValue = useRef(new Animated.Value(value ? 1 : 0)).current;
@@ -62,6 +62,7 @@ const FloatingInput = ({ label, value, onChangeText, secureTextEntry, keyboardTy
                     secureTextEntry={secureTextEntry && !showPassword}
                     keyboardType={keyboardType}
                     placeholder=""
+                    {...props}
                 />
                 {secureTextEntry && (
                     <TouchableOpacity

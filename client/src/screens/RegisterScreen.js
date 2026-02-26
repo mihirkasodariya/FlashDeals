@@ -127,6 +127,7 @@ const RegisterScreen = () => {
                         value={mobile}
                         onChangeText={setMobile}
                         keyboardType="phone-pad"
+                        maxLength={10}
                     />
 
                     <FloatingInput
