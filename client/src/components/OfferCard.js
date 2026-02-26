@@ -14,8 +14,8 @@ const OfferCard = ({ offer, onPress, grid }) => {
         ? (offer.image.startsWith('http') ? offer.image : `${STATIC_BASE_URL}${offer.image}`)
         : 'https://via.placeholder.com/400x200';
 
-    const storeLogoSource = offer.vendorId?.profileImage
-        ? { uri: (offer.vendorId.profileImage.startsWith('http') ? offer.vendorId.profileImage : `${STATIC_BASE_URL}${offer.vendorId.profileImage}`) }
+    const storeLogoSource = offer.vendorId?.storeImage
+        ? { uri: (offer.vendorId.storeImage.startsWith('http') ? offer.vendorId.storeImage : `${STATIC_BASE_URL}${offer.vendorId.storeImage}`) }
         : defaultLogo;
 
     const storeName = offer.vendorId?.storeName || 'Local Store';
@@ -27,7 +27,7 @@ const OfferCard = ({ offer, onPress, grid }) => {
         const now = new Date();
         const diff = end - now;
         const hours = Math.floor(diff / (1000 * 60 * 60));
-        return hours > 0 ? `${hours}H` : 'EXPIRING';
+        return hours > 0 ? `${hours}h` : 'Expiring';
     };
 
     return (
@@ -56,7 +56,7 @@ const OfferCard = ({ offer, onPress, grid }) => {
                             />
                         </View>
                         {!grid && (
-                            <Text className="text-primary font-black text-[9px] uppercase tracking-wider" numberOfLines={1}>
+                            <Text className="text-primary font-black text-[9px] tracking-wider" numberOfLines={1}>
                                 {storeName}
                             </Text>
                         )}
@@ -79,15 +79,15 @@ const OfferCard = ({ offer, onPress, grid }) => {
                 <View className="flex-row items-center justify-between mt-auto">
                     <View className={`flex-row items-center bg-[#F3F4F6] ${grid ? 'px-1.5 py-1' : 'px-3 py-2'} rounded-lg`}>
                         <MapPin size={grid ? 8 : 10} color={colors.secondary} strokeWidth={3} />
-                        <Text className={`text-primary font-bold ${grid ? 'text-[7px]' : 'text-[10px]'} ml-1 uppercase tracking-tight`}>
-                            {offer.distance || 'Near'} KM
+                        <Text className={`text-primary font-bold ${grid ? 'text-[7px]' : 'text-[10px]'} ml-1 tracking-tight`}>
+                            {offer.distance || 'Near'} km
                         </Text>
                     </View>
 
                     <View className={`flex-row items-center bg-primary/5 ${grid ? 'px-1.5 py-1' : 'px-3 py-2'} rounded-lg border border-primary/5`}>
                         <Clock size={grid ? 8 : 10} color={colors.primary} strokeWidth={3} />
                         <Text className={`text-primary font-black ${grid ? 'text-[7px]' : 'text-[10px]'} ml-1`}>
-                            {calculateExpiry()} LEFT
+                            {calculateExpiry()} left
                         </Text>
                     </View>
                 </View>

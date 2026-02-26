@@ -6,7 +6,8 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import { LinearGradient } from 'expo-linear-gradient';
-import { User, Settings, Bell, Shield, HelpCircle, LogOut, ChevronRight, MapPin, Package, Store, Map as MapIcon, Edit3, Navigation2 } from 'lucide-react-native';
+import { User, Settings, Bell, Shield, HelpCircle, LogOut, ChevronRight, MapPin, Package, Store, Map as MapIcon, Edit3, Navigation2, Camera } from 'lucide-react-native';
+import * as ImagePicker from 'expo-image-picker';
 
 
 
@@ -27,6 +28,8 @@ const ProfileScreen = () => {
     // Edit Form State
     const [editName, setEditName] = React.useState('');
     const [editMobile, setEditMobile] = React.useState('');
+    const [editImage, setEditImage] = React.useState(null);
+    const [saving, setSaving] = React.useState(false);
 
     const fetchProfile = async (isMounted) => {
         try {
@@ -121,11 +124,71 @@ const ProfileScreen = () => {
         }
     };
 
-    const handleSaveProfile = () => {
-        // Logic to update name/mobile on backend
-        setUser({ ...user, name: editName, mobile: editMobile });
-        setIsEditModalVisible(false);
-        Alert.alert("Success", "Profile updated successfully!");
+    const pickImage = async () => {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert("Permission", "Permission to access library is required");
+            return;
+        }
+
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.8,
+        });
+
+        if (!result.canceled) {
+            setEditImage(result.assets[0].uri);
+        }
+    };
+
+    const handleSaveProfile = async () => {
+        if (!editName) {
+            Alert.alert("Error", "Name is required");
+            return;
+        }
+
+        setSaving(true);
+        try {
+            const token = await AsyncStorage.getItem('userToken');
+            const formData = new FormData();
+            formData.append('name', editName);
+
+            if (editImage) {
+                const filename = editImage.split('/').pop();
+                const match = /\.(\w+)$/.exec(filename);
+                const type = match ? `image/${match[1]}` : `image`;
+                formData.append('profileImage', {
+                    uri: editImage,
+                    name: filename,
+                    type
+                });
+            }
+
+            const response = await fetch(`${API_BASE_URL}/auth/update`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                setUser(data.user);
+                setIsEditModalVisible(false);
+                setEditImage(null);
+                Alert.alert("Success", "Profile updated successfully!");
+            } else {
+                Alert.alert("Update Failed", data.message || "Could not update profile");
+            }
+        } catch (error) {
+            console.error("Update profile error:", error);
+            Alert.alert("Error", "Server connection failed");
+        } finally {
+            setSaving(false);
+        }
     };
 
     const menuItems = [
@@ -159,7 +222,15 @@ const ProfileScreen = () => {
                 <View className="bg-white px-6 pt-10 pb-8 rounded-b-[40px] shadow-sm items-center">
                     <View className="relative">
                         <View className="w-32 h-32 bg-[#F3F4F6] rounded-full items-center justify-center border-4 border-white shadow-xl overflow-hidden">
-                            <User size={80} color="#D1D5DB" strokeWidth={1} />
+                            {user.profileImage ? (
+                                <Image
+                                    source={{ uri: `${API_BASE_URL.replace('/api', '')}${user.profileImage}` }}
+                                    className="w-full h-full"
+                                    resizeMode="cover"
+                                />
+                            ) : (
+                                <User size={80} color="#D1D5DB" strokeWidth={1} />
+                            )}
                             {/* Decorative ring */}
                             <View className="absolute inset-0 border-[3px] border-primary/10 rounded-full" />
                         </View>
@@ -172,7 +243,7 @@ const ProfileScreen = () => {
                     </View>
 
                     <Text className="text-3xl font-black text-primary mt-6 tracking-tight">{user.name}</Text>
-                    <Text className="text-textSecondary font-bold mt-1 tracking-widest text-xs uppercase opacity-60">
+                    <Text className="text-textSecondary font-bold mt-1 tracking-widest text-xs opacity-60">
                         {user.role} Account • {user.mobile}
                     </Text>
 
@@ -180,14 +251,14 @@ const ProfileScreen = () => {
                         onPress={() => setIsEditModalVisible(true)}
                         className="mt-6 bg-[#F3F4F6] px-8 py-3 rounded-2xl border border-surface"
                     >
-                        <Text className="text-primary font-black text-xs uppercase tracking-widest">Edit Profile</Text>
+                        <Text className="text-primary font-black text-xs tracking-widest">Edit Profile</Text>
                     </TouchableOpacity>
                 </View>
 
 
                 {/* Settings Menu Sections */}
                 <View className="px-6 py-6">
-                    <Text className="text-[10px] font-black text-textSecondary uppercase tracking-[4px] mb-6 opacity-40">System Dashboard</Text>
+                    <Text className="text-[10px] font-black text-textSecondary tracking-[4px] mb-6 opacity-40">System Dashboard</Text>
 
                     <View className="bg-white rounded-[32px] p-4 shadow-sm border border-surface">
                         {menuItems.map((item, index) => (
@@ -211,14 +282,14 @@ const ProfileScreen = () => {
                     >
                         <View className="bg-error/5 px-6 py-3 rounded-full flex-row items-center">
                             <LogOut size={18} color={colors.error} />
-                            <Text className="ml-3 text-error font-black text-sm uppercase tracking-widest">Secure Logout</Text>
+                            <Text className="ml-3 text-error font-black text-sm tracking-widest">Secure Logout</Text>
                         </View>
                     </TouchableOpacity>
                 </View>
 
                 {/* Version & Credits */}
                 <View className="items-center pb-32">
-                    <Text className="text-[9px] font-black text-textSecondary/40 uppercase tracking-[5px]">NextGen Core v2.2</Text>
+                    <Text className="text-[9px] font-black text-textSecondary/40 tracking-[5px]">NextGen Core v2.2</Text>
                 </View>
             </ScrollView>
 
@@ -229,11 +300,30 @@ const ProfileScreen = () => {
                         <View className="w-16 h-1.5 bg-[#E5E7EB] rounded-full self-center mb-10" />
 
                         <Text className="text-3xl font-black text-primary mb-2">Edit Identity</Text>
-                        <Text className="text-textSecondary mb-10 font-medium">Update your profile information below.</Text>
+                        <Text className="text-textSecondary mb-8 font-medium">Update your profile information below.</Text>
+
+                        {/* Image Picker in Modal */}
+                        <View className="items-center mb-8">
+                            <TouchableOpacity
+                                onPress={pickImage}
+                                className="w-24 h-24 bg-surface rounded-full items-center justify-center border-2 border-dashed border-primary/20 overflow-hidden"
+                            >
+                                {editImage ? (
+                                    <Image source={{ uri: editImage }} className="w-full h-full" />
+                                ) : user.profileImage ? (
+                                    <Image source={{ uri: `${API_BASE_URL.replace('/api', '')}${user.profileImage}` }} className="w-full h-full" />
+                                ) : (
+                                    <Camera size={28} color={colors.primary} opacity={0.5} />
+                                )}
+                                <View className="absolute bottom-0 right-0 left-0 bg-primary/80 py-1.5 items-center">
+                                    <Text className="text-[8px] font-black text-white tracking-widest">Change</Text>
+                                </View>
+                            </TouchableOpacity>
+                        </View>
 
                         <View className="space-y-6">
                             <View>
-                                <Text className="text-[10px] font-black text-textSecondary uppercase tracking-widest mb-3 ml-1">Full Name</Text>
+                                <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-3 ml-1">Full Name</Text>
                                 <TextInput
                                     className="bg-[#F3F4F6] p-5 rounded-[24px] font-bold text-primary border border-transparent focus:border-primary"
                                     value={editName}
@@ -243,12 +333,11 @@ const ProfileScreen = () => {
                             </View>
 
                             <View className="mt-6">
-                                <Text className="text-[10px] font-black text-textSecondary uppercase tracking-widest mb-3 ml-1">Mobile Access</Text>
+                                <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-3 ml-1">Mobile No</Text>
                                 <TextInput
-                                    className="bg-[#F3F4F6] p-5 rounded-[24px] font-bold text-primary border border-transparent focus:border-primary"
+                                    className="bg-[#F3F4F6] p-5 rounded-[24px] font-bold text-primary border border-transparent opacity-50"
                                     value={editMobile}
-                                    onChangeText={setEditMobile}
-                                    keyboardType="phone-pad"
+                                    editable={false}
                                     placeholder="Enter mobile number"
                                 />
                             </View>
@@ -258,13 +347,18 @@ const ProfileScreen = () => {
                                     onPress={() => setIsEditModalVisible(false)}
                                     className="flex-1 bg-surface py-5 rounded-[24px] items-center"
                                 >
-                                    <Text className="text-primary font-black text-sm uppercase tracking-widest">Discard</Text>
+                                    <Text className="text-primary font-black text-sm tracking-widest">Discard</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
                                     onPress={handleSaveProfile}
+                                    disabled={saving}
                                     className="flex-[2] bg-primary py-5 rounded-[24px] items-center shadow-lg shadow-primary/30"
                                 >
-                                    <Text className="text-white font-black text-sm uppercase tracking-widest">Sync Changes</Text>
+                                    {saving ? (
+                                        <ActivityIndicator size="small" color="white" />
+                                    ) : (
+                                        <Text className="text-white font-black text-sm tracking-widest">Sync Changes</Text>
+                                    )}
                                 </TouchableOpacity>
                             </View>
                         </View>
@@ -293,13 +387,13 @@ const ProfileScreen = () => {
                                 onPress={handleLogout}
                                 className="w-full bg-primary py-5 rounded-[30px] items-center shadow-lg shadow-primary/30"
                             >
-                                <Text className="text-white font-black text-sm uppercase tracking-widest">Logout</Text>
+                                <Text className="text-white font-black text-sm tracking-widest">Logout</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 onPress={() => setIsLogoutModalVisible(false)}
                                 className="w-full py-5 items-center mt-2"
                             >
-                                <Text className="text-primary font-black text-xs uppercase tracking-[3px]">Cancel</Text>
+                                <Text className="text-primary font-black text-xs tracking-[3px]">Cancel</Text>
                             </TouchableOpacity>
                         </View>
                     </View>

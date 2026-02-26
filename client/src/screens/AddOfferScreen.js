@@ -52,7 +52,7 @@ const AddOfferScreen = () => {
                                     onPress={onClose}
                                     className="bg-primary/5 px-6 py-2 rounded-xl"
                                 >
-                                    <Text className="text-primary font-black text-sm uppercase">Done</Text>
+                                    <Text className="text-primary font-black text-sm">Done</Text>
                                 </TouchableOpacity>
                             </View>
                             <DateTimePicker
@@ -171,7 +171,7 @@ const AddOfferScreen = () => {
                 {/* Form Fields */}
                 <View className="mt-8 space-y-6 pb-20">
                     <View>
-                        <Text className="text-[10px] font-black text-textSecondary uppercase tracking-widest mb-2 ml-1">Offer Title</Text>
+                        <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-2 ml-1">Offer Title</Text>
                         <View className="flex-row items-center bg-surface px-4 py-3 rounded-2xl">
                             <Type size={18} color={colors.primary} className="mr-3" />
                             <TextInput
@@ -184,7 +184,7 @@ const AddOfferScreen = () => {
                     </View>
 
                     <View className="mt-6">
-                        <Text className="text-[10px] font-black text-textSecondary uppercase tracking-widest mb-2 ml-1">Detail Description</Text>
+                        <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-2 ml-1">Detail Description</Text>
                         <View className="flex-row items-start bg-surface px-4 py-4 rounded-2xl min-h-[120px]">
                             <FileText size={18} color={colors.primary} className="mr-3 mt-1" />
                             <TextInput
@@ -200,7 +200,7 @@ const AddOfferScreen = () => {
                     </View>
 
                     <View className="mt-6">
-                        <Text className="text-[10px] font-black text-textSecondary uppercase tracking-widest mb-2 ml-1">Category</Text>
+                        <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-2 ml-1">Category</Text>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row mt-2">
                             {CATEGORIES.map(cat => (
                                 <TouchableOpacity
@@ -216,7 +216,7 @@ const AddOfferScreen = () => {
 
                     <View className="flex-row gap-4 mt-6">
                         <View className="flex-1">
-                            <Text className="text-[10px] font-black text-textSecondary uppercase tracking-widest mb-2 ml-1">Start Date</Text>
+                            <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-2 ml-1">Start Date</Text>
                             <TouchableOpacity
                                 onPress={() => setShowStartPicker(true)}
                                 className="flex-row items-center bg-surface px-4 py-4 rounded-2xl"
@@ -230,7 +230,7 @@ const AddOfferScreen = () => {
                         </View>
 
                         <View className="flex-1">
-                            <Text className="text-[10px] font-black text-textSecondary uppercase tracking-widest mb-2 ml-1">End Date</Text>
+                            <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-2 ml-1">End Date</Text>
                             <TouchableOpacity
                                 onPress={() => setShowEndPicker(true)}
                                 className="flex-row items-center bg-surface px-4 py-4 rounded-2xl"
@@ -255,7 +255,7 @@ const AddOfferScreen = () => {
                     {loading ? (
                         <ActivityIndicator color="white" />
                     ) : (
-                        <Text className="text-white font-black text-sm uppercase tracking-widest">Publish Flash Deal</Text>
+                        <Text className="text-white font-black text-sm tracking-widest">Publish Flash Deal</Text>
                     )}
                 </TouchableOpacity>
             </View>

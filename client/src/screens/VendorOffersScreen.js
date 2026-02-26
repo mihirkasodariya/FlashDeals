@@ -51,7 +51,7 @@ const VendorOffersScreen = () => {
                     />
                     <View className="ml-4 flex-1">
                         <View className="bg-primary/5 self-start px-2 py-1 rounded-lg mb-1">
-                            <Text className="text-[10px] font-black text-primary uppercase">{item.category}</Text>
+                            <Text className="text-[10px] font-black text-primary">{item.category}</Text>
                         </View>
                         <Text className="text-lg font-black text-primary leading-6" numberOfLines={2}>{item.title}</Text>
 
@@ -97,7 +97,7 @@ const VendorOffersScreen = () => {
                                 onPress={() => navigation.navigate('AddOffer')}
                                 className="mt-8 bg-primary px-8 py-4 rounded-2xl"
                             >
-                                <Text className="text-white font-black uppercase text-xs tracking-widest">Create First Deal</Text>
+                                <Text className="text-white font-black text-xs tracking-widest">Create First Deal</Text>
                             </TouchableOpacity>
                         </View>
                     }

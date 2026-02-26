@@ -119,11 +119,11 @@ const EditStoreScreen = () => {
 
     const logoSource = logo
         ? { uri: logo.uri }
-        : vendorData?.profileImage
+        : vendorData?.storeImage
             ? {
-                uri: vendorData.profileImage.startsWith('/public/storelogo/')
-                    ? `${STATIC_BASE_URL}${vendorData.profileImage}`
-                    : `${STATIC_BASE_URL}/public/storelogo/${vendorData.profileImage.split('/').pop()}`
+                uri: vendorData.storeImage.startsWith('/public/storelogo/')
+                    ? `${STATIC_BASE_URL}${vendorData.storeImage}`
+                    : `${STATIC_BASE_URL}/public/storelogo/${vendorData.storeImage.split('/').pop()}`
             }
             : null;
 
@@ -175,7 +175,7 @@ const EditStoreScreen = () => {
                             </View>
                         </TouchableOpacity>
                         <Text className="text-white font-black text-2xl tracking-tighter text-center">Edit Brand Identity</Text>
-                        <Text className="text-white/60 text-[11px] font-black uppercase tracking-[3px] mt-1 text-center">Management Hub</Text>
+                        <Text className="text-white/60 text-[11px] font-black tracking-[3px] mt-1 text-center">Management Hub</Text>
                     </LinearGradient>
 
                     {/* Integrated Form Card */}
@@ -189,7 +189,7 @@ const EditStoreScreen = () => {
                                     <View className="w-6 h-6 bg-primary/5 rounded-full items-center justify-center">
                                         <CheckCircle2 size={12} color={colors.primary} strokeWidth={3} />
                                     </View>
-                                    <Text className="text-[10px] font-black text-primary uppercase tracking-[2px] ml-3">Business Name</Text>
+                                    <Text className="text-[10px] font-black text-primary tracking-[2px] ml-3">Business Name</Text>
                                 </View>
                                 <FloatingInput
                                     label="Legal Store Name"
@@ -203,7 +203,7 @@ const EditStoreScreen = () => {
                                     <View className="w-6 h-6 bg-secondary/5 rounded-full items-center justify-center">
                                         <MapPin size={12} color={colors.secondary} strokeWidth={3} />
                                     </View>
-                                    <Text className="text-[10px] font-black text-secondary uppercase tracking-[2px] ml-3">Physical Address</Text>
+                                    <Text className="text-[10px] font-black text-secondary tracking-[2px] ml-3">Physical Address</Text>
                                 </View>
                                 <AddressAutocomplete
                                     label=""
@@ -230,7 +230,7 @@ const EditStoreScreen = () => {
                                         <ActivityIndicator size="small" color="white" />
                                     ) : (
                                         <View className="flex-row items-center justify-center">
-                                            <Text className="text-white font-black text-sm uppercase tracking-[3px] mr-3">Publish Changes</Text>
+                                            <Text className="text-white font-black text-sm tracking-[3px] mr-3">Publish Changes</Text>
                                             <ChevronRight size={18} color="white" strokeWidth={3} />
                                         </View>
                                     )}
@@ -242,7 +242,7 @@ const EditStoreScreen = () => {
                     <View className="mt-8 items-center px-10">
                         <View className="flex-row items-center bg-success/5 px-4 py-2.5 rounded-2xl border border-success/10">
                             <Sparkles size={14} color={colors.success} fill={colors.success + '20'} />
-                            <Text className="text-success font-black text-[9px] uppercase tracking-widest ml-2">Updates reflected in real-time</Text>
+                            <Text className="text-success font-black text-[9px] tracking-widest ml-2">Updates Reflected In Real-Time</Text>
                         </View>
                     </View>
                 </ScrollView>

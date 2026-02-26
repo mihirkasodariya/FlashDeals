@@ -56,10 +56,26 @@ const RegisterScreen = () => {
 
         setLoading(true);
         try {
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('mobile', mobile);
+            formData.append('password', password);
+            formData.append('role', 'user');
+
+            if (image) {
+                const filename = image.split('/').pop();
+                const match = /\.(\w+)$/.exec(filename);
+                const type = match ? `image/${match[1]}` : `image`;
+                formData.append('profileImage', {
+                    uri: image,
+                    name: filename,
+                    type
+                });
+            }
+
             const response = await fetch(`${API_BASE_URL}/auth/register`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, mobile, password, role: 'user' })
+                body: formData
             });
 
             const data = await response.json();

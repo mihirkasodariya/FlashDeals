@@ -94,8 +94,8 @@ const StoreScreen = () => {
     const defaultLogo = require('../../assets/logos/storeLogo.png');
 
     // Resolve Logo Image
-    const logoSource = user.profileImage
-        ? { uri: `${STATIC_BASE_URL}${user.profileImage}` }
+    const logoSource = user.storeImage
+        ? { uri: `${STATIC_BASE_URL}${user.storeImage}` }
         : defaultLogo;
 
     return (
@@ -103,7 +103,7 @@ const StoreScreen = () => {
             <ScrollView showsVerticalScrollIndicator={false}>
                 {/* Visual Header */}
                 <View className="px-6 pt-8 pb-4">
-                    <Text className="text-[10px] font-black text-secondary uppercase tracking-[4px] mb-1">Commercial Hub</Text>
+                    <Text className="text-[10px] font-black text-secondary tracking-[4px] mb-1">Commercial Hub</Text>
                     <Text className="text-3xl font-black text-primary tracking-tighter">Store Command</Text>
                 </View>
                 {/* Integrated Store Card */}
@@ -138,7 +138,7 @@ const StoreScreen = () => {
                                     </Text>
                                     <View className="bg-success self-start px-2 py-0.5 rounded-full mt-1.5 flex-row items-center">
                                         <Shield size={10} color="white" />
-                                        <Text className="text-white text-[8px] font-black uppercase ml-1 tracking-widest">Verified Store</Text>
+                                        <Text className="text-white text-[8px] font-black ml-1 tracking-widest">Verified Store</Text>
                                     </View>
                                 </View>
                             </View>
@@ -154,7 +154,7 @@ const StoreScreen = () => {
                                     <MapPin size={18} color={colors.secondary} />
                                 </View>
                                 <View className="ml-4 flex-1">
-                                    <Text className="text-textSecondary text-[9px] font-black uppercase tracking-widest mb-1.5 opacity-50">Operational Base</Text>
+                                    <Text className="text-textSecondary text-[9px] font-black tracking-widest mb-1.5 opacity-50">Operational Base</Text>
                                     <Text className="text-primary font-bold text-sm leading-6">
                                         {user.storeAddress || 'Setup details in edit'}
                                     </Text>
@@ -178,7 +178,7 @@ const StoreScreen = () => {
                                         )}
                                         <View>
                                             <Text className="text-white font-black text-sm tracking-tight">Sync Satellite GPS</Text>
-                                            <Text className="text-white/40 text-[8px] font-black uppercase tracking-[2px] mt-0.5">High-Precision Link</Text>
+                                            <Text className="text-white/40 text-[8px] font-black tracking-[2px] mt-0.5">High-Precision Link</Text>
                                         </View>
                                     </View>
                                     <View className="w-1.5 h-1.5 rounded-full bg-success shadow-lg shadow-success/50" />
@@ -190,7 +190,7 @@ const StoreScreen = () => {
 
                 {/* Manage Section */}
                 <View className="px-6 py-6">
-                    <Text className="text-[10px] font-black text-textSecondary uppercase tracking-[4px] mb-6 opacity-40">Business Tools</Text>
+                    <Text className="text-[10px] font-black text-textSecondary tracking-[4px] mb-6 opacity-40">Business Tools</Text>
 
                     <View className="flex-row justify-between">
                         <TouchableOpacity

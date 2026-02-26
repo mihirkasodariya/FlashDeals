@@ -13,7 +13,7 @@ import {
 import * as Location from 'expo-location';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, Upload, CheckCircle2, AlertCircle, RefreshCw, Shield } from 'lucide-react-native';
+import { ChevronLeft, Upload, CheckCircle2, AlertCircle, RefreshCw, Shield, Camera } from 'lucide-react-native';
 import { colors } from '../theme/colors';
 
 import FloatingInput from '../components/FloatingInput';
@@ -51,9 +51,23 @@ const VendorRegisterScreen = () => {
     }, [route.params]);
 
     const [docImage, setDocImage] = useState(null);
+    const [profileImage, setProfileImage] = useState(null);
     const [validationStatus, setValidationStatus] = useState('none');
     const [uploadProgress, setUploadProgress] = useState(0);
     const [loading, setLoading] = useState(false);
+
+    const pickProfileImage = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            setProfileImage(result.assets[0].uri);
+        }
+    };
 
     const pickDocument = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
@@ -112,15 +126,26 @@ const VendorRegisterScreen = () => {
 
             setLoading(true);
             try {
+                const formDataToSend = new FormData();
+                formDataToSend.append('name', formData.name);
+                formDataToSend.append('mobile', formData.mobile);
+                formDataToSend.append('password', formData.password);
+                formDataToSend.append('role', 'vendor');
+
+                if (profileImage) {
+                    const filename = profileImage.split('/').pop();
+                    const match = /\.(\w+)$/.exec(filename);
+                    const type = match ? `image/${match[1]}` : `image`;
+                    formDataToSend.append('profileImage', {
+                        uri: profileImage,
+                        name: filename,
+                        type
+                    });
+                }
+
                 const response = await fetch(`${API_BASE_URL}/auth/register`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        name: formData.name,
-                        mobile: formData.mobile,
-                        password: formData.password,
-                        role: 'vendor'
-                    })
+                    body: formDataToSend
                 });
 
                 const data = await response.json();
@@ -204,7 +229,7 @@ const VendorRegisterScreen = () => {
                     <ChevronLeft size={24} color={colors.primary} strokeWidth={3} />
                 </TouchableOpacity>
                 <View className="ml-4">
-                    <Text className="text-[10px] font-black text-secondary uppercase tracking-[3px] mb-0.5">Commercial</Text>
+                    <Text className="text-[10px] font-black text-secondary tracking-[3px] mb-0.5">Commercial</Text>
                     <Text className="text-xl font-black text-primary">Merchant Portal</Text>
                 </View>
             </View>
@@ -217,8 +242,28 @@ const VendorRegisterScreen = () => {
                     <View className="bg-white rounded-[40px] p-8 shadow-sm border border-surface mt-6">
                         {step === 0 ? (
                             <View className="space-y-6">
+                                <View className="items-center mb-6">
+                                    <TouchableOpacity
+                                        onPress={pickProfileImage}
+                                        className="w-24 h-24 bg-surface rounded-full items-center justify-center border border-surface overflow-hidden"
+                                    >
+                                        {profileImage ? (
+                                            <Image source={{ uri: profileImage }} className="w-full h-full" />
+                                        ) : (
+                                            <View className="items-center">
+                                                <Shield size={32} color={colors.primary} strokeWidth={1} />
+                                                <Text className="text-[8px] font-black text-primary/40 mt-1 tracking-widest">Identify</Text>
+                                            </View>
+                                        )}
+                                        <View className="absolute bottom-0 right-0 left-0 bg-primary/20 items-center py-1">
+                                            <Camera size={12} color={colors.primary} />
+                                        </View>
+                                    </TouchableOpacity>
+                                    <Text className="mt-3 text-[10px] font-black text-textSecondary/40 tracking-widest">Personal Profile Image</Text>
+                                </View>
+
                                 <View>
-                                    <Text className="text-[10px] font-black text-textSecondary uppercase tracking-widest mb-3 ml-1 opacity-50">Business Lead</Text>
+                                    <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-3 ml-1 opacity-50">Business Lead</Text>
                                     <FloatingInput
                                         label="Full Name"
                                         value={formData.name}
@@ -227,7 +272,7 @@ const VendorRegisterScreen = () => {
                                 </View>
 
                                 <View className="mt-6">
-                                    <Text className="text-[10px] font-black text-textSecondary uppercase tracking-widest mb-3 ml-1 opacity-50">Communication Hub</Text>
+                                    <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-3 ml-1 opacity-50">Communication Hub</Text>
                                     <FloatingInput
                                         label="Mobile Access Number"
                                         value={formData.mobile}
@@ -238,7 +283,7 @@ const VendorRegisterScreen = () => {
                                 </View>
 
                                 <View className="mt-6">
-                                    <Text className="text-[10px] font-black text-textSecondary uppercase tracking-widest mb-3 ml-1 opacity-50">Secure Access</Text>
+                                    <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-3 ml-1 opacity-50">Secure Access</Text>
                                     <FloatingInput
                                         label="Creation Password"
                                         value={formData.password}
@@ -272,14 +317,14 @@ const VendorRegisterScreen = () => {
                                             className={`flex-1 py-3.5 items-center rounded-xl ${formData.idType === type ? 'bg-white shadow-xl' : ''}`}
                                             onPress={() => setFormData({ ...formData, idType: type })}
                                         >
-                                            <Text className={`text-[10px] font-black uppercase tracking-widest ${formData.idType === type ? 'text-primary' : 'text-gray-400'}`}>{type}</Text>
+                                            <Text className={`text-[10px] font-black tracking-widest ${formData.idType === type ? 'text-primary' : 'text-gray-400'}`}>{type}</Text>
                                         </TouchableOpacity>
                                     ))}
                                 </View>
 
                                 <View className="space-y-6">
                                     <View>
-                                        <Text className="text-[10px] font-black text-textSecondary uppercase tracking-widest mb-3 ml-1 opacity-50">Public Branding</Text>
+                                        <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-3 ml-1 opacity-50">Public Branding</Text>
                                         <FloatingInput
                                             label="Trade / Store Name"
                                             value={formData.storeName}
@@ -288,7 +333,7 @@ const VendorRegisterScreen = () => {
                                     </View>
 
                                     <View className="mt-6">
-                                        <Text className="text-[10px] font-black text-textSecondary uppercase tracking-widest mb-3 ml-1 opacity-50">Tax Identity</Text>
+                                        <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-3 ml-1 opacity-50">Tax Identity</Text>
                                         <FloatingInput
                                             label={`${formData.idType} Reference`}
                                             value={formData.idNumber}
@@ -297,7 +342,7 @@ const VendorRegisterScreen = () => {
                                     </View>
 
                                     <View className="mt-6">
-                                        <Text className="text-[10px] font-black text-textSecondary uppercase tracking-widest mb-3 ml-1 opacity-50">Physical Nexus</Text>
+                                        <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-3 ml-1 opacity-50">Physical Nexus</Text>
                                         <AddressAutocomplete
                                             label="Registered Store Address"
                                             value={formData.storeAddress}
@@ -310,7 +355,7 @@ const VendorRegisterScreen = () => {
                                             className="mt-4 flex-row items-center border border-secondary/10 bg-secondary/5 py-5 rounded-[24px] px-6"
                                         >
                                             <View className={`w-3.5 h-3.5 rounded-full mr-4 shadow-sm ${formData.location ? 'bg-green-500' : 'bg-gray-300'}`} />
-                                            <Text className="text-secondary font-black text-xs uppercase tracking-widest">
+                                            <Text className="text-secondary font-black text-xs tracking-widest">
                                                 {formData.location ? 'GPS Precision Synced' : 'Detect Live GPS Location'}
                                             </Text>
                                         </TouchableOpacity>
@@ -318,7 +363,7 @@ const VendorRegisterScreen = () => {
 
                                     {/* Document Upload Zone */}
                                     <View className="mt-10">
-                                        <Text className="text-[10px] font-black text-textSecondary uppercase tracking-widest mb-4 ml-1 opacity-50">Proof of Existence</Text>
+                                        <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-4 ml-1 opacity-50">Proof of Existence</Text>
                                         <TouchableOpacity className="h-[220px] border-2 border-surface border-dashed rounded-[32px] justify-center items-center bg-[#FAFAFA] overflow-hidden" onPress={pickDocument}>
                                             {docImage ? (
                                                 <View className="w-full h-full">
@@ -327,7 +372,7 @@ const VendorRegisterScreen = () => {
                                                         <View className="bg-white/20 w-12 h-12 rounded-full items-center justify-center backdrop-blur-md">
                                                             <RefreshCw size={20} color="#FFFFFF" strokeWidth={3} />
                                                         </View>
-                                                        <Text className="text-white mt-3 font-black text-[10px] uppercase tracking-widest">Update Image</Text>
+                                                        <Text className="text-white mt-3 font-black text-[10px] tracking-widest">Update Image</Text>
                                                     </View>
                                                 </View>
                                             ) : (
@@ -335,8 +380,8 @@ const VendorRegisterScreen = () => {
                                                     <View className="w-16 h-16 bg-white rounded-3xl items-center justify-center shadow-sm mb-6">
                                                         <Upload size={28} color={colors.secondary} strokeWidth={2.5} />
                                                     </View>
-                                                    <Text className="text-primary font-black text-sm uppercase tracking-widest">Upload ID Card</Text>
-                                                    <Text className="text-[10px] text-gray-400 mt-2 font-medium tracking-[2px] uppercase">PNG, JPG • Max 5MB</Text>
+                                                    <Text className="text-primary font-black text-sm tracking-widest">Upload ID Card</Text>
+                                                    <Text className="text-[10px] text-gray-400 mt-2 font-medium tracking-[2px]">PNG, JPG • Max 5MB</Text>
                                                 </View>
                                             )}
                                         </TouchableOpacity>
@@ -351,7 +396,7 @@ const VendorRegisterScreen = () => {
                                             {validationStatus === 'valid' && <CheckCircle2 size={24} color="#10B981" strokeWidth={3} className="mr-4" />}
 
                                             <View className="flex-1">
-                                                <Text className="text-[10px] font-black text-textSecondary uppercase tracking-widest mb-0.5 opacity-50">AI Core Status</Text>
+                                                <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-0.5 opacity-50">AI Core Status</Text>
                                                 <Text className={`text-sm font-black ${validationStatus === 'valid' ? 'text-green-600' :
                                                     validationStatus === 'invalid' ? 'text-red-500' : 'text-secondary'
                                                     }`}>
@@ -367,7 +412,7 @@ const VendorRegisterScreen = () => {
 
                         <View className="mt-12">
                             <CustomButton
-                                title={step === 0 ? "Verify via Otp" : "Finalize portal"}
+                                title={step === 0 ? "Verify Via Otp" : "Finalize Portal"}
                                 onPress={handleNext}
                                 loading={loading}
                             />
@@ -375,7 +420,7 @@ const VendorRegisterScreen = () => {
                     </View>
 
                     <View className="mt-8 items-center">
-                        <Text className="text-[9px] font-black text-textSecondary uppercase tracking-[5px] opacity-30">Secure Merchant Onboarding v2</Text>
+                        <Text className="text-[9px] font-black text-textSecondary tracking-[5px] opacity-30">Secure Merchant Onboarding v2</Text>
                     </View>
                 </ScrollView>
             </KeyboardAvoidingView>

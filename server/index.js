@@ -71,6 +71,22 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/flashdeals'
     .then(() => console.log('✅ MongoDB Connected'))
     .catch(err => console.error('❌ MongoDB Connection Error:', err));
 
+// Specialized Multer for Store Logos
+const profileStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const uploadDir = 'public/storelogo';
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, 'logo-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
+const uploadProfile = multer({ storage: profileStorage });
+
 // Routes
 app.get('/', (req, res) => {
     res.send('FlashDeals API is running...');
@@ -121,7 +137,7 @@ app.get('/api/auth/me', async (req, res) => {
 });
 
 
-app.post('/api/auth/register', async (req, res) => {
+app.post('/api/auth/register', uploadProfile.single('profileImage'), async (req, res) => {
     try {
         const { name, mobile, password, role = 'user' } = req.body;
 
@@ -131,10 +147,41 @@ app.post('/api/auth/register', async (req, res) => {
             return res.status(400).json({ success: false, message: 'Mobile number already registered' });
         }
 
-        const user = new User({ name, mobile, password, role });
+        const userData = { name, mobile, password, role };
+        if (req.file) {
+            userData.profileImage = `/public/storelogo/${req.file.filename}`;
+        }
+
+        const user = new User(userData);
         await user.save();
 
         res.json({ success: true, message: 'Registration successful. OTP sent.', mobile: user.mobile, userId: user._id });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Update Profile API
+app.put('/api/auth/update', authenticateToken, uploadProfile.single('profileImage'), async (req, res) => {
+    try {
+        const { name } = req.body;
+        const updateData = {};
+        if (name) updateData.name = name;
+        if (req.file) {
+            updateData.profileImage = `/public/storelogo/${req.file.filename}`;
+        }
+
+        const user = await User.findByIdAndUpdate(
+            req.user.userId,
+            updateData,
+            { new: true }
+        ).select('-password');
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        res.json({ success: true, message: 'Profile updated successfully', user });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -218,22 +265,6 @@ app.post('/api/vendor/complete-registration', upload.single('idDocument'), async
     }
 });
 
-// Specialized Multer for Store Logos
-const profileStorage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const uploadDir = 'public/storelogo';
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir, { recursive: true });
-        }
-        cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, 'logo-' + uniqueSuffix + path.extname(file.originalname));
-    }
-});
-const uploadProfile = multer({ storage: profileStorage });
-
 app.put('/api/vendor/update/:userId', uploadProfile.single('profileImage'), async (req, res) => {
     try {
         const { userId } = req.params;
@@ -274,15 +305,15 @@ app.put('/api/vendor/update/:userId', uploadProfile.single('profileImage'), asyn
         }
 
         if (req.file) {
-            updateData.profileImage = `/public/storelogo/${req.file.filename}`;
+            updateData.storeImage = `/public/storelogo/${req.file.filename}`;
         }
 
-        console.log("Applying updates:", Object.keys(updateData));
+        console.log("Applying vendor updates:", Object.keys(updateData));
 
         const user = await User.findByIdAndUpdate(
             userId,
             updateData,
-            { returnDocument: 'after' }
+            { new: true }
         );
 
         if (!user) {
@@ -333,7 +364,7 @@ app.post('/api/offers/add', authenticateToken, uploadOffer.single('image'), asyn
 // Get All Offers (Public)
 app.get('/api/offers', async (req, res) => {
     try {
-        const offers = await Offer.find().populate('vendorId', 'storeName name location profileImage').sort({ createdAt: -1 });
+        const offers = await Offer.find().populate('vendorId', 'storeName name location profileImage storeImage').sort({ createdAt: -1 });
         res.json({ success: true, offers });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });

@@ -60,7 +60,7 @@ const ActivationStatusScreen = () => {
 
             <View className="mt-auto mb-10">
                 <CustomButton
-                    title="Return to Home"
+                    title="Return To Home"
                     onPress={() => navigation.navigate('Login')}
                     variant="outline"
                 />

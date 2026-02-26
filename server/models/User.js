@@ -10,6 +10,7 @@ const userSchema = new mongoose.Schema({
     // Vendor specific fields
     storeName: { type: String },
     storeAddress: { type: String },
+    storeImage: { type: String },
     location: {
         latitude: { type: Number },
         longitude: { type: Number },

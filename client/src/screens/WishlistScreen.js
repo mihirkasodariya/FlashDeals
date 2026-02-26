@@ -19,7 +19,7 @@ const WishlistScreen = () => {
             {/* Minimal Header */}
             <View className="px-6 pt-4 pb-6 bg-white shadow-sm flex-row items-center justify-between">
                 <View>
-                    <Text className="text-[10px] font-black text-secondary uppercase tracking-[3px] mb-1">Collection</Text>
+                    <Text className="text-[10px] font-black text-secondary tracking-[3px] mb-1">Collection</Text>
                     <Text className="text-3xl font-black text-primary">Wishlist</Text>
                 </View>
             </View>
@@ -48,7 +48,7 @@ const WishlistScreen = () => {
                     </Text>
 
                     <CustomButton
-                        title="Start discovering"
+                        title="Start Discovering"
                         onPress={() => navigation.navigate('Home')}
                     />
                 </View>

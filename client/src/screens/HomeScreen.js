@@ -81,7 +81,7 @@ const HomeScreen = () => {
                             <MapPin size={22} color={colors.secondary} strokeWidth={2.5} />
                         </View>
                         <View className="ml-3">
-                            <Text className="text-[10px] uppercase font-black tracking-widest text-textSecondary">Your Location</Text>
+                            <Text className="text-[10px] font-black tracking-widest text-textSecondary">Your Location</Text>
                             <View className="flex-row items-center">
                                 <Text className="text-primary font-black text-base" numberOfLines={1}>{location}</Text>
                                 <ChevronDown size={14} color={colors.primary} className="ml-1" />
@@ -160,12 +160,12 @@ const HomeScreen = () => {
                                     <View>
                                         <View className="flex-row items-center mb-1">
                                             <View className="w-2 h-2 bg-error rounded-full mr-2" />
-                                            <Text className="text-[10px] font-black text-error uppercase tracking-[3px]">On Fire Now</Text>
+                                            <Text className="text-[10px] font-black text-error tracking-[3px]">On Fire Now</Text>
                                         </View>
                                         <Text className="text-3xl font-black text-primary tracking-tighter">Hot Deals</Text>
                                     </View>
                                     <TouchableOpacity className="bg-primary/5 px-5 py-2.5 rounded-2xl border border-primary/5">
-                                        <Text className="text-primary font-black text-xs uppercase tracking-tight">Browse All</Text>
+                                        <Text className="text-primary font-black text-xs tracking-tight">Browse All</Text>
                                     </TouchableOpacity>
                                 </View>
                                 <FlatList
@@ -189,7 +189,7 @@ const HomeScreen = () => {
                         {/* Main List */}
                         <View className="px-6 mt-8 flex-row items-center justify-between mb-4">
                             <View>
-                                <Text className="text-[10px] font-black text-secondary uppercase tracking-widest mb-1">Flash Sales</Text>
+                                <Text className="text-[10px] font-black text-secondary tracking-widest mb-1">Flash Sales</Text>
                                 <Text className="text-2xl font-black text-primary">Near Your Place</Text>
                             </View>
                             <TouchableOpacity
@@ -197,7 +197,7 @@ const HomeScreen = () => {
                                 className="bg-white px-4 py-2 rounded-xl shadow-md border border-surface flex-row items-center"
                             >
                                 <Filter size={14} color={colors.primary} strokeWidth={3} />
-                                <Text className="text-primary text-xs font-black ml-2 uppercase">{radius}km</Text>
+                                <Text className="text-primary text-xs font-black ml-2">{radius}km</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity
