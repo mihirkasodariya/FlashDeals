@@ -82,7 +82,6 @@ function MainTabs() {
           fontSize: 10,
           fontWeight: '800',
           marginTop: 2,
-          textTransform: 'uppercase',
           letterSpacing: 0.5,
         },
         tabBarIcon: ({ color, size, focused }) => {
@@ -106,12 +105,12 @@ function MainTabs() {
       <Tab.Screen
         name="Home"
         component={HomeScreen}
-        options={{ tabBarLabel: 'Discover' }}
+        options={{ tabBarLabel: 'Home' }}
       />
       <Tab.Screen
         name="Wishlist"
         component={WishlistScreen}
-        options={{ tabBarLabel: 'Favorites' }}
+        options={{ tabBarLabel: 'WishList' }}
       />
       {role === 'vendor' && (
         <Tab.Screen

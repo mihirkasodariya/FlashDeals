@@ -2,10 +2,11 @@ import React from 'react';
 import { View, Text, FlatList, Image, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Heart, ShoppingBag } from 'lucide-react-native';
+import { Heart, ShoppingBag, Sparkles } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { colors } from '../theme/colors';
+import CustomButton from '../components/CustomButton';
 
 const WishlistScreen = () => {
     const navigation = useNavigation();
@@ -21,37 +22,35 @@ const WishlistScreen = () => {
                     <Text className="text-[10px] font-black text-secondary uppercase tracking-[3px] mb-1">Collection</Text>
                     <Text className="text-3xl font-black text-primary">Wishlist</Text>
                 </View>
-                <View className="w-12 h-12 bg-surface rounded-2xl items-center justify-center">
-                    <Heart size={24} color={colors.primary} fill={colors.primary} />
-                </View>
             </View>
 
             {favorites.length === 0 ? (
                 <View className="flex-1 justify-center items-center px-8">
-                    <View className="w-48 h-48 bg-white rounded-[60px] items-center justify-center mb-10 shadow-2xl border border-surface">
-                        <Heart size={80} color={colors.border} strokeWidth={1} />
-                        <View className="absolute bottom-10 right-10 w-6 h-6 bg-secondary rounded-full border-4 border-white" />
-                    </View>
+                    <TouchableOpacity
+                        activeOpacity={0.7}
+                        onPress={() => navigation.navigate('Home')}
+                        className="relative"
+                    >
+                        <View className="w-48 h-48 bg-white rounded-[60px] items-center justify-center mb-10 shadow-2xl border border-surface">
+                            <Heart size={80} color={colors.primary} opacity={0.1} strokeWidth={1.5} />
+                            <View className="absolute">
+                                <Heart size={60} color={colors.secondary} strokeWidth={2} />
+                            </View>
+                        </View>
+                        <View className="absolute -top-2 -right-2 w-12 h-12 bg-white rounded-2xl items-center justify-center shadow-lg transform rotate-12">
+                            <Sparkles size={24} color={colors.warning} />
+                        </View>
+                    </TouchableOpacity>
 
-                    <Text className="text-2xl font-black text-primary mb-3 text-center">Empty Heart?</Text>
-                    <Text className="text-textSecondary text-center mb-12 font-medium leading-6">
-                        Don't let these flash deals slip away! Save your favorite offers here to track them easily.
+                    <Text className="text-3xl font-black text-primary mb-3 text-center tracking-tighter">Your Heart is Empty</Text>
+                    <Text className="text-textSecondary text-center mb-12 font-medium leading-6 opacity-70">
+                        Don't let these exclusive deals slip away! Start tapping the heart to save your top picks.
                     </Text>
 
-                    <TouchableOpacity
-                        activeOpacity={0.9}
+                    <CustomButton
+                        title="Start discovering"
                         onPress={() => navigation.navigate('Home')}
-                        className="w-full"
-                    >
-                        <LinearGradient
-                            colors={[colors.primary, '#1e293b']}
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 1, y: 0 }}
-                            className="py-5 rounded-[24px] items-center shadow-lg"
-                        >
-                            <Text className="text-white font-black text-sm uppercase tracking-widest">Start Discovering</Text>
-                        </LinearGradient>
-                    </TouchableOpacity>
+                    />
                 </View>
             ) : (
                 <FlatList
