@@ -1,37 +1,23 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, Image, TouchableOpacity, Share, useWindowDimensions, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ChevronLeft, Share2, Heart, MapPin, Clock, Store, Info, Phone, Map } from 'lucide-react-native';
+import { ChevronLeft, Share2, Heart, MapPin, Clock, Store, Info, Phone, Map, Sparkles } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { colors } from '../theme/colors';
-import CustomButton from '../components/CustomButton';
+import { API_BASE_URL } from '../config';
 
 const OfferDetailsScreen = ({ route, navigation }) => {
     const insets = useSafeAreaInsets();
+    const { offer } = route.params || {};
 
-    const { offer } = route.params || {
-        offer: {
-            id: '1',
-            title: '50% Off on Pizza Royale',
-            storeName: 'Pizza Hut - Downtown',
-            discount: 50,
-            distance: 1.2,
-            stock: 5,
-            expiryHours: 2,
-            category: 'Food',
-            image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&q=80',
-            description: 'Enjoy a massive 50% discount on our best-selling Pizza Royale. Valid for dine-in and takeaway. Limited time offer!',
-            terms: [
-                'Valid only today until 10:00 PM',
-                'Cannot be combined with other offers',
-                'One coupon per customer',
-                'Valid on medium and large sizes'
-            ],
-            storeAddress: '123 Food Street, Near City Center, Ahmedabad',
-            storePhone: '+91 98765 43210'
-        }
-    };
+    if (!offer) {
+        return (
+            <SafeAreaView className="flex-1 bg-white items-center justify-center">
+                <Text className="text-primary font-black">Offer not found</Text>
+            </SafeAreaView>
+        );
+    }
 
     const { width, height } = useWindowDimensions();
     const [isFavorite, setIsFavorite] = useState(false);
@@ -40,10 +26,29 @@ const OfferDetailsScreen = ({ route, navigation }) => {
     const isTablet = width > 768;
     const imageHeight = isTablet ? height * 0.5 : 400;
 
+    // Data Processing (Remove /api from base URL for static files)
+    const STATIC_BASE_URL = API_BASE_URL.replace('/api', '');
+
+    const imageUrl = offer.image
+        ? (offer.image.startsWith('http') ? offer.image : `${STATIC_BASE_URL}${offer.image}`)
+        : 'https://via.placeholder.com/400x400';
+
+    const storeName = offer.vendorId?.storeName || 'Local Store';
+    const storeAddress = offer.vendorId?.storeAddress || 'Address available at store';
+
+    const calculateExpiry = () => {
+        if (!offer.endDate) return '24';
+        const end = new Date(offer.endDate);
+        const now = new Date();
+        const diff = end - now;
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        return hours > 0 ? hours : '0';
+    };
+
     const handleShare = async () => {
         try {
             await Share.share({
-                message: `Check out this amazing deal: ${offer.title} at ${offer.storeName}! Download FlashDeals to get more.`,
+                message: `Check out this amazing deal: ${offer.title} at ${storeName}! Download FlashDeals to get more.`,
             });
         } catch (error) {
             console.log(error.message);
@@ -91,18 +96,18 @@ const OfferDetailsScreen = ({ route, navigation }) => {
             <ScrollView showsVerticalScrollIndicator={false} className="flex-1" bounces={false}>
                 <View className="relative">
                     <Image
-                        source={{ uri: offer.image }}
+                        source={{ uri: imageUrl }}
                         style={{ width: '100%', height: imageHeight }}
                         className="bg-surface"
                     />
                     <LinearGradient
-                        colors={['rgba(0,0,0,0.5)', 'transparent', 'white']}
+                        colors={['rgba(0,0,0,0.4)', 'transparent', 'white']}
                         className="absolute inset-0"
                     />
 
                     <View className="absolute bottom-10 left-6 right-6 flex-row justify-end items-end">
                         <View className="bg-white/90 px-4 py-2 rounded-2xl shadow-lg border border-white/20">
-                            <Text className="text-error font-black text-xs uppercase tracking-widest">Expires in {offer.expiryHours}h</Text>
+                            <Text className="text-error font-black text-xs uppercase tracking-widest">Expires in {calculateExpiry()}h</Text>
                         </View>
                     </View>
                 </View>
@@ -121,16 +126,16 @@ const OfferDetailsScreen = ({ route, navigation }) => {
                                 <Store size={28} color={colors.primary} strokeWidth={1.5} />
                             </View>
                             <View className="ml-4 flex-1">
-                                <Text className="text-primary font-black text-lg">{offer.storeName}</Text>
+                                <Text className="text-primary font-black text-lg">{storeName}</Text>
                                 <View className="flex-row items-center mt-1">
                                     <MapPin size={14} color={colors.textSecondary} />
-                                    <Text className="text-textSecondary text-xs font-bold ml-1">{offer.distance} km away</Text>
+                                    <Text className="text-textSecondary text-xs font-bold ml-1">{offer.distance || 'Near'} km away</Text>
                                 </View>
                             </View>
                         </View>
 
                         <Text className="text-textSecondary text-sm font-medium leading-6 mb-6">
-                            {offer.storeAddress}
+                            {storeAddress}
                         </Text>
 
                         <View className="flex-row gap-3">
@@ -148,23 +153,24 @@ const OfferDetailsScreen = ({ route, navigation }) => {
                     <View className="mb-10">
                         <View className="flex-row items-center mb-4">
                             <View className="w-1.5 h-6 bg-secondary rounded-full mr-3" />
-                            <Text className="text-xl font-black text-primary tracking-tight">The Detail</Text>
+                            <Text className="text-xl font-black text-primary tracking-tight">Deals Details</Text>
                         </View>
                         <Text className="text-textSecondary text-base leading-7 font-medium">
-                            {offer.description || 'Exquisite flash deal curated for a limited time. Experience premium quality at half the price.'}
+                            {offer.description}
                         </Text>
                     </View>
 
                     <View className="bg-primary/5 p-8 rounded-[40px] border border-primary/5">
-                        <Text className="font-black text-primary text-sm uppercase tracking-[3px] mb-6">Key Terms</Text>
-                        {(offer.terms || []).map((term, index) => (
-                            <View key={index} className="flex-row items-start mb-4">
-                                <View className="w-6 h-6 rounded-full bg-white items-center justify-center mr-4 shadow-sm">
-                                    <Clock size={12} color={colors.primary} strokeWidth={3} />
-                                </View>
-                                <Text className="text-primary font-bold text-sm flex-1 leading-6">{term}</Text>
+                        <View className="flex-row items-center mb-6">
+                            <Sparkles size={16} color={colors.primary} strokeWidth={2} />
+                            <Text className="font-black text-primary text-sm uppercase tracking-[3px] ml-3">Verified Offer</Text>
+                        </View>
+                        <View className="flex-row items-start mb-4">
+                            <View className="w-6 h-6 rounded-full bg-white items-center justify-center mr-4 shadow-sm">
+                                <Clock size={12} color={colors.primary} strokeWidth={3} />
                             </View>
-                        ))}
+                            <Text className="text-primary font-bold text-sm flex-1 leading-6">This offer is live until {offer.endDate ? new Date(offer.endDate).toLocaleDateString() : 'the end of the week'}.</Text>
+                        </View>
                     </View>
                 </View>
 
@@ -211,6 +217,5 @@ const OfferDetailsScreen = ({ route, navigation }) => {
         </View>
     );
 };
-
 
 export default OfferDetailsScreen;

@@ -39,30 +39,33 @@ const VendorOffersScreen = () => {
         fetchMyOffers();
     }, []);
 
-    const renderOfferItem = ({ item }) => (
-        <View className="bg-white rounded-[32px] mb-4 p-4 shadow-sm border border-surface overflow-hidden">
-            <View className="flex-row">
-                <Image
-                    source={{ uri: `${API_BASE_URL}${item.image}` }}
-                    className="w-24 h-24 rounded-2xl bg-surface"
-                    resizeMode="cover"
-                />
-                <View className="ml-4 flex-1">
-                    <View className="bg-primary/5 self-start px-2 py-1 rounded-lg mb-1">
-                        <Text className="text-[10px] font-black text-primary uppercase">{item.category}</Text>
-                    </View>
-                    <Text className="text-lg font-black text-primary leading-6" numberOfLines={2}>{item.title}</Text>
+    const renderOfferItem = ({ item }) => {
+        const STATIC_BASE_URL = API_BASE_URL.replace('/api', '');
+        return (
+            <View className="bg-white rounded-[32px] mb-4 p-4 shadow-sm border border-surface overflow-hidden">
+                <View className="flex-row">
+                    <Image
+                        source={{ uri: `${STATIC_BASE_URL}${item.image}` }}
+                        className="w-24 h-24 rounded-2xl bg-surface"
+                        resizeMode="cover"
+                    />
+                    <View className="ml-4 flex-1">
+                        <View className="bg-primary/5 self-start px-2 py-1 rounded-lg mb-1">
+                            <Text className="text-[10px] font-black text-primary uppercase">{item.category}</Text>
+                        </View>
+                        <Text className="text-lg font-black text-primary leading-6" numberOfLines={2}>{item.title}</Text>
 
-                    <View className="flex-row items-center mt-2 opacity-50">
-                        <Calendar size={12} color={colors.primary} />
-                        <Text className="text-[10px] font-bold text-primary ml-1">
-                            {new Date(item.startDate).toLocaleDateString()} - {new Date(item.endDate).toLocaleDateString()}
-                        </Text>
+                        <View className="flex-row items-center mt-2 opacity-50">
+                            <Calendar size={12} color={colors.primary} />
+                            <Text className="text-[10px] font-bold text-primary ml-1">
+                                {new Date(item.startDate).toLocaleDateString()} - {new Date(item.endDate).toLocaleDateString()}
+                            </Text>
+                        </View>
                     </View>
                 </View>
             </View>
-        </View>
-    );
+        );
+    };
 
     return (
         <SafeAreaView className="flex-1 bg-[#FAFAFA]" edges={['top']}>

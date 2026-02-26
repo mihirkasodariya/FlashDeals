@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, FlatList, Image, StatusBar, useWindowDimensions } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, FlatList, Image, StatusBar, useWindowDimensions, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Search, MapPin, SlidersHorizontal, Bell, ChevronDown, Flame, Filter, LayoutGrid, List } from 'lucide-react-native';
 import { colors } from '../theme/colors';
 import OfferCard from '../components/OfferCard';
 import LocationSelectorModal from '../components/LocationSelectorModal';
+import { API_BASE_URL } from '../config';
 
 const CATEGORIES = [
     { id: '1', name: 'All', icon: '🛍️' },
@@ -16,61 +17,6 @@ const CATEGORIES = [
     { id: '6', name: 'Health', icon: '💊' },
 ];
 
-const DUMMY_OFFERS = [
-    {
-        id: '1',
-        title: '50% Off on Pizza Royale',
-        storeName: 'Pizza Hut - Downtown',
-        storeLogo: 'https://cdn.iconscout.com/icon/free/png-256/free-pizza-hut-logo-icon-download-in-svg-png-gif-file-formats--brand-brands-pack-logos-icons-226343.png',
-        discount: 50,
-        distance: 1.2,
-        stock: 5,
-        expiryHours: 2,
-        category: 'Food',
-        image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&q=80',
-        isTrending: true,
-    },
-    {
-        id: '2',
-        title: 'Buy 1 Get 1 Free - Fresh Milk',
-        storeName: 'Reliance Fresh',
-        storeLogo: 'https://companieslogo.com/img/orig/RELIANCE.NS-96424ca1.png',
-        discount: 30,
-        distance: 0.8,
-        stock: 12,
-        expiryHours: 5,
-        category: 'Grocery',
-        image: 'https://images.unsplash.com/photo-1528498033053-35a71300267f?w=800&q=80',
-        isTrending: true,
-    },
-    {
-        id: '3',
-        title: 'Flat 40% Off on Sneakers',
-        storeName: 'Adidas Express',
-        storeLogo: 'https://w7.pngwing.com/pngs/461/123/png-transparent-adidas-logo-adidas-original-logo-brand-adidas-text-indonesia-shoes.png',
-        discount: 40,
-        distance: 3.5,
-        stock: 3,
-        expiryHours: 8,
-        category: 'Fashion',
-        image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80',
-        isTrending: false,
-    },
-    {
-        id: '4',
-        title: 'Free Coke with Burger Combo',
-        storeName: 'Burger King',
-        storeLogo: 'https://companieslogo.com/img/orig/QSR-61d0263f.png',
-        discount: 25,
-        distance: 2.1,
-        stock: 15,
-        expiryHours: 1,
-        category: 'Food',
-        image: 'https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=800&q=80',
-        isTrending: true,
-    }
-];
-
 const HomeScreen = () => {
     const navigation = useNavigation();
     const { width } = useWindowDimensions();
@@ -78,25 +24,53 @@ const HomeScreen = () => {
     const [location, setLocation] = useState('Ahmedabad, Gujarat');
     const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
-    const [radius, setRadius] = useState(5); // 1, 5, 10 km
-    const [viewMode, setViewMode] = useState('list'); // 'list' or 'grid'
+    const [radius, setRadius] = useState(5);
+    const [viewMode, setViewMode] = useState('list');
+    const [offers, setOffers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
 
-    const filteredOffers = DUMMY_OFFERS.filter(offer => {
+    const fetchOffers = async () => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/offers`);
+            const data = await response.json();
+            if (data.success) {
+                setOffers(data.offers);
+            }
+        } catch (error) {
+            console.error("Fetch offers error:", error);
+        } finally {
+            setLoading(false);
+            setRefreshing(false);
+        }
+    };
+
+    useFocusEffect(
+        React.useCallback(() => {
+            fetchOffers();
+        }, [])
+    );
+
+    const onRefresh = () => {
+        setRefreshing(true);
+        fetchOffers();
+    };
+
+    const filteredOffers = offers.filter(offer => {
         const matchesCategory = selectedCategory === '1' || offer.category === CATEGORIES.find(c => c.id === selectedCategory)?.name;
         const matchesSearch = offer.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            offer.storeName.toLowerCase().includes(searchQuery.toLowerCase());
+            (offer.vendorId?.storeName || '').toLowerCase().includes(searchQuery.toLowerCase());
         return matchesCategory && matchesSearch;
     });
 
-    const trendingOffers = DUMMY_OFFERS.filter(o => o.isTrending);
+    const trendingOffers = filteredOffers.filter(o => o.isTrending || o.status === 'active').slice(0, 5);
     const isTablet = width > 768;
-    const numColumns = isTablet ? 2 : 1;
 
     return (
         <SafeAreaView className="flex-1 bg-[#FAFAFA]" edges={['top']}>
             <StatusBar barStyle="dark-content" />
 
-            {/* Premium Sticky-ready Header */}
+            {/* Header */}
             <View className="bg-white px-4 pb-4 pt-2 shadow-sm">
                 <View className="flex-row items-center justify-between mb-4">
                     <TouchableOpacity
@@ -121,7 +95,7 @@ const HomeScreen = () => {
                     </TouchableOpacity>
                 </View>
 
-                {/* Modern Search Section */}
+                {/* Search */}
                 <View className="flex-row items-center">
                     <View className="flex-1 flex-row items-center bg-[#F3F4F6] rounded-2xl px-4 py-3 border border-transparent">
                         <Search size={22} color={colors.textSecondary} strokeWidth={2.5} />
@@ -139,8 +113,14 @@ const HomeScreen = () => {
                 </View>
             </View>
 
-            <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
-                {/* Modern Categories */}
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+                className="flex-1"
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[colors.primary]} />
+                }
+            >
+                {/* Categories */}
                 <View className="py-6 bg-white">
                     <FlatList
                         horizontal
@@ -167,99 +147,103 @@ const HomeScreen = () => {
                     />
                 </View>
 
-                {/* Trending Section */}
-                {trendingOffers.length > 0 && searchQuery === '' && (
-                    <View className="mt-8">
-                        <View className="px-6 flex-row items-end justify-between mb-6">
-                            <View>
-                                <View className="flex-row items-center mb-1">
-                                    <View className="w-2 h-2 bg-error rounded-full mr-2" />
-                                    <Text className="text-[10px] font-black text-error uppercase tracking-[3px]">On Fire Now</Text>
+                {loading ? (
+                    <View className="py-20 items-center">
+                        <ActivityIndicator size="large" color={colors.primary} />
+                    </View>
+                ) : (
+                    <>
+                        {/* Trending Section */}
+                        {trendingOffers.length > 0 && searchQuery === '' && (
+                            <View className="mt-8">
+                                <View className="px-6 flex-row items-end justify-between mb-6">
+                                    <View>
+                                        <View className="flex-row items-center mb-1">
+                                            <View className="w-2 h-2 bg-error rounded-full mr-2" />
+                                            <Text className="text-[10px] font-black text-error uppercase tracking-[3px]">On Fire Now</Text>
+                                        </View>
+                                        <Text className="text-3xl font-black text-primary tracking-tighter">Hot Deals</Text>
+                                    </View>
+                                    <TouchableOpacity className="bg-primary/5 px-5 py-2.5 rounded-2xl border border-primary/5">
+                                        <Text className="text-primary font-black text-xs uppercase tracking-tight">Browse All</Text>
+                                    </TouchableOpacity>
                                 </View>
-                                <Text className="text-3xl font-black text-primary tracking-tighter">Hot Deals</Text>
+                                <FlatList
+                                    horizontal
+                                    showsHorizontalScrollIndicator={false}
+                                    data={trendingOffers}
+                                    keyExtractor={(item) => item._id}
+                                    contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 16 }}
+                                    renderItem={({ item }) => (
+                                        <View style={{ width: width > 600 ? 350 : width * 0.85 }} className="mr-6">
+                                            <OfferCard
+                                                offer={item}
+                                                onPress={() => navigation.navigate('OfferDetails', { offer: item })}
+                                            />
+                                        </View>
+                                    )}
+                                />
                             </View>
-                            <TouchableOpacity className="bg-primary/5 px-5 py-2.5 rounded-2xl border border-primary/5">
-                                <Text className="text-primary font-black text-xs uppercase tracking-tight">Browse All</Text>
+                        )}
+
+                        {/* Main List */}
+                        <View className="px-6 mt-8 flex-row items-center justify-between mb-4">
+                            <View>
+                                <Text className="text-[10px] font-black text-secondary uppercase tracking-widest mb-1">Flash Sales</Text>
+                                <Text className="text-2xl font-black text-primary">Near Your Place</Text>
+                            </View>
+                            <TouchableOpacity
+                                onPress={() => setRadius(radius === 10 ? 1 : radius === 5 ? 10 : 5)}
+                                className="bg-white px-4 py-2 rounded-xl shadow-md border border-surface flex-row items-center"
+                            >
+                                <Filter size={14} color={colors.primary} strokeWidth={3} />
+                                <Text className="text-primary text-xs font-black ml-2 uppercase">{radius}km</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                onPress={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
+                                className="bg-white ml-2 w-10 h-10 rounded-xl shadow-md border border-surface items-center justify-center"
+                            >
+                                {viewMode === 'list' ? (
+                                    <LayoutGrid size={18} color={colors.primary} strokeWidth={2.5} />
+                                ) : (
+                                    <List size={18} color={colors.primary} strokeWidth={2.5} />
+                                )}
                             </TouchableOpacity>
                         </View>
-                        <FlatList
-                            horizontal
-                            showsHorizontalScrollIndicator={false}
-                            data={trendingOffers}
-                            keyExtractor={(item) => item.id}
-                            contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 16 }}
-                            renderItem={({ item }) => (
-                                <View style={{ width: width > 600 ? 350 : width * 0.85 }} className="mr-6">
+
+                        <View className={`px-4 py-2 flex-row flex-wrap justify-between`}>
+                            {filteredOffers.map(offer => (
+                                <View
+                                    key={offer._id}
+                                    style={{
+                                        width: isTablet || viewMode === 'grid' ? '48.5%' : '100%'
+                                    }}
+                                    className="mb-2"
+                                >
                                     <OfferCard
-                                        offer={item}
-                                        onPress={() => navigation.navigate('OfferDetails', { offer: item })}
+                                        offer={offer}
+                                        grid={isTablet || viewMode === 'grid'}
+                                        onPress={() => navigation.navigate('OfferDetails', { offer })}
                                     />
                                 </View>
+                            ))}
+                            {filteredOffers.length === 0 && (
+                                <View className="py-24 items-center w-full">
+                                    <View className="w-40 h-40 bg-surface rounded-full items-center justify-center mb-6">
+                                        <Search size={64} color={colors.border} />
+                                    </View>
+                                    <Text className="text-primary text-2xl font-black text-center">No Treasures Found</Text>
+                                    <Text className="text-textSecondary text-center px-10 mt-2 font-medium">
+                                        We couldn't find any deals matching your current filters.
+                                    </Text>
+                                </View>
                             )}
-                        />
-                    </View>
+                        </View>
+                    </>
                 )}
 
-                {/* Main List Header */}
-                <View className="px-6 mt-8 flex-row items-center justify-between mb-4">
-                    <View>
-                        <Text className="text-[10px] font-black text-secondary uppercase tracking-widest mb-1">Flash Sales</Text>
-                        <Text className="text-2xl font-black text-primary">Near Your Place</Text>
-                    </View>
-                    <TouchableOpacity
-                        onPress={() => setRadius(radius === 10 ? 1 : radius === 5 ? 10 : 5)}
-                        className="bg-white px-4 py-2 rounded-xl shadow-md border border-surface flex-row items-center"
-                    >
-                        <Filter size={14} color={colors.primary} strokeWidth={3} />
-                        <Text className="text-primary text-xs font-black ml-2 uppercase">{radius}km</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        onPress={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
-                        className="bg-white ml-2 w-10 h-10 rounded-xl shadow-md border border-surface items-center justify-center"
-                    >
-                        {viewMode === 'list' ? (
-                            <LayoutGrid size={18} color={colors.primary} strokeWidth={2.5} />
-                        ) : (
-                            <List size={18} color={colors.primary} strokeWidth={2.5} />
-                        )}
-                    </TouchableOpacity>
-                </View>
-
-                {/* Offer List with improved spacing */}
-                <View className={`px-4 py-2 flex-row flex-wrap justify-between`}>
-                    {filteredOffers.map(offer => (
-                        <View
-                            key={offer.id}
-                            style={{
-                                width: isTablet || viewMode === 'grid' ? '48.5%' : '100%'
-                            }}
-                            className="mb-2"
-                        >
-                            <OfferCard
-                                offer={offer}
-                                grid={isTablet || viewMode === 'grid'}
-                                onPress={() => navigation.navigate('OfferDetails', { offer })}
-                            />
-                        </View>
-                    ))}
-                    {filteredOffers.length === 0 && (
-                        <View className="py-24 items-center w-full">
-                            <View className="w-40 h-40 bg-surface rounded-full items-center justify-center mb-6">
-                                <Search size={64} color={colors.border} />
-                            </View>
-                            <Text className="text-primary text-2xl font-black text-center">No Treasures Found</Text>
-                            <Text className="text-textSecondary text-center px-10 mt-2 font-medium">
-                                We couldn't find any deals matching your current filters.
-                            </Text>
-                        </View>
-                    )}
-                </View>
-
-
-                {/* Spacer for bottom */}
                 <View className="h-32" />
-
             </ScrollView>
 
             <LocationSelectorModal
