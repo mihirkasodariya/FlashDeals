@@ -364,7 +364,10 @@ app.post('/api/offers/add', authenticateToken, uploadOffer.single('image'), asyn
 // Get All Offers (Public)
 app.get('/api/offers', async (req, res) => {
     try {
-        const offers = await Offer.find().populate('vendorId', 'storeName name location profileImage storeImage storeAddress').sort({ createdAt: -1 });
+        const now = new Date();
+        const offers = await Offer.find({
+            endDate: { $gte: now }
+        }).populate('vendorId', 'storeName name location profileImage storeImage storeAddress').sort({ createdAt: -1 });
         res.json({ success: true, offers });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -375,7 +378,11 @@ app.get('/api/offers', async (req, res) => {
 app.get('/api/offers/vendor/:vendorId', async (req, res) => {
     try {
         const { vendorId } = req.params;
-        const offers = await Offer.find({ vendorId }).populate('vendorId', 'storeName name location profileImage storeImage storeAddress').sort({ createdAt: -1 });
+        const now = new Date();
+        const offers = await Offer.find({
+            vendorId,
+            endDate: { $gte: now }
+        }).populate('vendorId', 'storeName name location profileImage storeImage storeAddress').sort({ createdAt: -1 });
         res.json({ success: true, offers });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });

@@ -20,14 +20,22 @@ const OfferCard = ({ offer, onPress, grid }) => {
 
     const storeName = offer.vendorId?.storeName || 'Local Store';
 
-    // Calculate expiry hours
+    // Calculate expiry
     const calculateExpiry = () => {
-        if (!offer.endDate) return '24H';
+        if (!offer.endDate) return '24h';
         const end = new Date(offer.endDate);
         const now = new Date();
         const diff = end - now;
-        const hours = Math.floor(diff / (1000 * 60 * 60));
-        return hours > 0 ? `${hours}h` : 'Expiring';
+        const totalHours = Math.floor(diff / (1000 * 60 * 60));
+
+        if (totalHours <= 0) return 'Expiring';
+
+        if (totalHours > 24) {
+            const days = Math.floor(totalHours / 24);
+            return `${days} Days`;
+        }
+
+        return `${totalHours}h`;
     };
 
     return (

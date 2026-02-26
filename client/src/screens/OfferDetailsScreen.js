@@ -215,7 +215,24 @@ const OfferDetailsScreen = ({ route, navigation }) => {
                             <View className="w-6 h-6 rounded-full bg-white items-center justify-center mr-4 shadow-sm">
                                 <Clock size={12} color={colors.primary} strokeWidth={3} />
                             </View>
-                            <Text className="text-primary font-bold text-sm flex-1 leading-6">This offer is live until {offer.endDate ? new Date(offer.endDate).toLocaleDateString() : 'the end of the week'}.</Text>
+                            <Text className="text-primary font-bold text-sm flex-1 leading-6">
+                                {(() => {
+                                    if (!offer.endDate) return 'This offer is live for the rest of the week.';
+                                    const end = new Date(offer.endDate);
+                                    const now = new Date();
+                                    const diff = end - now;
+                                    const totalHours = Math.floor(diff / (1000 * 60 * 60));
+
+                                    if (totalHours <= 0) return 'This offer is expiring very soon!';
+
+                                    if (totalHours > 24) {
+                                        const days = Math.floor(totalHours / 24);
+                                        return `This offer is live for ${days} more ${days === 1 ? 'Day' : 'Days'}.`;
+                                    }
+
+                                    return `This offer is live for ${totalHours} more ${totalHours === 1 ? 'hour' : 'hours'}.`;
+                                })()}
+                            </Text>
                         </View>
                     </View>
                 </View>
