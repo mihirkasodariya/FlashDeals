@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Image, TouchableOpacity, Share, useWindowDimensions } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, Share2, Heart, MapPin, Clock, Store, Info, Phone, Navigation } from 'lucide-react-native';
+import { View, Text, ScrollView, Image, TouchableOpacity, Share, useWindowDimensions, Alert, ActivityIndicator } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ChevronLeft, Share2, Heart, MapPin, Clock, Store, Info, Phone, Map } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+
 import { colors } from '../theme/colors';
 import CustomButton from '../components/CustomButton';
 
 const OfferDetailsScreen = ({ route, navigation }) => {
+    const insets = useSafeAreaInsets();
+
     const { offer } = route.params || {
         offer: {
             id: '1',
@@ -34,7 +38,7 @@ const OfferDetailsScreen = ({ route, navigation }) => {
     const [isRedeeming, setIsRedeeming] = useState(false);
 
     const isTablet = width > 768;
-    const imageHeight = isTablet ? height * 0.45 : 320;
+    const imageHeight = isTablet ? height * 0.5 : 400;
 
     const handleShare = async () => {
         try {
@@ -48,142 +52,165 @@ const OfferDetailsScreen = ({ route, navigation }) => {
 
     const handleRedeem = () => {
         setIsRedeeming(true);
-        // Simulate API call
         setTimeout(() => {
             setIsRedeeming(false);
-            // Navigate to a redemption success or QR screen
-            alert("Offer Activated! Show this code at the store: FD-9921");
+            Alert.alert(
+                "Offer Activated",
+                "Flash Code: FD-9921\n\nShow this at the counter to claim your discount!",
+                [{ text: "Great, Got it!" }]
+            );
         }, 1500);
     };
 
     return (
         <View className="flex-1 bg-white">
-            {/* Header Overlay */}
-            <View className="absolute top-0 left-0 right-0 z-10 px-4 py-12 flex-row justify-between pointer-events-none">
+            <View className="absolute top-0 left-0 right-0 z-20 px-6 pt-12 pb-6 flex-row justify-between items-center">
                 <TouchableOpacity
                     onPress={() => navigation.goBack()}
-                    className="w-10 h-10 bg-white/80 rounded-full items-center justify-center pointer-events-auto shadow-sm"
+                    className="w-12 h-12 bg-white/90 rounded-2xl items-center justify-center shadow-lg"
                 >
-                    <ChevronLeft size={24} color={colors.primary} />
+                    <ChevronLeft size={24} color={colors.primary} strokeWidth={3} />
                 </TouchableOpacity>
 
-                <View className="flex-row pointer-events-auto">
+                <View className="flex-row">
                     <TouchableOpacity
                         onPress={handleShare}
-                        className="w-10 h-10 bg-white/80 rounded-full items-center justify-center mr-2 shadow-sm"
+                        className="w-12 h-12 bg-white/90 rounded-2xl items-center justify-center mr-3 shadow-lg"
                     >
-                        <Share2 size={20} color={colors.primary} />
+                        <Share2 size={20} color={colors.primary} strokeWidth={2.5} />
                     </TouchableOpacity>
                     <TouchableOpacity
                         onPress={() => setIsFavorite(!isFavorite)}
-                        className="w-10 h-10 bg-white/80 rounded-full items-center justify-center shadow-sm"
+                        className="w-12 h-12 bg-white/90 rounded-2xl items-center justify-center shadow-lg"
                     >
-                        <Heart size={20} color={isFavorite ? colors.error : colors.primary} fill={isFavorite ? colors.error : 'transparent'} />
+                        <Heart size={20} color={isFavorite ? colors.error : colors.primary} fill={isFavorite ? colors.error : 'transparent'} strokeWidth={2.5} />
                     </TouchableOpacity>
                 </View>
             </View>
 
-            <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
-                {/* Main Image */}
-                <Image
-                    source={{ uri: offer.image }}
-                    style={{ width: '100%', height: imageHeight }}
-                    className="bg-surface"
-                />
+            <ScrollView showsVerticalScrollIndicator={false} className="flex-1" bounces={false}>
+                <View className="relative">
+                    <Image
+                        source={{ uri: offer.image }}
+                        style={{ width: '100%', height: imageHeight }}
+                        className="bg-surface"
+                    />
+                    <LinearGradient
+                        colors={['rgba(0,0,0,0.5)', 'transparent', 'white']}
+                        className="absolute inset-0"
+                    />
 
-                <View className="p-5 -mt-6 bg-white rounded-t-3xl shadow-lg">
-                    {/* Offer Info */}
-                    <View className="flex-row justify-between items-start mb-2">
-                        <View className="flex-1 mr-4">
-                            <View className="flex-row items-center mb-1">
-                                <View className="bg-secondary/10 px-2 py-0.5 rounded mr-2">
-                                    <Text className="text-secondary font-bold text-xs uppercase">{offer.category}</Text>
-                                </View>
-                                <View className="flex-row items-center">
-                                    <Clock size={14} color={colors.error} />
-                                    <Text className="text-error font-bold text-xs ml-1">Expires in {offer.expiryHours}h</Text>
-                                </View>
-                            </View>
-                            <Text className="text-2xl font-bold text-primary leading-tight">{offer.title}</Text>
-                        </View>
-                        <View className="bg-secondary px-3 py-2 rounded-xl items-center justify-center">
-                            <Text className="text-white font-bold text-xl">{offer.discount}%</Text>
-                            <Text className="text-white text-[10px] font-bold uppercase">Off</Text>
+                    <View className="absolute bottom-10 left-6 right-6 flex-row justify-end items-end">
+                        <View className="bg-white/90 px-4 py-2 rounded-2xl shadow-lg border border-white/20">
+                            <Text className="text-error font-black text-xs uppercase tracking-widest">Expires in {offer.expiryHours}h</Text>
                         </View>
                     </View>
+                </View>
 
-                    {/* Store Info */}
-                    <View className="flex-row items-center mb-6 pt-4 border-t border-border">
-                        <View className="w-12 h-12 bg-surface rounded-full items-center justify-center border border-border">
-                            <Store size={24} color={colors.primary} />
-                        </View>
-                        <View className="ml-3 flex-1">
-                            <Text className="text-primary font-bold text-base">{offer.storeName}</Text>
-                            <View className="flex-row items-center">
-                                <MapPin size={12} color={colors.textSecondary} />
-                                <Text className="text-textSecondary text-xs ml-1">{offer.distance} km away • {offer.storeAddress}</Text>
-                            </View>
-                        </View>
-                    </View>
-
-                    {/* Buttons Row */}
-                    <View className="flex-row gap-3 mb-8">
-                        <TouchableOpacity className="flex-1 bg-surface border border-border py-3 rounded-xl flex-row items-center justify-center">
-                            <Phone size={18} color={colors.primary} />
-                            <Text className="ml-2 font-bold text-primary">Call Store</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity className="flex-1 bg-surface border border-border py-3 rounded-xl flex-row items-center justify-center">
-                            <Navigation size={18} color={colors.primary} />
-                            <Text className="ml-2 font-bold text-primary">Map</Text>
-                        </TouchableOpacity>
-                    </View>
-
-                    {/* Description */}
-                    <View className="mb-6">
-                        <View className="flex-row items-center mb-2">
-                            <Info size={18} color={colors.primary} />
-                            <Text className="text-lg font-bold text-primary ml-2">Description</Text>
-                        </View>
-                        <Text className="text-textSecondary leading-6">
-                            {offer.description || 'No description available for this offer.'}
+                <View className="px-6 py-8">
+                    <View className="mb-8">
+                        <Text className="text-[10px] font-black text-secondary uppercase tracking-[4px] mb-2">{offer.category}</Text>
+                        <Text className="text-4xl font-black text-primary tracking-tighter leading-[44px]">
+                            {offer.title}
                         </Text>
                     </View>
 
-                    {/* Terms & Conditions */}
-                    <View className="mb-10 bg-surface/50 p-4 rounded-xl border border-dashed border-border">
-                        <Text className="font-bold text-primary mb-3">Terms & Conditions</Text>
+                    <View className="bg-[#FAFAFA] rounded-[32px] p-6 mb-8 border border-surface shadow-sm">
+                        <View className="flex-row items-center mb-6">
+                            <View className="w-14 h-14 bg-white rounded-2xl items-center justify-center shadow-md border border-surface">
+                                <Store size={28} color={colors.primary} strokeWidth={1.5} />
+                            </View>
+                            <View className="ml-4 flex-1">
+                                <Text className="text-primary font-black text-lg">{offer.storeName}</Text>
+                                <View className="flex-row items-center mt-1">
+                                    <MapPin size={14} color={colors.textSecondary} />
+                                    <Text className="text-textSecondary text-xs font-bold ml-1">{offer.distance} km away</Text>
+                                </View>
+                            </View>
+                        </View>
+
+                        <Text className="text-textSecondary text-sm font-medium leading-6 mb-6">
+                            {offer.storeAddress}
+                        </Text>
+
+                        <View className="flex-row gap-3">
+                            <TouchableOpacity className="flex-1 bg-white border border-surface py-4 rounded-2xl flex-row items-center justify-center shadow-sm">
+                                <Phone size={18} color={colors.primary} />
+                                <Text className="ml-2 font-black text-primary text-xs uppercase tracking-widest">Call Now</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity className="flex-1 bg-white border border-surface py-4 rounded-2xl flex-row items-center justify-center shadow-sm">
+                                <Map size={18} color={colors.primary} />
+                                <Text className="ml-2 font-black text-primary text-xs uppercase tracking-widest">Directions</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+
+                    <View className="mb-10">
+                        <View className="flex-row items-center mb-4">
+                            <View className="w-1.5 h-6 bg-secondary rounded-full mr-3" />
+                            <Text className="text-xl font-black text-primary tracking-tight">The Detail</Text>
+                        </View>
+                        <Text className="text-textSecondary text-base leading-7 font-medium">
+                            {offer.description || 'Exquisite flash deal curated for a limited time. Experience premium quality at half the price.'}
+                        </Text>
+                    </View>
+
+                    <View className="bg-primary/5 p-8 rounded-[40px] border border-primary/5">
+                        <Text className="font-black text-primary text-sm uppercase tracking-[3px] mb-6">Key Terms</Text>
                         {(offer.terms || []).map((term, index) => (
-                            <View key={index} className="flex-row items-start mb-2">
-                                <View className="w-1.5 h-1.5 rounded-full bg-secondary mt-1.5 mr-3" />
-                                <Text className="text-textSecondary text-sm flex-1">{term}</Text>
+                            <View key={index} className="flex-row items-start mb-4">
+                                <View className="w-6 h-6 rounded-full bg-white items-center justify-center mr-4 shadow-sm">
+                                    <Clock size={12} color={colors.primary} strokeWidth={3} />
+                                </View>
+                                <Text className="text-primary font-bold text-sm flex-1 leading-6">{term}</Text>
                             </View>
                         ))}
                     </View>
                 </View>
 
-                {/* Bottom Padding */}
-                <View className="h-40" />
+                <View className="h-48" />
             </ScrollView>
 
-            {/* Floating Action Button */}
-            <View className="absolute bottom-0 left-0 right-0 p-5 bg-white border-t border-border">
-                <View className="flex-row items-center justify-between mb-4">
+            <View
+                style={{ paddingBottom: Math.max(insets.bottom, 24) }}
+                className="absolute bottom-0 left-0 right-0 bg-white/95 p-6 pt-4 border-t border-surface shadow-2xl"
+            >
+
+                <View className="flex-row items-center justify-between mb-5">
                     <View>
-                        <Text className="text-textSecondary text-xs">Limited Stock Left</Text>
-                        <Text className="text-warning font-black text-lg">Only {offer.stock} Left!</Text>
+                        <Text className="text-[10px] font-black text-textSecondary uppercase tracking-widest opacity-60">Offer Status</Text>
+                        <View className="flex-row items-center mt-1">
+                            <View className="w-2 h-2 bg-success rounded-full mr-2" />
+                            <Text className="text-success font-black text-base uppercase">Available Now</Text>
+                        </View>
                     </View>
                     <View className="items-end">
-                        <Text className="text-textSecondary text-xs text-right">Grab it before it expires!</Text>
+                        <Text className="text-primary font-black text-2xl tracking-tighter">Activated</Text>
                     </View>
                 </View>
-                <CustomButton
-                    title={isRedeeming ? "Activating..." : "Redeem Offer Now"}
+
+                <TouchableOpacity
+                    activeOpacity={0.9}
                     onPress={handleRedeem}
                     disabled={isRedeeming}
-                />
+                >
+                    <LinearGradient
+                        colors={[colors.primary, '#1e293b']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                        className="py-5 rounded-[24px] items-center shadow-xl"
+                    >
+                        {isRedeeming ? (
+                            <ActivityIndicator size="small" color="white" />
+                        ) : (
+                            <Text className="text-white font-black text-sm uppercase tracking-[4px]">Activate Flash Pass</Text>
+                        )}
+                    </LinearGradient>
+                </TouchableOpacity>
             </View>
         </View>
     );
 };
+
 
 export default OfferDetailsScreen;

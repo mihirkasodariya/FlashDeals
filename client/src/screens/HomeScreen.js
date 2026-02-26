@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput, FlatList, Image, StatusBar, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import { Search, MapPin, SlidersHorizontal, Bell, ChevronDown, Flame, Filter } from 'lucide-react-native';
+import { Search, MapPin, SlidersHorizontal, Bell, ChevronDown, Flame, Filter, LayoutGrid, List } from 'lucide-react-native';
 import { colors } from '../theme/colors';
 import OfferCard from '../components/OfferCard';
 import LocationSelectorModal from '../components/LocationSelectorModal';
@@ -21,6 +21,7 @@ const DUMMY_OFFERS = [
         id: '1',
         title: '50% Off on Pizza Royale',
         storeName: 'Pizza Hut - Downtown',
+        storeLogo: 'https://cdn.iconscout.com/icon/free/png-256/free-pizza-hut-logo-icon-download-in-svg-png-gif-file-formats--brand-brands-pack-logos-icons-226343.png',
         discount: 50,
         distance: 1.2,
         stock: 5,
@@ -33,6 +34,7 @@ const DUMMY_OFFERS = [
         id: '2',
         title: 'Buy 1 Get 1 Free - Fresh Milk',
         storeName: 'Reliance Fresh',
+        storeLogo: 'https://companieslogo.com/img/orig/RELIANCE.NS-96424ca1.png',
         discount: 30,
         distance: 0.8,
         stock: 12,
@@ -45,6 +47,7 @@ const DUMMY_OFFERS = [
         id: '3',
         title: 'Flat 40% Off on Sneakers',
         storeName: 'Adidas Express',
+        storeLogo: 'https://w7.pngwing.com/pngs/461/123/png-transparent-adidas-logo-adidas-original-logo-brand-adidas-text-indonesia-shoes.png',
         discount: 40,
         distance: 3.5,
         stock: 3,
@@ -57,6 +60,7 @@ const DUMMY_OFFERS = [
         id: '4',
         title: 'Free Coke with Burger Combo',
         storeName: 'Burger King',
+        storeLogo: 'https://companieslogo.com/img/orig/QSR-61d0263f.png',
         discount: 25,
         distance: 2.1,
         stock: 15,
@@ -75,6 +79,7 @@ const HomeScreen = () => {
     const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [radius, setRadius] = useState(5); // 1, 5, 10 km
+    const [viewMode, setViewMode] = useState('list'); // 'list' or 'grid'
 
     const filteredOffers = DUMMY_OFFERS.filter(offer => {
         const matchesCategory = selectedCategory === '1' || offer.category === CATEGORIES.find(c => c.id === selectedCategory)?.name;
@@ -88,52 +93,55 @@ const HomeScreen = () => {
     const numColumns = isTablet ? 2 : 1;
 
     return (
-        <SafeAreaView className="flex-1 bg-white">
+        <SafeAreaView className="flex-1 bg-[#FAFAFA]" edges={['top']}>
             <StatusBar barStyle="dark-content" />
 
-            {/* Header / Location */}
-            <View className="px-4 py-2 flex-row items-center justify-between">
-                <TouchableOpacity
-                    className="flex-row items-center flex-1"
-                    onPress={() => setIsLocationModalVisible(true)}
-                >
-                    <MapPin size={20} color={colors.secondary} />
-                    <View className="ml-2">
-                        <View className="flex-row items-center">
-                            <Text className="text-primary font-bold text-base" numberOfLines={1}>{location}</Text>
-                            <ChevronDown size={16} color={colors.primary} className="ml-1" />
+            {/* Premium Sticky-ready Header */}
+            <View className="bg-white px-4 pb-4 pt-2 shadow-sm">
+                <View className="flex-row items-center justify-between mb-4">
+                    <TouchableOpacity
+                        className="flex-row items-center"
+                        onPress={() => setIsLocationModalVisible(true)}
+                    >
+                        <View className="w-10 h-10 bg-secondary/10 rounded-full items-center justify-center">
+                            <MapPin size={22} color={colors.secondary} strokeWidth={2.5} />
                         </View>
-                        <Text className="text-textSecondary text-[10px]">Tap to change location</Text>
-                    </View>
-                </TouchableOpacity>
+                        <View className="ml-3">
+                            <Text className="text-[10px] uppercase font-black tracking-widest text-textSecondary">Your Location</Text>
+                            <View className="flex-row items-center">
+                                <Text className="text-primary font-black text-base" numberOfLines={1}>{location}</Text>
+                                <ChevronDown size={14} color={colors.primary} className="ml-1" />
+                            </View>
+                        </View>
+                    </TouchableOpacity>
 
-                <TouchableOpacity className="w-10 h-10 bg-surface rounded-full items-center justify-center border border-border">
-                    <Bell size={20} color={colors.primary} />
-                    <View className="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border border-white" />
-                </TouchableOpacity>
+                    <TouchableOpacity className="w-12 h-12 bg-white rounded-2xl items-center justify-center shadow-xl border border-surface">
+                        <Bell size={22} color={colors.primary} />
+                        <View className="absolute top-3 right-3 w-2.5 h-2.5 bg-error rounded-full border-2 border-white" />
+                    </TouchableOpacity>
+                </View>
+
+                {/* Modern Search Section */}
+                <View className="flex-row items-center">
+                    <View className="flex-1 flex-row items-center bg-[#F3F4F6] rounded-2xl px-4 py-3 border border-transparent">
+                        <Search size={22} color={colors.textSecondary} strokeWidth={2.5} />
+                        <TextInput
+                            className="flex-1 ml-3 text-primary font-bold text-sm"
+                            placeholder="Discover deals, stores..."
+                            placeholderTextColor="#9CA3AF"
+                            value={searchQuery}
+                            onChangeText={setSearchQuery}
+                        />
+                    </View>
+                    <TouchableOpacity className="ml-3 w-14 h-14 bg-primary rounded-2xl items-center justify-center shadow-lg">
+                        <SlidersHorizontal size={22} color="white" />
+                    </TouchableOpacity>
+                </View>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
-                {/* Search Bar */}
-                <View className="px-4 py-3">
-                    <View className="flex-row items-center">
-                        <View className="flex-1 flex-row items-center bg-surface border border-border rounded-xl px-3 py-2.5">
-                            <Search size={20} color={colors.textSecondary} />
-                            <TextInput
-                                className="flex-1 ml-2 text-primary font-medium"
-                                placeholder="Search for stores, categories..."
-                                value={searchQuery}
-                                onChangeText={setSearchQuery}
-                            />
-                        </View>
-                        <TouchableOpacity className="ml-2 w-12 h-12 bg-primary rounded-xl items-center justify-center">
-                            <SlidersHorizontal size={20} color="white" />
-                        </TouchableOpacity>
-                    </View>
-                </View>
-
-                {/* Categories */}
-                <View className="py-2">
+                {/* Modern Categories */}
+                <View className="py-6 bg-white">
                     <FlatList
                         horizontal
                         showsHorizontalScrollIndicator={false}
@@ -143,13 +151,14 @@ const HomeScreen = () => {
                         renderItem={({ item }) => (
                             <TouchableOpacity
                                 onPress={() => setSelectedCategory(item.id)}
-                                className={`mr-3 px-4 py-2.5 rounded-full flex-row items-center border ${selectedCategory === item.id
-                                    ? 'bg-primary border-primary'
-                                    : 'bg-white border-border'
+                                activeOpacity={0.8}
+                                className={`mr-4 px-6 py-3 rounded-2xl flex-row items-center ${selectedCategory === item.id
+                                    ? 'bg-primary shadow-lg shadow-primary/40'
+                                    : 'bg-[#F3F4F6]'
                                     }`}
                             >
-                                <Text className="mr-2 text-base">{item.icon}</Text>
-                                <Text className={`font-bold ${selectedCategory === item.id ? 'text-white' : 'text-primary'
+                                <Text className="mr-2 text-lg">{item.icon}</Text>
+                                <Text className={`font-black text-sm ${selectedCategory === item.id ? 'text-white' : 'text-primary'
                                     }`}>
                                     {item.name}
                                 </Text>
@@ -160,14 +169,17 @@ const HomeScreen = () => {
 
                 {/* Trending Section */}
                 {trendingOffers.length > 0 && searchQuery === '' && (
-                    <View className="mt-4">
-                        <View className="px-4 flex-row items-center justify-between mb-3">
-                            <View className="flex-row items-center">
-                                <Flame size={20} color={colors.error} fill={colors.error} />
-                                <Text className="text-xl font-bold text-primary ml-2">Trending Deals</Text>
+                    <View className="mt-8">
+                        <View className="px-6 flex-row items-end justify-between mb-6">
+                            <View>
+                                <View className="flex-row items-center mb-1">
+                                    <View className="w-2 h-2 bg-error rounded-full mr-2" />
+                                    <Text className="text-[10px] font-black text-error uppercase tracking-[3px]">On Fire Now</Text>
+                                </View>
+                                <Text className="text-3xl font-black text-primary tracking-tighter">Hot Deals</Text>
                             </View>
-                            <TouchableOpacity>
-                                <Text className="text-secondary font-bold">See All</Text>
+                            <TouchableOpacity className="bg-primary/5 px-5 py-2.5 rounded-2xl border border-primary/5">
+                                <Text className="text-primary font-black text-xs uppercase tracking-tight">Browse All</Text>
                             </TouchableOpacity>
                         </View>
                         <FlatList
@@ -175,9 +187,9 @@ const HomeScreen = () => {
                             showsHorizontalScrollIndicator={false}
                             data={trendingOffers}
                             keyExtractor={(item) => item.id}
-                            contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 10 }}
+                            contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 16 }}
                             renderItem={({ item }) => (
-                                <View style={{ width: width > 600 ? 350 : width * 0.75 }} className="mr-4">
+                                <View style={{ width: width > 600 ? 350 : width * 0.85 }} className="mr-6">
                                     <OfferCard
                                         offer={item}
                                         onPress={() => navigation.navigate('OfferDetails', { offer: item })}
@@ -188,50 +200,66 @@ const HomeScreen = () => {
                     </View>
                 )}
 
-                {/* Filter / Sort Pills */}
-                <View className="px-4 mt-4 flex-row items-center justify-between">
-                    <Text className="text-lg font-bold text-primary">All Offers Near You</Text>
-                    <View className="flex-row items-center">
-                        <TouchableOpacity
-                            onPress={() => setRadius(radius === 10 ? 1 : radius === 5 ? 10 : 5)}
-                            className="bg-surface px-3 py-1.5 rounded-lg border border-border flex-row items-center mr-2"
-                        >
-                            <Filter size={14} color={colors.primary} />
-                            <Text className="text-primary text-xs font-bold ml-1">{radius}km</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity className="bg-surface px-3 py-1.5 rounded-lg border border-border">
-                            <Text className="text-primary text-xs font-bold">Sort By</Text>
-                        </TouchableOpacity>
+                {/* Main List Header */}
+                <View className="px-6 mt-8 flex-row items-center justify-between mb-4">
+                    <View>
+                        <Text className="text-[10px] font-black text-secondary uppercase tracking-widest mb-1">Flash Sales</Text>
+                        <Text className="text-2xl font-black text-primary">Near Your Place</Text>
                     </View>
+                    <TouchableOpacity
+                        onPress={() => setRadius(radius === 10 ? 1 : radius === 5 ? 10 : 5)}
+                        className="bg-white px-4 py-2 rounded-xl shadow-md border border-surface flex-row items-center"
+                    >
+                        <Filter size={14} color={colors.primary} strokeWidth={3} />
+                        <Text className="text-primary text-xs font-black ml-2 uppercase">{radius}km</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        onPress={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
+                        className="bg-white ml-2 w-10 h-10 rounded-xl shadow-md border border-surface items-center justify-center"
+                    >
+                        {viewMode === 'list' ? (
+                            <LayoutGrid size={18} color={colors.primary} strokeWidth={2.5} />
+                        ) : (
+                            <List size={18} color={colors.primary} strokeWidth={2.5} />
+                        )}
+                    </TouchableOpacity>
                 </View>
 
-                {/* Offer List */}
-                <View className={`px-4 py-4 ${isTablet ? 'flex-row flex-wrap justify-between' : ''}`}>
+                {/* Offer List with improved spacing */}
+                <View className={`px-4 py-2 flex-row flex-wrap justify-between`}>
                     {filteredOffers.map(offer => (
-                        <View key={offer.id} style={{ width: isTablet ? '48.5%' : '100%' }}>
+                        <View
+                            key={offer.id}
+                            style={{
+                                width: isTablet || viewMode === 'grid' ? '48.5%' : '100%'
+                            }}
+                            className="mb-2"
+                        >
                             <OfferCard
                                 offer={offer}
+                                grid={isTablet || viewMode === 'grid'}
                                 onPress={() => navigation.navigate('OfferDetails', { offer })}
                             />
                         </View>
                     ))}
                     {filteredOffers.length === 0 && (
-                        <View className="py-20 items-center w-full">
-                            <Image
-                                source={{ uri: 'https://illustrations.popsy.co/teal/searching.png' }}
-                                className="w-48 h-48"
-                                resizeMode="contain"
-                            />
-                            <Text className="text-textSecondary text-lg font-medium mt-4">No deals found here</Text>
-                            <Text className="text-textSecondary text-center px-10 mt-2">
-                                Try changing your category or searching for something else
+                        <View className="py-24 items-center w-full">
+                            <View className="w-40 h-40 bg-surface rounded-full items-center justify-center mb-6">
+                                <Search size={64} color={colors.border} />
+                            </View>
+                            <Text className="text-primary text-2xl font-black text-center">No Treasures Found</Text>
+                            <Text className="text-textSecondary text-center px-10 mt-2 font-medium">
+                                We couldn't find any deals matching your current filters.
                             </Text>
                         </View>
                     )}
                 </View>
 
+
                 {/* Spacer for bottom */}
-                <View className="h-20" />
+                <View className="h-32" />
+
             </ScrollView>
 
             <LocationSelectorModal

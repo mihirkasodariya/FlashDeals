@@ -8,38 +8,43 @@ const AddressAutocomplete = ({ value, onChangeText, placeholder, label }) => {
     const [loading, setLoading] = useState(false);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [query, setQuery] = useState(value);
+    const isMounted = useRef(true);
     const timeoutRef = useRef(null);
 
+
     useEffect(() => {
+        isMounted.current = true;
         setQuery(value);
+        return () => { isMounted.current = false; };
     }, [value]);
 
     const fetchSuggestions = async (text) => {
         if (text.length < 3) {
-            setSuggestions([]);
+            if (isMounted.current) setSuggestions([]);
             return;
         }
 
         setLoading(true);
         try {
-            // Added &accept-language=en-IN and ensured strictly countrycodes=in
             const response = await fetch(
                 `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(text)}&addressdetails=1&limit=6&countrycodes=in&accept-language=en-IN`
             );
             const data = await response.json();
-            // Final client-side check to ensure only Indian results are shown
             const indianResults = data.filter(item =>
                 item.address && (item.address.country_code === 'in' || item.display_name.toLowerCase().includes('india'))
             );
-            setSuggestions(indianResults);
-            setShowSuggestions(true);
+            if (isMounted.current) {
+                setSuggestions(indianResults);
+                setShowSuggestions(true);
+            }
         } catch (error) {
-
             console.error('Error fetching address suggestions:', error);
         } finally {
-            setLoading(false);
+            if (isMounted.current) setLoading(false);
         }
     };
+
+
 
     const handleTextChange = (text) => {
         setQuery(text);

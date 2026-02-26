@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Modal, TouchableOpacity, ScrollView, TextInput, FlatList } from 'react-native';
-import { X, ChevronRight, MapPin, Search, ChevronLeft } from 'lucide-react-native';
+import { X, ChevronRight, MapPin, Search, ChevronLeft, Navigation2 } from 'lucide-react-native';
+
 import { colors } from '../theme/colors';
 
 const LocationSelectorModal = ({ visible, onClose, onSelectLocation }) => {
@@ -10,7 +11,6 @@ const LocationSelectorModal = ({ visible, onClose, onSelectLocation }) => {
     const [selectedCity, setSelectedCity] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
 
-    // Dummy data for demo
     const dummyLocations = {
         states: ['Gujarat', 'Maharashtra', 'Rajasthan', 'Delhi'],
         districts: {
@@ -70,88 +70,112 @@ const LocationSelectorModal = ({ visible, onClose, onSelectLocation }) => {
     };
 
     return (
-        <Modal visible={visible} animationType="slide" transparent={false}>
-            <View className="flex-1 bg-white">
-                {/* Header */}
-                <View className="flex-row items-center justify-between px-4 py-4 border-b border-border">
-                    <View className="flex-row items-center">
-                        {step !== 'state' && (
-                            <TouchableOpacity onPress={handleBack} className="mr-3">
-                                <ChevronLeft size={24} color={colors.primary} />
+        <Modal visible={visible} animationType="slide" transparent={true}>
+            <View className="flex-1 justify-end bg-black/60">
+                <View className="bg-white rounded-t-[40px] h-[85%] shadow-2xl">
+                    {/* Premium Handle */}
+                    <View className="w-12 h-1 bg-[#E5E7EB] rounded-full self-center mt-4 mb-2" />
+
+                    {/* Header */}
+                    <View className="flex-row items-center justify-between px-6 py-4">
+                        <View className="flex-row items-center flex-1">
+                            {step !== 'state' && (
+                                <TouchableOpacity onPress={handleBack} className="mr-4 w-10 h-10 bg-[#F3F4F6] rounded-full items-center justify-center">
+                                    <ChevronLeft size={20} color={colors.primary} strokeWidth={3} />
+                                </TouchableOpacity>
+                            )}
+                            <View>
+                                <Text className="text-[10px] font-black text-secondary uppercase tracking-widest mb-0.5">Location Hub</Text>
+                                <Text className="text-2xl font-black text-primary">
+                                    {step === 'state' ? 'Choose State' :
+                                        step === 'district' ? 'Select District' :
+                                            step === 'city' ? 'Select City' : 'Select Village'}
+                                </Text>
+                            </View>
+                        </View>
+                        <TouchableOpacity onPress={handleClose} className="w-10 h-10 bg-[#F3F4F6] rounded-full items-center justify-center">
+                            <X size={20} color={colors.primary} strokeWidth={3} />
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* Modern Search */}
+                    <View className="px-6 py-4">
+                        <View className="flex-row items-center bg-[#F3F4F6] rounded-2xl px-5 py-4 border border-transparent focus:border-primary/20">
+                            <Search size={20} color={colors.textSecondary} strokeWidth={2.5} />
+                            <TextInput
+                                className="flex-1 ml-3 text-primary font-bold text-sm"
+                                placeholder={`Find your ${step}...`}
+                                placeholderTextColor="#9CA3AF"
+                                value={searchQuery}
+                                onChangeText={setSearchQuery}
+                            />
+                        </View>
+                    </View>
+
+                    {/* Selection Visual Path */}
+                    {(selectedState || selectedDistrict || selectedCity) && (
+                        <View className="px-6 py-2 flex-row flex-wrap gap-2">
+                            {selectedState && (
+                                <View className="bg-primary/5 px-3 py-1.5 rounded-full border border-primary/10">
+                                    <Text className="text-[10px] text-primary font-black uppercase">{selectedState}</Text>
+                                </View>
+                            )}
+                            {selectedDistrict && (
+                                <View className="bg-primary/5 px-3 py-1.5 rounded-full border border-primary/10">
+                                    <Text className="text-[10px] text-primary font-black uppercase">{selectedDistrict}</Text>
+                                </View>
+                            )}
+                        </View>
+                    )}
+
+                    {/* Options List */}
+                    <FlatList
+                        data={currentList()}
+                        keyExtractor={(item) => item}
+                        contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 40, paddingTop: 10 }}
+                        ListHeaderComponent={step === 'state' && (
+                            <TouchableOpacity
+                                className="flex-row items-center p-6 bg-secondary/5 rounded-3xl mb-4 border border-secondary/10"
+                                onPress={() => {
+                                    onSelectLocation('Current Location (GPS)');
+                                    handleClose();
+                                }}
+                            >
+                                <View className="w-12 h-12 bg-secondary/20 rounded-2xl items-center justify-center">
+                                    <Navigation2 size={22} color={colors.secondary} strokeWidth={3} />
+                                </View>
+                                <View className="ml-4">
+                                    <Text className="text-primary font-black text-base">Detect Current</Text>
+                                    <Text className="text-secondary font-bold text-xs uppercase tracking-tighter">Using GPS Precision</Text>
+                                </View>
                             </TouchableOpacity>
                         )}
-                        <Text className="text-xl font-bold text-primary">
-                            {step === 'state' ? 'Select State' :
-                                step === 'district' ? 'Select District' :
-                                    step === 'city' ? 'Select City' : 'Select Village/Area'}
-                        </Text>
-                    </View>
-                    <TouchableOpacity onPress={handleClose}>
-                        <X size={24} color={colors.primary} />
-                    </TouchableOpacity>
+                        renderItem={({ item }) => (
+                            <TouchableOpacity
+                                className="flex-row items-center justify-between py-5 border-b border-surface"
+                                onPress={() => handleSelect(item)}
+                            >
+                                <View className="flex-row items-center">
+                                    <View className="w-10 h-10 bg-primary/5 rounded-xl items-center justify-center mr-4">
+                                        <MapPin size={18} color={colors.primary} />
+                                    </View>
+                                    <Text className="text-primary text-base font-bold">{item}</Text>
+                                </View>
+                                <ChevronRight size={18} color="#D1D5DB" strokeWidth={3} />
+                            </TouchableOpacity>
+                        )}
+                        ListEmptyComponent={
+                            <View className="items-center justify-center py-20">
+                                <Search size={48} color="#E5E7EB" />
+                                <Text className="text-textSecondary font-bold mt-4">We couldn't find that place</Text>
+                            </View>
+                        }
+                    />
                 </View>
-
-                {/* Search */}
-                <View className="px-4 py-3">
-                    <View className="flex-row items-center bg-surface rounded-lg px-3 py-2 border border-border">
-                        <Search size={20} color={colors.textSecondary} />
-                        <TextInput
-                            className="flex-1 ml-2 text-primary font-medium"
-                            placeholder={`Search ${step}...`}
-                            value={searchQuery}
-                            onChangeText={setSearchQuery}
-                        />
-                    </View>
-                </View>
-
-                {/* Current Selection Path */}
-                {(selectedState || selectedDistrict || selectedCity) && (
-                    <View className="px-4 py-2 bg-surface/50 flex-row flex-wrap">
-                        {selectedState && <Text className="text-xs text-textSecondary">{selectedState}</Text>}
-                        {selectedDistrict && <Text className="text-xs text-textSecondary"> {'>'} {selectedDistrict}</Text>}
-                        {selectedCity && <Text className="text-xs text-textSecondary"> {'>'} {selectedCity}</Text>}
-                    </View>
-                )}
-
-                {/* Current Location Option */}
-                {step === 'state' && (
-                    <TouchableOpacity
-                        className="flex-row items-center px-4 py-4 border-b border-border"
-                        onPress={() => {
-                            onSelectLocation('Current Location (GPS)');
-                            handleClose();
-                        }}
-                    >
-                        <MapPin size={22} color={colors.accent} />
-                        <View className="ml-3">
-                            <Text className="text-accent font-bold">Use current location</Text>
-                            <Text className="text-textSecondary text-xs">Using GPS</Text>
-                        </View>
-                    </TouchableOpacity>
-                )}
-
-                {/* List */}
-                <FlatList
-                    data={currentList()}
-                    keyExtractor={(item) => item}
-                    renderItem={({ item }) => (
-                        <TouchableOpacity
-                            className="flex-row items-center justify-between px-4 py-4 border-b border-border"
-                            onPress={() => handleSelect(item)}
-                        >
-                            <Text className="text-primary text-base">{item}</Text>
-                            <ChevronRight size={20} color={colors.border} />
-                        </TouchableOpacity>
-                    )}
-                    ListEmptyComponent={
-                        <View className="items-center justify-center py-10">
-                            <Text className="text-textSecondary">No results found</Text>
-                        </View>
-                    }
-                />
             </View>
         </Modal>
     );
 };
+
 
 export default LocationSelectorModal;

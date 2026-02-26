@@ -6,8 +6,11 @@ import {
     ScrollView,
     KeyboardAvoidingView,
     Platform,
-    Alert
+    Alert,
+    ActivityIndicator
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Save, MapPin, Store } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -77,67 +80,94 @@ const EditStoreScreen = () => {
         }
     };
 
-
     return (
-        <SafeAreaView className="flex-1 bg-white">
-            <View className="flex-row items-center px-4 py-3 border-b border-surface">
-                <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <ChevronLeft size={28} color={colors.primary} />
+        <SafeAreaView className="flex-1 bg-[#FAFAFA]">
+            {/* Elegant Header */}
+            <View className="bg-white px-6 pb-6 pt-2 shadow-sm flex-row items-center border-b border-surface">
+                <TouchableOpacity
+                    onPress={() => navigation.goBack()}
+                    className="w-10 h-10 bg-surface rounded-full items-center justify-center"
+                >
+                    <ChevronLeft size={24} color={colors.primary} strokeWidth={2.5} />
                 </TouchableOpacity>
-                <Text className="text-lg font-bold text-primary ml-4">Edit Store Details</Text>
+                <View className="ml-4">
+                    <Text className="text-[10px] font-black text-secondary uppercase tracking-[3px] mb-0.5">Management</Text>
+                    <Text className="text-xl font-black text-primary">Edit Store Profile</Text>
+                </View>
             </View>
-
 
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 className="flex-1"
             >
                 <ScrollView
-                    contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 30, paddingBottom: 40 }}
+                    contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 40, paddingBottom: 60 }}
                     showsVerticalScrollIndicator={false}
                 >
-                    <View className="items-center mb-8">
-                        <View className="w-20 h-20 bg-surface rounded-2xl items-center justify-center border border-border">
-                            <Store size={40} color={colors.secondary} />
+                    <View className="bg-white rounded-[40px] p-8 shadow-sm border border-surface">
+                        <View className="items-center mb-10">
+                            <View className="w-24 h-24 bg-primary/5 rounded-[32px] items-center justify-center border border-primary/10">
+                                <Store size={48} color={colors.primary} strokeWidth={1} />
+                            </View>
+                            <Text className="mt-6 text-primary font-black text-2xl tracking-tight">Business Hub</Text>
+                            <Text className="text-[11px] text-textSecondary text-center px-4 mt-2 font-medium leading-5 opacity-60 uppercase tracking-widest">
+                                Brand settings & physical presence
+                            </Text>
                         </View>
-                        <Text className="mt-4 text-primary font-bold text-lg">Your Business Identity</Text>
-                        <Text className="text-xs text-textSecondary text-center px-6 mt-1">
-                            These details are visible to users when they view your offers.
-                        </Text>
+
+                        <View className="space-y-8">
+                            <View>
+                                <Text className="text-[10px] font-black text-textSecondary uppercase tracking-widest mb-3 ml-1 opacity-50">Legal Store Name</Text>
+                                <FloatingInput
+                                    label="Enter Store Name"
+                                    value={formData.storeName}
+                                    onChangeText={(val) => setFormData({ ...formData, storeName: val })}
+                                />
+                            </View>
+
+                            <View className="mt-8">
+                                <Text className="text-[10px] font-black text-textSecondary uppercase tracking-widest mb-3 ml-1 opacity-50">Verified Location</Text>
+                                <AddressAutocomplete
+                                    label="Search Shop Address"
+                                    value={formData.storeAddress}
+                                    onChangeText={(val) => setFormData({ ...formData, storeAddress: val })}
+                                />
+                            </View>
+
+                            <View className="mt-12">
+                                <TouchableOpacity
+                                    activeOpacity={0.9}
+                                    onPress={handleUpdate}
+                                    disabled={loading}
+                                >
+                                    <LinearGradient
+                                        colors={[colors.primary, '#1e293b']}
+                                        start={{ x: 0, y: 0 }}
+                                        end={{ x: 1, y: 0 }}
+                                        className="py-5 rounded-[24px] items-center shadow-lg"
+                                    >
+                                        {loading ? (
+                                            <ActivityIndicator size="small" color="white" />
+                                        ) : (
+                                            <Text className="text-white font-black text-sm uppercase tracking-widest">Publish Changes</Text>
+                                        )}
+                                    </LinearGradient>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
                     </View>
 
-                    <View className="mb-6">
-                        <Text className="text-sm font-bold text-textSecondary uppercase tracking-widest mb-4">Basic Info</Text>
-                        <FloatingInput
-                            label="Store / Shop Name"
-                            value={formData.storeName}
-                            onChangeText={(val) => setFormData({ ...formData, storeName: val })}
-                        />
+                    <View className="mt-10 items-center px-6">
+                        <View className="flex-row items-center bg-secondary/10 px-4 py-2 rounded-full">
+                            <Save size={12} color={colors.secondary} />
+                            <Text className="text-secondary font-black text-[9px] uppercase tracking-widest ml-2">Changes are live instantly</Text>
+                        </View>
                     </View>
-
-                    <View className="mb-8">
-                        <AddressAutocomplete
-                            label="Full Shop / Store Address"
-                            value={formData.storeAddress}
-                            onChangeText={(val) => setFormData({ ...formData, storeAddress: val })}
-                        />
-                    </View>
-
-
-
-                    <CustomButton
-                        title="Update Store Details"
-                        onPress={handleUpdate}
-                        loading={loading}
-                    />
-
-                    <Text className="text-center text-[10px] text-textSecondary mt-6 leading-4">
-                        Note: Significant changes to store name may require a quick re-verification by our team.
-                    </Text>
                 </ScrollView>
             </KeyboardAvoidingView>
         </SafeAreaView>
     );
 };
+
 
 export default EditStoreScreen;

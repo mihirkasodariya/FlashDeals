@@ -1,99 +1,69 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
-import { MapPin, Clock, Heart, Star, Navigation } from 'lucide-react-native';
+import { MapPin, Clock, Heart, Flame } from 'lucide-react-native';
+
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../theme/colors';
 
-const OfferCard = ({ offer, onPress }) => {
+const OfferCard = ({ offer, onPress, grid }) => {
     return (
         <TouchableOpacity
             onPress={onPress}
-            activeOpacity={0.95}
-            style={styles.container}
-            className="bg-white rounded-[24px] mb-5 shadow-lg overflow-hidden border border-border/50"
+            activeOpacity={0.9}
+            style={styles.cardContainer}
+            className={`bg-white rounded-[24px] mb-6 overflow-hidden border border-[#E5E7EB]/60 ${grid ? 'mx-1' : ''}`}
         >
-            <View className="relative">
+            {/* Minimalist Image View */}
+            <View className={`relative bg-[#F9FAFB] ${grid ? 'h-40' : 'h-56'}`}>
                 <Image
                     source={{ uri: offer.image || 'https://via.placeholder.com/400x200' }}
-                    className="w-full h-52 bg-surface"
+                    className="w-full h-full"
                     resizeMode="cover"
                 />
 
-                {/* Image Overlays */}
-                <LinearGradient
-                    colors={['transparent', 'rgba(0,0,0,0.4)']}
-                    className="absolute inset-0"
-                />
-
-                {/* Badges - Top Row */}
-                <View className="absolute top-3 left-3 flex-row space-x-2">
-                    <LinearGradient
-                        colors={[colors.secondary, '#FB923C']}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 0 }}
-                        className="px-3 py-1.5 rounded-full shadow-sm"
-                    >
-                        <Text className="text-white font-black text-xs uppercase tracking-tighter">
-                            {offer.discount}% OFF
-                        </Text>
-                    </LinearGradient>
-
-                    {offer.isTrending && (
-                        <View className="bg-white/95 px-2.5 py-1.5 rounded-full flex-row items-center shadow-sm">
-                            <Star size={10} color="#F59E0B" fill="#F59E0B" />
-                            <Text className="text-[#F59E0B] font-bold text-[10px] ml-1 uppercase">Top Deal</Text>
+                {/* Subtle Brand Overlay - Scaled for grid */}
+                <View className={`absolute bottom-3 left-3 right-3 flex-row justify-between items-center ${grid ? 'bottom-2 left-2 right-2' : ''}`}>
+                    <View className="bg-white/90 backdrop-blur-md px-2 py-1 rounded-lg flex-row items-center border border-white/50 shadow-sm">
+                        <View className={`${grid ? 'w-4 h-4' : 'w-5 h-5'} bg-white rounded-md items-center justify-center overflow-hidden mr-1.5`}>
+                            <Image
+                                source={{ uri: offer.storeLogo || 'https://via.placeholder.com/40' }}
+                                className="w-full h-full"
+                                resizeMode="contain"
+                            />
                         </View>
-                    )}
-                </View>
-
-                {/* Like Button */}
-                <TouchableOpacity
-                    className="absolute top-3 right-3 w-9 h-9 bg-white/30 rounded-full items-center justify-center backdrop-blur-md"
-                >
-                    <Heart size={18} color="white" />
-                </TouchableOpacity>
-
-                {/* Quick Info Bar - Floating */}
-                <View className="absolute bottom-3 left-3 right-3 flex-row justify-between items-center">
-                    <View className="bg-white/95 px-3 py-1.5 rounded-full flex-row items-center shadow-sm">
-                        <Navigation size={12} color={colors.secondary} strokeWidth={2.5} />
-                        <Text className="text-primary font-bold text-[10px] ml-1.5">{offer.distance}km away</Text>
+                        {!grid && (
+                            <Text className="text-primary font-black text-[9px] uppercase tracking-wider">
+                                {offer.storeName}
+                            </Text>
+                        )}
                     </View>
 
-                    <View className="bg-primary px-3 py-1.5 rounded-full flex-row items-center shadow-sm">
-                        <Clock size={12} color="white" />
-                        <Text className="text-white font-bold text-[10px] ml-1.5">{offer.expiryHours}h left</Text>
-                    </View>
+                    <TouchableOpacity
+                        className={`${grid ? 'w-8 h-8' : 'w-10 h-10'} bg-white/60 backdrop-blur-xl rounded-full items-center justify-center border border-white/80`}
+                    >
+                        <Heart size={grid ? 14 : 18} color={colors.primary} strokeWidth={2.5} />
+                    </TouchableOpacity>
                 </View>
             </View>
 
-            <View className="p-4 bg-white">
-                <View className="flex-row justify-between items-start">
-                    <View className="flex-1">
-                        <Text className="text-primary font-black text-lg leading-6" numberOfLines={1}>
-                            {offer.title}
-                        </Text>
+            {/* Clean Content Area */}
+            <View className={`${grid ? 'p-3' : 'p-5'}`}>
+                <Text className={`text-primary font-black leading-6 mb-3 ${grid ? 'text-sm mb-2 h-12' : 'text-xl'}`} numberOfLines={2}>
+                    {offer.title}
+                </Text>
 
-                        <View className="flex-row items-center mt-1">
-                            <Text className="text-textSecondary text-sm font-medium">at</Text>
-                            <Text className="text-secondary font-bold text-sm ml-1.5 decoration-secondary" numberOfLines={1}>
-                                {offer.storeName}
-                            </Text>
-                        </View>
-                    </View>
-                </View>
-
-                <View className="flex-row items-center justify-between mt-4 pt-4 border-t border-surface">
-                    <View className="flex-row items-center">
-                        <View className="w-2.5 h-2.5 bg-warning rounded-full" />
-                        <Text className="text-warning font-black text-[11px] ml-2 uppercase tracking-wide">
-                            {offer.stock} Stocks Left
+                <View className="flex-row items-center justify-between mt-auto">
+                    <View className={`flex-row items-center bg-[#F3F4F6] ${grid ? 'px-1.5 py-1' : 'px-3 py-2'} rounded-lg`}>
+                        <MapPin size={grid ? 8 : 12} color={colors.secondary} strokeWidth={2.5} />
+                        <Text className={`text-primary font-bold ${grid ? 'text-[8px]' : 'text-[11px]'} ml-1 uppercase tracking-tight`}>
+                            {offer.distance}km
                         </Text>
                     </View>
 
-                    <View className="bg-surface px-3 py-1.5 rounded-lg">
-                        <Text className="text-primary/70 font-bold text-[10px] uppercase tracking-widest">
-                            {offer.category}
+                    <View className={`flex-row items-center bg-primary/5 ${grid ? 'px-1.5 py-1' : 'px-3 py-2'} rounded-lg border border-primary/5`}>
+                        <Clock size={grid ? 8 : 12} color={colors.primary} strokeWidth={2.5} />
+                        <Text className={`text-primary font-black ${grid ? 'text-[8px]' : 'text-[11px]'} ml-1`}>
+                            {offer.expiryHours}H LEFT
                         </Text>
                     </View>
                 </View>
@@ -103,12 +73,12 @@ const OfferCard = ({ offer, onPress }) => {
 };
 
 const styles = StyleSheet.create({
-    container: {
+    cardContainer: {
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.1,
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.05,
         shadowRadius: 15,
-        elevation: 8,
+        elevation: 6,
     }
 });
 
