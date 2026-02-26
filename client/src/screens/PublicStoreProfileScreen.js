@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, Image, TouchableOpacity, FlatList, ActivityIndicator, useWindowDimensions, Platform, StatusBar, Linking, Alert } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ChevronLeft, MapPin, Package, Shield, User, Map as MapIcon } from 'lucide-react-native';
+import { ChevronLeft, MapPin, Package, Shield, User, Map as MapIcon, LayoutGrid, List } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { colors } from '../theme/colors';
@@ -16,6 +16,7 @@ const PublicStoreProfileScreen = ({ route, navigation }) => {
     const [vendor, setVendor] = useState(null);
     const [offers, setOffers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [viewMode, setViewMode] = useState('grid');
 
     const STATIC_BASE_URL = API_BASE_URL.replace('/api', '');
 
@@ -169,19 +170,39 @@ const PublicStoreProfileScreen = ({ route, navigation }) => {
                                 <Text className="text-[10px] font-black text-secondary tracking-widest mb-1">Store Inventory</Text>
                                 <Text className="text-3xl font-black text-primary tracking-tighter">Active Deals</Text>
                             </View>
-                            <View className="bg-secondary/10 px-4 py-2 rounded-2xl border border-secondary/10">
-                                <Text className="text-secondary font-black text-[10px] tracking-widest">{offers.length} LIVE</Text>
+                            <View className="flex-row items-center">
+                                <View className="bg-secondary/10 px-4 py-2 rounded-2xl border border-secondary/10 mr-3">
+                                    <Text className="text-secondary font-black text-[10px] tracking-widest">{offers.length} LIVE</Text>
+                                </View>
+                                <TouchableOpacity
+                                    onPress={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
+                                    className="bg-white w-10 h-10 rounded-xl shadow-md border border-surface items-center justify-center"
+                                >
+                                    {viewMode === 'list' ? (
+                                        <LayoutGrid size={18} color={colors.primary} strokeWidth={2.5} />
+                                    ) : (
+                                        <List size={18} color={colors.primary} strokeWidth={2.5} />
+                                    )}
+                                </TouchableOpacity>
                             </View>
                         </View>
 
                         {offers.length > 0 ? (
-                            <View>
+                            <View className="flex-row flex-wrap justify-between px-1">
                                 {offers.map((item) => (
-                                    <OfferCard
+                                    <View
                                         key={item._id}
-                                        offer={item}
-                                        onPress={() => navigation.navigate('OfferDetails', { offer: item })}
-                                    />
+                                        style={{
+                                            width: viewMode === 'grid' ? '48.5%' : '100%'
+                                        }}
+                                        className="mb-2"
+                                    >
+                                        <OfferCard
+                                            offer={item}
+                                            grid={viewMode === 'grid'}
+                                            onPress={() => navigation.navigate('OfferDetails', { offer: item })}
+                                        />
+                                    </View>
                                 ))}
                             </View>
                         ) : (

@@ -25,7 +25,7 @@ const HomeScreen = () => {
     const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [radius, setRadius] = useState(5);
-    const [viewMode, setViewMode] = useState('list');
+    const [viewMode, setViewMode] = useState('grid');
     const [offers, setOffers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
