@@ -130,14 +130,14 @@ const ProfileScreen = () => {
 
     const menuItems = [
         ...(isVendor ? [
-            { icon: Store, label: 'Business Insights', color: colors.secondary },
-            { icon: Package, label: 'Deal Manager', color: colors.secondary }
+            { icon: Store, label: 'Business Insights', color: colors.secondary, onPress: () => { } },
+            { icon: Package, label: 'Add New Offer', color: colors.secondary, onPress: () => navigation.navigate('AddOffer') }
         ] : [
-            { icon: Package, label: 'Redemption History', color: colors.secondary }
+            { icon: Package, label: 'Redemption History', color: colors.secondary, onPress: () => { } }
         ]),
-        { icon: MapPin, label: 'Saved Locations', color: colors.accent },
-        { icon: Bell, label: 'Preferences', color: colors.warning },
-        { icon: Shield, label: 'Privacy Center', color: colors.primary },
+        { icon: MapPin, label: 'Saved Locations', color: colors.accent, onPress: () => { } },
+        { icon: Bell, label: 'Preferences', color: colors.warning, onPress: () => { } },
+        { icon: Shield, label: 'Privacy Center', color: colors.primary, onPress: () => { } },
     ];
 
     if (loading) {
@@ -267,9 +267,23 @@ const ProfileScreen = () => {
                                             Status: Satellite Lock Active
                                         </Text>
                                     </View>
+
+                                    <TouchableOpacity
+                                        activeOpacity={0.8}
+                                        onPress={() => navigation.navigate('AddOffer')}
+                                        className="mt-8 overflow-hidden rounded-[24px]"
+                                    >
+                                        <LinearGradient
+                                            colors={[colors.secondary, '#0D9488']}
+                                            start={{ x: 0, y: 0 }}
+                                            end={{ x: 1, y: 1 }}
+                                            className="px-6 py-5 flex-row items-center justify-center"
+                                        >
+                                            <Package size={20} color="white" strokeWidth={2.5} />
+                                            <Text className="text-white font-black text-sm uppercase tracking-[3px] ml-3">Launch Flash Deal</Text>
+                                        </LinearGradient>
+                                    </TouchableOpacity>
                                 </View>
-
-
                             </View>
                         </View>
                     </View>
@@ -283,6 +297,7 @@ const ProfileScreen = () => {
                         {menuItems.map((item, index) => (
                             <TouchableOpacity
                                 key={index}
+                                onPress={item.onPress}
                                 className={`flex-row items-center py-5 ${index !== menuItems.length - 1 ? 'border-b border-surface' : ''}`}
                             >
                                 <View style={{ backgroundColor: `${item.color}10` }} className="w-12 h-12 rounded-[18px] items-center justify-center">

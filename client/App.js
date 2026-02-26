@@ -24,6 +24,7 @@ import OfferDetailsScreen from './src/screens/OfferDetailsScreen';
 import WishlistScreen from './src/screens/WishlistScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import EditStoreScreen from './src/screens/EditStoreScreen';
+import AddOfferScreen from './src/screens/AddOfferScreen';
 
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -125,6 +126,7 @@ function RootStack() {
       <Stack.Screen name="Main" component={MainTabs} />
       <Stack.Screen name="OfferDetails" component={OfferDetailsScreen} />
       <Stack.Screen name="EditStore" component={EditStoreScreen} />
+      <Stack.Screen name="AddOffer" component={AddOfferScreen} />
     </Stack.Navigator>
   );
 }

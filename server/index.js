@@ -35,6 +35,36 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 const User = require('./models/User');
+const Offer = require('./models/Offer');
+
+// Specialized Multer for Offers
+const offerStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const uploadDir = 'public/offers';
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, 'offer-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
+const uploadOffer = multer({ storage: offerStorage });
+
+// Helper for Auth Middleware
+const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (!token) return res.status(401).json({ success: false, message: 'No token provided' });
+
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) return res.status(403).json({ success: false, message: 'Invalid token' });
+        req.user = user;
+        next();
+    });
+};
 
 // Database Connection
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/flashdeals')
@@ -224,6 +254,49 @@ app.put('/api/vendor/update/:userId', async (req, res) => {
         res.json({ success: true, message: 'Store details updated successfully', user });
     } catch (error) {
         console.error("!!! UPDATE ERROR:", error, "!!!");
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// --- OFFER ROUTES ---
+
+// Add Offer (Vendor Only)
+app.post('/api/offers/add', authenticateToken, uploadOffer.single('image'), async (req, res) => {
+    try {
+        if (req.user.role !== 'vendor') {
+            return res.status(403).json({ success: false, message: 'Only vendors can add offers' });
+        }
+
+        const { title, description, category, startDate, endDate } = req.body;
+
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: 'Offer image is required' });
+        }
+
+        const offer = new Offer({
+            vendorId: req.user.userId,
+            title,
+            description,
+            category,
+            image: `/public/offers/${req.file.filename}`,
+            startDate,
+            endDate
+        });
+
+        await offer.save();
+        res.json({ success: true, message: 'Offer added successfully', offer });
+    } catch (error) {
+        console.error("Add Offer Error:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Get All Offers (Public)
+app.get('/api/offers', async (req, res) => {
+    try {
+        const offers = await Offer.find().populate('vendorId', 'storeName name location profileImage').sort({ createdAt: -1 });
+        res.json({ success: true, offers });
+    } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 });
