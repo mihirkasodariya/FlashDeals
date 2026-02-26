@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, StyleSheet, Platform, useWindowDimensions } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, StyleSheet, Platform, useWindowDimensions, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -15,6 +15,9 @@ const StoreScreen = () => {
     const [user, setUser] = React.useState(null);
     const [loading, setLoading] = React.useState(true);
     const [locationLoading, setLocationLoading] = React.useState(false);
+
+    // Static URL for images
+    const STATIC_BASE_URL = API_BASE_URL.replace('/api', '');
 
     const fetchProfile = async (isMounted) => {
         try {
@@ -88,6 +91,13 @@ const StoreScreen = () => {
 
     if (!user || user.role !== 'vendor') return null;
 
+    const defaultLogo = require('../../assets/logos/storeLogo.png');
+
+    // Resolve Logo Image
+    const logoSource = user.profileImage
+        ? { uri: `${STATIC_BASE_URL}${user.profileImage}` }
+        : defaultLogo;
+
     return (
         <SafeAreaView className="flex-1 bg-[#FAFAFA]" edges={['top']}>
             <ScrollView showsVerticalScrollIndicator={false}>
@@ -96,7 +106,6 @@ const StoreScreen = () => {
                     <Text className="text-[10px] font-black text-secondary uppercase tracking-[4px] mb-1">Commercial Hub</Text>
                     <Text className="text-3xl font-black text-primary tracking-tighter">Store Command</Text>
                 </View>
-
                 {/* Integrated Store Card */}
                 <View className="px-6 py-2">
                     <View
@@ -120,8 +129,8 @@ const StoreScreen = () => {
                             </TouchableOpacity>
 
                             <View className="flex-row items-center">
-                                <View className="w-16 h-16 bg-white rounded-[24px] items-center justify-center shadow-lg">
-                                    <Store size={32} color={colors.primary} strokeWidth={2} />
+                                <View className="w-16 h-16 bg-white rounded-[24px] items-center justify-center shadow-lg overflow-hidden">
+                                    <Image source={logoSource} className="w-full h-full" resizeMode="cover" />
                                 </View>
                                 <View className="ml-5 flex-1">
                                     <Text className="text-white font-black text-2xl tracking-tight" numberOfLines={1}>
@@ -209,8 +218,8 @@ const StoreScreen = () => {
                 </View>
 
                 <View className="h-32" />
-            </ScrollView>
-        </SafeAreaView>
+            </ScrollView >
+        </SafeAreaView >
     );
 };
 

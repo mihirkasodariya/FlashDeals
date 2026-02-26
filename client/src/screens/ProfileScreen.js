@@ -291,15 +291,15 @@ const ProfileScreen = () => {
                         <View className="w-full space-y-4">
                             <TouchableOpacity
                                 onPress={handleLogout}
-                                className="w-full bg-error py-5 rounded-[30px] items-center shadow-lg shadow-error/30"
+                                className="w-full bg-primary py-5 rounded-[30px] items-center shadow-lg shadow-primary/30"
                             >
-                                <Text className="text-white font-black text-sm uppercase tracking-widest">Yes, Disconnect</Text>
+                                <Text className="text-white font-black text-sm uppercase tracking-widest">Logout</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 onPress={() => setIsLogoutModalVisible(false)}
                                 className="w-full py-5 items-center mt-2"
                             >
-                                <Text className="text-primary font-black text-xs uppercase tracking-[3px]">Stay Connected</Text>
+                                <Text className="text-primary font-black text-xs uppercase tracking-[3px]">Cancel</Text>
                             </TouchableOpacity>
                         </View>
                     </View>

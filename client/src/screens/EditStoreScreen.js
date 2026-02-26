@@ -8,12 +8,14 @@ import {
     Platform,
     Alert,
     ActivityIndicator,
-    StyleSheet
+    StyleSheet,
+    Image
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, Save, MapPin, Store, Sparkles, CheckCircle2, ChevronRight } from 'lucide-react-native';
+import { ChevronLeft, Save, MapPin, Store, Sparkles, CheckCircle2, ChevronRight, Camera } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as ImagePicker from 'expo-image-picker';
 import FloatingInput from '../components/FloatingInput';
 import AddressAutocomplete from '../components/AddressAutocomplete';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -29,7 +31,30 @@ const EditStoreScreen = () => {
         storeName: vendorData?.storeName || '',
         storeAddress: vendorData?.storeAddress || '',
     });
+    const [logo, setLogo] = useState(null);
     const [loading, setLoading] = useState(false);
+
+    // Dynamic base URL for static files
+    const STATIC_BASE_URL = API_BASE_URL.replace('/api', '');
+
+    const handlePickLogo = async () => {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert("Permission Denied", "We need your permission to access photos.");
+            return;
+        }
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'],
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.8,
+        });
+
+        if (!result.canceled) {
+            setLogo(result.assets[0]);
+        }
+    };
 
     const handleUpdate = async () => {
         if (!formData.storeName || !formData.storeAddress) {
@@ -52,13 +77,27 @@ const EditStoreScreen = () => {
                 return;
             }
 
+            const uploadData = new FormData();
+            uploadData.append('storeName', formData.storeName);
+            uploadData.append('storeAddress', formData.storeAddress);
+
+            if (logo) {
+                const filename = logo.uri.split('/').pop();
+                const match = /\.(\w+)$/.exec(filename);
+                const type = match ? `image/${match[1]}` : `image`;
+                uploadData.append('profileImage', {
+                    uri: logo.uri,
+                    name: filename,
+                    type
+                });
+            }
+
             const response = await fetch(`${API_BASE_URL}/vendor/update/${userId}`, {
                 method: 'PUT',
                 headers: {
-                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify(formData)
+                body: uploadData
             });
 
             const data = await response.json();
@@ -77,6 +116,16 @@ const EditStoreScreen = () => {
             console.error(error);
         }
     };
+
+    const logoSource = logo
+        ? { uri: logo.uri }
+        : vendorData?.profileImage
+            ? {
+                uri: vendorData.profileImage.startsWith('/public/storelogo/')
+                    ? `${STATIC_BASE_URL}${vendorData.profileImage}`
+                    : `${STATIC_BASE_URL}/public/storelogo/${vendorData.profileImage.split('/').pop()}`
+            }
+            : null;
 
     return (
         <SafeAreaView className="flex-1 bg-[#FAFAFA]" edges={['top']}>
@@ -103,7 +152,7 @@ const EditStoreScreen = () => {
                     contentContainerStyle={{ paddingBottom: 60 }}
                     showsVerticalScrollIndicator={false}
                 >
-                    {/* Brand Banner - Centered for iPhone */}
+                    {/* Brand Banner */}
                     <LinearGradient
                         colors={[colors.primary, '#004D40']}
                         start={{ x: 0, y: 0 }}
@@ -111,9 +160,20 @@ const EditStoreScreen = () => {
                         style={Platform.OS === 'ios' ? { paddingBottom: 110, paddingTop: 40, alignItems: 'center' } : {}}
                         className={`px-8 items-center ${Platform.OS === 'ios' ? '' : 'pt-10 pb-20'}`}
                     >
-                        <View className="w-20 h-20 bg-white rounded-[28px] items-center justify-center shadow-2xl mb-4">
-                            <Store size={40} color={colors.primary} strokeWidth={2} />
-                        </View>
+                        <TouchableOpacity
+                            onPress={handlePickLogo}
+                            activeOpacity={0.9}
+                            className="w-24 h-24 bg-white rounded-[32px] items-center justify-center shadow-2xl mb-4 overflow-hidden relative"
+                        >
+                            {logoSource ? (
+                                <Image source={logoSource} className="w-full h-full" resizeMode="cover" />
+                            ) : (
+                                <Store size={40} color={colors.primary} strokeWidth={2} />
+                            )}
+                            <View className="absolute bottom-0 right-0 left-0 bg-black/30 py-1 items-center">
+                                <Camera size={14} color="white" strokeWidth={2.5} />
+                            </View>
+                        </TouchableOpacity>
                         <Text className="text-white font-black text-2xl tracking-tighter text-center">Edit Brand Identity</Text>
                         <Text className="text-white/60 text-[11px] font-black uppercase tracking-[3px] mt-1 text-center">Management Hub</Text>
                     </LinearGradient>

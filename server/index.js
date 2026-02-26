@@ -218,10 +218,34 @@ app.post('/api/vendor/complete-registration', upload.single('idDocument'), async
     }
 });
 
-app.put('/api/vendor/update/:userId', async (req, res) => {
+// Specialized Multer for Store Logos
+const profileStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const uploadDir = 'public/storelogo';
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, 'logo-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
+const uploadProfile = multer({ storage: profileStorage });
+
+app.put('/api/vendor/update/:userId', uploadProfile.single('profileImage'), async (req, res) => {
     try {
         const { userId } = req.params;
-        const { storeName, storeAddress, location } = req.body;
+
+        console.log("--- VENDOR UPDATE REQUEST ---");
+        console.log("User ID:", userId);
+        console.log("Content-Type:", req.headers['content-type']);
+        console.log("Body exists:", !!req.body);
+
+        // Safely extract from body with fallback
+        const body = req.body || {};
+        const { storeName, storeAddress, location } = body;
 
         // Verify Token
         const authHeader = req.headers.authorization;
@@ -232,25 +256,40 @@ app.put('/api/vendor/update/:userId', async (req, res) => {
         const token = authHeader.split(' ')[1];
         const decoded = jwt.verify(token, JWT_SECRET);
 
-        // Security check: Ensure user is updating their own profile
+        // Security check
         if (decoded.userId !== userId) {
             return res.status(403).json({ success: false, message: 'Forbidden' });
         }
 
-        console.log("!!! ATTEMPTING VENDOR UPDATE FOR ID:", userId, "!!!");
+        let updateData = {};
+        if (storeName) updateData.storeName = storeName;
+        if (storeAddress) updateData.storeAddress = storeAddress;
+
+        if (location) {
+            try {
+                updateData.location = typeof location === 'string' ? JSON.parse(location) : location;
+            } catch (e) {
+                console.log("Location parse error", e);
+            }
+        }
+
+        if (req.file) {
+            updateData.profileImage = `/public/storelogo/${req.file.filename}`;
+        }
+
+        console.log("Applying updates:", Object.keys(updateData));
 
         const user = await User.findByIdAndUpdate(
             userId,
-            { storeName, storeAddress, location },
-            { new: true }
+            updateData,
+            { returnDocument: 'after' }
         );
 
         if (!user) {
-            console.log("!!! VENDOR NOT FOUND IN DB !!!");
             return res.status(404).json({ success: false, message: 'Vendor not found' });
         }
 
-        console.log("!!! VENDOR UPDATED SUCCESSFULLY !!!");
+        console.log("Vendor updated successfully");
         res.json({ success: true, message: 'Store details updated successfully', user });
     } catch (error) {
         console.error("!!! UPDATE ERROR:", error, "!!!");

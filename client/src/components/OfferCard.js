@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
-import { MapPin, Clock, Heart } from 'lucide-react-native';
+import { MapPin, Clock, Heart, Store } from 'lucide-react-native';
 import { colors } from '../theme/colors';
 import { API_BASE_URL } from '../config';
 
@@ -8,13 +8,15 @@ const OfferCard = ({ offer, onPress, grid }) => {
     // Prefix image if it's a local path (Remove /api from base URL for static files)
     const STATIC_BASE_URL = API_BASE_URL.replace('/api', '');
 
+    const defaultLogo = require('../../assets/logos/storeLogo.png');
+
     const imageUrl = offer.image
         ? (offer.image.startsWith('http') ? offer.image : `${STATIC_BASE_URL}${offer.image}`)
         : 'https://via.placeholder.com/400x200';
 
-    const storeLogo = offer.vendorId?.profileImage
-        ? (offer.vendorId.profileImage.startsWith('http') ? offer.vendorId.profileImage : `${STATIC_BASE_URL}${offer.vendorId.profileImage}`)
-        : 'https://cdn.iconscout.com/icon/free/png-256/free-store-icon-download-in-svg-png-gif-file-formats--market-shop-building-shopping-commerce-pack-e-commerce-icons-443831.png';
+    const storeLogoSource = offer.vendorId?.profileImage
+        ? { uri: (offer.vendorId.profileImage.startsWith('http') ? offer.vendorId.profileImage : `${STATIC_BASE_URL}${offer.vendorId.profileImage}`) }
+        : defaultLogo;
 
     const storeName = offer.vendorId?.storeName || 'Local Store';
 
@@ -48,7 +50,7 @@ const OfferCard = ({ offer, onPress, grid }) => {
                     <View className="bg-white/90 backdrop-blur-md px-2 py-1 rounded-lg flex-row items-center border border-white/50 shadow-sm leading-none">
                         <View className={`${grid ? 'w-4 h-4' : 'w-5 h-5'} bg-white rounded-md items-center justify-center overflow-hidden mr-1.5`}>
                             <Image
-                                source={{ uri: storeLogo }}
+                                source={storeLogoSource}
                                 className="w-full h-full"
                                 resizeMode="contain"
                             />
