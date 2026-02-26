@@ -301,6 +301,17 @@ app.get('/api/offers', async (req, res) => {
     }
 });
 
+// Get Offers for specific vendor
+app.get('/api/offers/vendor/:vendorId', async (req, res) => {
+    try {
+        const { vendorId } = req.params;
+        const offers = await Offer.find({ vendorId }).sort({ createdAt: -1 });
+        res.json({ success: true, offers });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 
 // 404 Handler - Return JSON instead of HTML
 app.use((req, res) => {

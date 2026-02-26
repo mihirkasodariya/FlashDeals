@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, useWindowDimensions, Modal, Pressable, Alert, ActivityIndicator, StyleSheet, TextInput } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image, useWindowDimensions, Modal, Pressable, Alert, ActivityIndicator, StyleSheet, TextInput, Platform } from 'react-native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -184,110 +184,6 @@ const ProfileScreen = () => {
                     </TouchableOpacity>
                 </View>
 
-                {/* Vendor Section Refresh */}
-                {isVendor && (
-                    <View className="px-6 py-8">
-                        <View className="flex-row items-center justify-between mb-6">
-                            <View>
-                                <Text className="text-[10px] font-black text-secondary uppercase tracking-[3px] mb-1">Commercial Hub</Text>
-                                <Text className="text-2xl font-black text-primary">Store Identity</Text>
-                            </View>
-                            <TouchableOpacity
-                                className="w-12 h-12 bg-white rounded-2xl items-center justify-center shadow-md border border-surface"
-                                onPress={() => navigation.navigate('EditStore', { vendorData: user })}
-                            >
-                                <Edit3 size={18} color={colors.primary} />
-                            </TouchableOpacity>
-                        </View>
-
-                        <View style={styles.premiumCard} className="bg-white rounded-[40px] p-8 border border-surface">
-                            <View className="flex-row items-center mb-10">
-                                <View className="w-20 h-20 bg-primary/5 rounded-[30px] items-center justify-center border border-primary/10 shadow-inner">
-                                    <Store size={40} color={colors.primary} strokeWidth={1} />
-                                </View>
-                                <View className="ml-5 flex-1">
-                                    <Text className="text-primary font-black text-2xl tracking-tight leading-8">{user.storeName}</Text>
-                                    <View className="flex-row items-center mt-2">
-                                        <View className="bg-green-500 px-2.5 py-1 rounded-full flex-row items-center">
-                                            <Shield size={10} color="white" />
-                                            <Text className="text-white text-[8px] font-black uppercase ml-1.5 tracking-widest">Global Brand</Text>
-                                        </View>
-                                    </View>
-                                </View>
-                            </View>
-
-                            <View className="space-y-6">
-                                <View className="flex-row items-start mb-8">
-                                    <View className="w-10 h-10 bg-secondary/10 rounded-2xl items-center justify-center">
-                                        <MapPin size={18} color={colors.secondary} />
-                                    </View>
-                                    <View className="ml-4 flex-1">
-                                        <Text className="text-textSecondary text-[10px] font-black uppercase tracking-widest mb-1.5 opacity-50">Operational Base</Text>
-                                        <Text className="text-primary font-bold text-sm leading-6">
-                                            {user.storeAddress || 'Setup details in edit'}
-                                        </Text>
-                                    </View>
-                                </View>
-
-                                <View className="mt-4 pt-4 border-t border-surface/50">
-                                    <TouchableOpacity
-                                        activeOpacity={0.8}
-                                        onPress={handleUpdateLocation}
-                                        disabled={locationLoading}
-                                        className="overflow-hidden rounded-[24px] shadow-sm"
-                                    >
-                                        <LinearGradient
-                                            colors={['#1E293B', '#0F172A']}
-                                            start={{ x: 0, y: 0 }}
-                                            end={{ x: 1, y: 1 }}
-                                            className="px-6 py-5 flex-row items-center justify-between"
-                                        >
-                                            <View className="flex-row items-center">
-                                                <View className="w-11 h-11 bg-white/10 rounded-2xl items-center justify-center mr-4 border border-white/5">
-                                                    {locationLoading ? (
-                                                        <ActivityIndicator size="small" color="white" />
-                                                    ) : (
-                                                        <Navigation2 size={22} color="white" strokeWidth={2} />
-                                                    )}
-                                                </View>
-                                                <View>
-                                                    <Text className="text-white font-black text-sm tracking-tight">Synchronize GPS</Text>
-                                                    <Text className="text-white/40 text-[9px] font-black uppercase tracking-[3px] mt-0.5">High-Precision Link</Text>
-                                                </View>
-                                            </View>
-                                            <View className="w-8 h-8 rounded-xl items-center justify-center bg-white/5">
-                                                <ChevronRight size={16} color="white" strokeWidth={3} opacity={0.4} />
-                                            </View>
-                                        </LinearGradient>
-                                    </TouchableOpacity>
-
-                                    <View className="flex-row items-center justify-center mt-5">
-                                        <View className="w-1.5 h-1.5 rounded-full bg-green-500 mr-2 shadow-lg shadow-green-500/50" />
-                                        <Text className="text-[9px] text-textSecondary uppercase tracking-[3px] font-black opacity-30">
-                                            Status: Satellite Lock Active
-                                        </Text>
-                                    </View>
-
-                                    <TouchableOpacity
-                                        activeOpacity={0.8}
-                                        onPress={() => navigation.navigate('AddOffer')}
-                                        className="mt-8 overflow-hidden rounded-[24px]"
-                                    >
-                                        <LinearGradient
-                                            colors={[colors.secondary, '#0D9488']}
-                                            start={{ x: 0, y: 0 }}
-                                            end={{ x: 1, y: 1 }}
-                                            className="px-6 py-5 flex-row items-center justify-center"
-                                        >
-                                            <Package size={20} color="white" strokeWidth={2.5} />
-                                            <Text className="text-white font-black text-sm uppercase tracking-[3px] ml-3">Launch Flash Deal</Text>
-                                        </LinearGradient>
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                        </View>
-                    </View>
-                )}
 
                 {/* Settings Menu Sections */}
                 <View className="px-6 py-6">
@@ -421,6 +317,13 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 40,
         elevation: 15,
+    },
+    iosButtonShadow: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+        elevation: 0,
     }
 });
 

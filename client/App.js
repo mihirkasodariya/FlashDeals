@@ -3,11 +3,14 @@ import React from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { enableScreens } from 'react-native-screens';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Home as HomeIcon, Heart, User } from 'lucide-react-native';
+import { Home as HomeIcon, Heart, User, Store as StoreIcon } from 'lucide-react-native';
 import { colors } from './src/theme/colors';
+import { API_BASE_URL } from './src/config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform, View, Text } from 'react-native';
 
 // Essential for performance
 enableScreens();
@@ -23,52 +26,64 @@ import HomeScreen from './src/screens/HomeScreen';
 import OfferDetailsScreen from './src/screens/OfferDetailsScreen';
 import WishlistScreen from './src/screens/WishlistScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import StoreScreen from './src/screens/StoreScreen';
 import EditStoreScreen from './src/screens/EditStoreScreen';
 import AddOfferScreen from './src/screens/AddOfferScreen';
-
-
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Platform, View, Text } from 'react-native';
-
+import VendorOffersScreen from './src/screens/VendorOffersScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
 function MainTabs() {
   const insets = useSafeAreaInsets();
+  const [role, setRole] = React.useState(null);
+
+  React.useEffect(() => {
+    const fetchUserRole = async () => {
+      try {
+        const token = await AsyncStorage.getItem('userToken');
+        if (token) {
+          const response = await fetch(`${API_BASE_URL}/auth/me`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const data = await response.json();
+          if (data.success) {
+            setRole(data.user.role);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching role:", error);
+      }
+    };
+    fetchUserRole();
+  }, []);
 
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: '#8E8E8E',
+        tabBarInactiveTintColor: '#94A3B8',
         tabBarShowLabel: true,
         tabBarStyle: {
-          position: 'absolute',
-          bottom: -22,
-          left: 0,
-          right: 0,
-          height: 60 + insets.bottom,
           backgroundColor: '#FFFFFF',
-          borderTopWidth: 0.5,
-          borderTopColor: '#DBDBDB',
-          elevation: 0,
-          shadowOpacity: 0,
-          borderRadius: 0,
-          zIndex: 1000,
+          borderTopWidth: 1,
+          borderTopColor: '#F1F5F9',
+          height: Platform.OS === 'ios' ? 88 : 92,
+          paddingBottom: Platform.OS === 'ios' ? 30 : 12,
+          paddingTop: 10,
+          elevation: 20,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -10 },
+          shadowOpacity: 0.05,
+          shadowRadius: 15,
         },
-        tabBarBackground: () => (
-          <View style={{ flex: 1, backgroundColor: '#FFFFFF' }} />
-        ),
-        tabBarItemStyle: {
-          paddingBottom: insets.bottom > 0 ? insets.bottom - 10 : 10,
-        },
-
         tabBarLabelStyle: {
           fontSize: 10,
-          fontWeight: '700',
-          marginTop: 1,
+          fontWeight: '800',
+          marginTop: 2,
+          textTransform: 'uppercase',
+          letterSpacing: 0.5,
         },
         tabBarIcon: ({ color, size, focused }) => {
           let icon;
@@ -77,10 +92,11 @@ function MainTabs() {
 
           if (route.name === 'Home') icon = <HomeIcon size={iconSize} color={color} strokeWidth={strokeWidth} />;
           if (route.name === 'Wishlist') icon = <Heart size={iconSize} color={color} strokeWidth={strokeWidth} fill={focused ? color : 'transparent'} />;
+          if (route.name === 'Store') icon = <StoreIcon size={iconSize} color={color} strokeWidth={strokeWidth} />;
           if (route.name === 'Profile') icon = <User size={iconSize} color={color} strokeWidth={strokeWidth} />;
 
           return (
-            <View className="items-center justify-center">
+            <View>
               {icon}
             </View>
           );
@@ -97,6 +113,13 @@ function MainTabs() {
         component={WishlistScreen}
         options={{ tabBarLabel: 'Favorites' }}
       />
+      {role === 'vendor' && (
+        <Tab.Screen
+          name="Store"
+          component={StoreScreen}
+          options={{ tabBarLabel: 'Store' }}
+        />
+      )}
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}
@@ -106,9 +129,7 @@ function MainTabs() {
   );
 }
 
-
 function RootStack() {
-  console.log("!!! ROOT STACK RENDERING (JS STACK) !!!");
   return (
     <Stack.Navigator
       initialRouteName="Login"
@@ -127,12 +148,12 @@ function RootStack() {
       <Stack.Screen name="OfferDetails" component={OfferDetailsScreen} />
       <Stack.Screen name="EditStore" component={EditStoreScreen} />
       <Stack.Screen name="AddOffer" component={AddOfferScreen} />
+      <Stack.Screen name="VendorOffers" component={VendorOffersScreen} />
     </Stack.Navigator>
   );
 }
 
 export default function App() {
-  console.log("!!! APP COMPONENT RENDERING !!!");
   return (
     <SafeAreaProvider>
       <NavigationContainer>
