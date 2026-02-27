@@ -68,8 +68,18 @@ const LoginHistoryScreen = () => {
 
             const data = await response.json();
             if (data.success) {
-                setDevices(devices.filter(d => d._id !== selectedDeviceId));
-                setShowLogoutModal(false);
+                // If it's the current device (index 0), logout locally too
+                const deviceIndex = devices.findIndex(d => d._id === selectedDeviceId);
+                if (deviceIndex === 0) {
+                    await AsyncStorage.multiRemove(['userToken', 'userData', 'isVendor']);
+                    navigation.reset({
+                        index: 0,
+                        routes: [{ name: 'Login' }],
+                    });
+                } else {
+                    setDevices(devices.filter(d => d._id !== selectedDeviceId));
+                    setShowLogoutModal(false);
+                }
             } else {
                 Alert.alert("Failed", data.message || "Could not logout device");
             }
@@ -177,7 +187,10 @@ const LoginHistoryScreen = () => {
                                             <View className="flex-row items-center">
                                                 <Text className="text-base font-black text-primary mr-2">{device.deviceInfo}</Text>
                                                 {index === 0 && (
-                                                    <View className="w-2 h-2 rounded-full bg-success" />
+                                                    <View className="flex-row items-center bg-green-50 px-2 py-0.5 rounded-full border border-green-100 ml-2">
+                                                        <View className="w-1.5 h-1.5 rounded-full bg-green-500 mr-1" />
+                                                        <Text className="text-[8px] font-black text-green-600">Live</Text>
+                                                    </View>
                                                 )}
                                             </View>
                                             <Text className="text-slate-400 text-[11px] font-bold mt-1">
@@ -186,23 +199,17 @@ const LoginHistoryScreen = () => {
                                         </View>
                                     </View>
 
-                                    {index !== 0 ? (
-                                        <TouchableOpacity
-                                            onPress={() => confirmLogout(device._id)}
-                                            disabled={actionLoading === device._id}
-                                            className="px-4 py-2 bg-red-50 rounded-xl border border-red-100"
-                                        >
-                                            {actionLoading === device._id ? (
-                                                <ActivityIndicator size="small" color="#EF4444" />
-                                            ) : (
-                                                <Text className="text-red-500 font-black text-[10px]">Logout</Text>
-                                            )}
-                                        </TouchableOpacity>
-                                    ) : (
-                                        <View className="px-4 py-2 bg-green-50 rounded-xl border border-green-100">
-                                            <Text className="text-green-600 font-black text-[10px]">Active</Text>
-                                        </View>
-                                    )}
+                                    <TouchableOpacity
+                                        onPress={() => confirmLogout(device._id)}
+                                        disabled={actionLoading === device._id}
+                                        className="px-4 py-2 bg-red-50 rounded-xl border border-red-100"
+                                    >
+                                        {actionLoading === device._id ? (
+                                            <ActivityIndicator size="small" color="#EF4444" />
+                                        ) : (
+                                            <Text className="text-red-500 font-black text-[10px]">Logout</Text>
+                                        )}
+                                    </TouchableOpacity>
                                 </View>
 
                                 <View className="ml-[76px] mt-2 flex-row items-center">
