@@ -89,7 +89,10 @@ const HomeScreen = () => {
                         </View>
                     </TouchableOpacity>
 
-                    <TouchableOpacity className="w-12 h-12 bg-white rounded-2xl items-center justify-center shadow-xl border border-surface">
+                    <TouchableOpacity
+                        onPress={() => navigation.navigate('Notifications')}
+                        className="w-12 h-12 bg-white rounded-2xl items-center justify-center shadow-xl border border-surface"
+                    >
                         <Bell size={22} color={colors.primary} />
                         <View className="absolute top-3 right-3 w-2.5 h-2.5 bg-error rounded-full border-2 border-white" />
                     </TouchableOpacity>

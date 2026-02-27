@@ -36,6 +36,7 @@ import LoginHistoryScreen from './src/screens/LoginHistoryScreen';
 import PrivacyCenterScreen from './src/screens/PrivacyCenterScreen';
 import SupportCenterScreen from './src/screens/SupportCenterScreen';
 import TicketDetailsScreen from './src/screens/TicketDetailsScreen';
+import NotificationScreen from './src/screens/NotificationScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -160,6 +161,7 @@ function RootStack() {
       <Stack.Screen name="PrivacyCenter" component={PrivacyCenterScreen} />
       <Stack.Screen name="SupportCenter" component={SupportCenterScreen} />
       <Stack.Screen name="TicketDetails" component={TicketDetailsScreen} />
+      <Stack.Screen name="Notifications" component={NotificationScreen} />
     </Stack.Navigator>
   );
 }
