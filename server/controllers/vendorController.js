@@ -26,7 +26,7 @@ const completeRegistration = async (req, res) => {
             updateData.idDocument = `/public/uploads/${req.file.filename}`;
         }
 
-        const user = await User.findByIdAndUpdate(userId, updateData, { new: true });
+        const user = await User.findByIdAndUpdate(userId, updateData, { returnDocument: 'after' });
 
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });
@@ -69,7 +69,7 @@ const updateVendor = async (req, res) => {
         const user = await User.findByIdAndUpdate(
             userId,
             updateData,
-            { new: true }
+            { returnDocument: 'after' }
         );
 
         if (!user) {

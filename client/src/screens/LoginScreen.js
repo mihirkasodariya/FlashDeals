@@ -8,6 +8,7 @@ import {
     Platform
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as Device from 'expo-device';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import FloatingInput from '../components/FloatingInput';
 
@@ -49,7 +50,12 @@ const LoginScreen = () => {
             const response = await fetch(`${API_BASE_URL}/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ mobile, password })
+                body: JSON.stringify({
+                    mobile,
+                    password,
+                    deviceInfo: Device.modelName || (Platform.OS === 'ios' ? 'iPhone' : 'Android Device'),
+                    os: `${Platform.OS} ${Platform.Version}`
+                })
             });
 
             console.log("Response status:", response.status);

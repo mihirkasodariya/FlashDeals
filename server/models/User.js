@@ -24,6 +24,14 @@ const userSchema = new mongoose.Schema({
         enum: ['submitted', 'under_review', 'approved', 'rejected'],
         default: 'submitted'
     },
+    loginDevices: [{
+        deviceInfo: { type: String },
+        os: { type: String },
+        ip: { type: String },
+        location: { type: String },
+        lastLogin: { type: Date, default: Date.now },
+        isActive: { type: Boolean, default: true }
+    }]
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

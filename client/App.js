@@ -31,6 +31,8 @@ import EditStoreScreen from './src/screens/EditStoreScreen';
 import AddOfferScreen from './src/screens/AddOfferScreen';
 import VendorOffersScreen from './src/screens/VendorOffersScreen';
 import PublicStoreProfileScreen from './src/screens/PublicStoreProfileScreen';
+import ChangePasswordScreen from './src/screens/ChangePasswordScreen';
+import LoginHistoryScreen from './src/screens/LoginHistoryScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -150,6 +152,8 @@ function RootStack() {
       <Stack.Screen name="AddOffer" component={AddOfferScreen} />
       <Stack.Screen name="VendorOffers" component={VendorOffersScreen} />
       <Stack.Screen name="PublicStoreProfile" component={PublicStoreProfileScreen} />
+      <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
+      <Stack.Screen name="LoginHistory" component={LoginHistoryScreen} />
     </Stack.Navigator>
   );
 }
