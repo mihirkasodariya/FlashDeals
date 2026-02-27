@@ -6,7 +6,7 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import { LinearGradient } from 'expo-linear-gradient';
-import { User, Settings, Bell, Shield, HelpCircle, LogOut, ChevronRight, MapPin, Package as LucidePackage, Store, Map as MapIcon, Edit3, Navigation2, Camera, Lock, History } from 'lucide-react-native';
+import { User, Settings, Bell, Shield, HelpCircle, LogOut, ChevronRight, MapPin, Package as LucidePackage, Store, Map as MapIcon, Edit3, Navigation2, Camera, Lock, History, Headphones } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 
 
@@ -193,16 +193,15 @@ const ProfileScreen = () => {
 
     const menuItems = [
         ...(isVendor ? [
-            { icon: Store, label: 'Business Insights', color: colors.secondary, onPress: () => { } },
             { icon: LucidePackage, label: 'Add New Offer', color: colors.secondary, onPress: () => navigation.navigate('AddOffer') }
         ] : [
             { icon: LucidePackage, label: 'Redemption History', color: colors.secondary, onPress: () => { } }
         ]),
-        { icon: MapPin, label: 'Saved Locations', color: colors.accent, onPress: () => { } },
         { icon: Lock, label: 'Change Password', color: colors.warning, onPress: () => navigation.navigate('ChangePassword') },
         { icon: History, label: 'Login History', color: colors.secondary, onPress: () => navigation.navigate('LoginHistory') },
-        { icon: Bell, label: 'Preferences', color: colors.warning, onPress: () => { } },
-        { icon: Shield, label: 'Privacy Center', color: colors.primary, onPress: () => { } },
+        { icon: Bell, label: 'Notifications', color: colors.warning, onPress: () => { } },
+        { icon: Shield, label: 'Privacy Center', color: colors.primary, onPress: () => navigation.navigate('PrivacyCenter') },
+        { icon: Headphones, label: 'Support Center', color: colors.secondary, onPress: () => navigation.navigate('SupportCenter') },
     ];
 
     if (loading) {

@@ -38,9 +38,11 @@ const uploadStorage = multer.diskStorage({
 const upload = multer({ storage: uploadStorage });
 const uploadOffer = multer({ storage: createStorage('offers', 'offer') });
 const uploadProfile = multer({ storage: createStorage('storelogo', 'logo') });
+const uploadHelp = multer({ storage: createStorage('help', 'ticket') });
 
 module.exports = {
     upload,
     uploadOffer,
-    uploadProfile
+    uploadProfile,
+    uploadHelp
 };

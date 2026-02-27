@@ -6,7 +6,7 @@ const CustomButton = ({ title, onPress, loading, variant = 'primary', style, tex
     const isSecondary = variant === 'secondary';
     const isOutline = variant === 'outline';
 
-    let containerClasses = "h-[52px] rounded-[36px] justify-center items-center w-full my-3 shadow-2xl";
+    let containerClasses = "h-[50px] rounded-[36px] justify-center items-center w-full my-2 shadow-2xl px-10";
     if (variant === 'primary') containerClasses += " bg-primary shadow-primary/40";
     if (variant === 'secondary') containerClasses += " bg-secondary shadow-secondary/40";
     if (variant === 'outline') containerClasses += " bg-transparent border-2 border-primary";

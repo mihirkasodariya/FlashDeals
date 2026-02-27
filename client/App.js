@@ -12,7 +12,7 @@ import { API_BASE_URL } from './src/config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform, View, Text } from 'react-native';
 
-// Essential for performance
+// Essential for performance - call before any components are rendered
 enableScreens();
 
 // Import Screens
@@ -33,6 +33,9 @@ import VendorOffersScreen from './src/screens/VendorOffersScreen';
 import PublicStoreProfileScreen from './src/screens/PublicStoreProfileScreen';
 import ChangePasswordScreen from './src/screens/ChangePasswordScreen';
 import LoginHistoryScreen from './src/screens/LoginHistoryScreen';
+import PrivacyCenterScreen from './src/screens/PrivacyCenterScreen';
+import SupportCenterScreen from './src/screens/SupportCenterScreen';
+import TicketDetailsScreen from './src/screens/TicketDetailsScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -154,11 +157,15 @@ function RootStack() {
       <Stack.Screen name="PublicStoreProfile" component={PublicStoreProfileScreen} />
       <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
       <Stack.Screen name="LoginHistory" component={LoginHistoryScreen} />
+      <Stack.Screen name="PrivacyCenter" component={PrivacyCenterScreen} />
+      <Stack.Screen name="SupportCenter" component={SupportCenterScreen} />
+      <Stack.Screen name="TicketDetails" component={TicketDetailsScreen} />
     </Stack.Navigator>
   );
 }
 
 export default function App() {
+  // Navigation Container Initialized Here
   return (
     <SafeAreaProvider>
       <NavigationContainer>
