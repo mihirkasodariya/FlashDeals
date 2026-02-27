@@ -86,7 +86,7 @@ const EditStoreScreen = () => {
                 const match = /\.(\w+)$/.exec(filename);
                 const type = match ? `image/${match[1]}` : `image`;
                 uploadData.append('profileImage', {
-                    uri: logo.uri,
+                    uri: Platform.OS === 'ios' ? logo.uri.replace('file://', '') : logo.uri,
                     name: filename,
                     type
                 });
@@ -120,11 +120,7 @@ const EditStoreScreen = () => {
     const logoSource = logo
         ? { uri: logo.uri }
         : vendorData?.storeImage
-            ? {
-                uri: vendorData.storeImage.startsWith('/public/storelogo/')
-                    ? `${STATIC_BASE_URL}${vendorData.storeImage}`
-                    : `${STATIC_BASE_URL}/public/storelogo/${vendorData.storeImage.split('/').pop()}`
-            }
+            ? { uri: `${STATIC_BASE_URL}${vendorData.storeImage}` }
             : null;
 
     return (

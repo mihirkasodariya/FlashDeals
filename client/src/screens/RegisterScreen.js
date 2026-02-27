@@ -67,7 +67,7 @@ const RegisterScreen = () => {
                 const match = /\.(\w+)$/.exec(filename);
                 const type = match ? `image/${match[1]}` : `image`;
                 formData.append('profileImage', {
-                    uri: image,
+                    uri: Platform.OS === 'ios' ? image.replace('file://', '') : image,
                     name: filename,
                     type
                 });

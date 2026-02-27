@@ -115,7 +115,11 @@ const AddOfferScreen = () => {
             const match = /\.(\w+)$/.exec(filename);
             const type = match ? `image/${match[1]}` : `image`;
 
-            formData.append('image', { uri: image, name: filename, type });
+            formData.append('image', {
+                uri: Platform.OS === 'ios' ? image.replace('file://', '') : image,
+                name: filename,
+                type
+            });
 
             const response = await fetch(`${API_BASE_URL}/offers/add`, {
                 method: 'POST',

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Image, ActivityIndicator, Alert, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import { ChevronLeft, Package, Trash2, Calendar, Tag } from 'lucide-react-native';
+import { ChevronLeft, Package as LucidePackage, Trash2, Calendar, Tag } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors } from '../theme/colors';
 import { API_BASE_URL } from '../config';
@@ -89,7 +89,7 @@ const VendorOffersScreen = () => {
                     ListEmptyComponent={
                         <View className="items-center justify-center py-20">
                             <View className="w-20 h-20 bg-surface rounded-full items-center justify-center mb-4">
-                                <Package size={40} color={colors.border} strokeWidth={1.5} />
+                                <LucidePackage size={40} color={colors.border} strokeWidth={1.5} />
                             </View>
                             <Text className="text-xl font-black text-primary">No Active Deals</Text>
                             <Text className="text-textSecondary text-center mt-2">You haven't launched any flash deals yet.</Text>

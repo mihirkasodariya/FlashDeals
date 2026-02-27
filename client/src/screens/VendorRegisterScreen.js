@@ -137,7 +137,7 @@ const VendorRegisterScreen = () => {
                     const match = /\.(\w+)$/.exec(filename);
                     const type = match ? `image/${match[1]}` : `image`;
                     formDataToSend.append('profileImage', {
-                        uri: profileImage,
+                        uri: Platform.OS === 'ios' ? profileImage.replace('file://', '') : profileImage,
                         name: filename,
                         type
                     });

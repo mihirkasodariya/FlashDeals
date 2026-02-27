@@ -23,6 +23,16 @@ const LoginScreen = () => {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
 
+    React.useEffect(() => {
+        const checkToken = async () => {
+            const token = await AsyncStorage.getItem('userToken');
+            if (token) {
+                navigation.replace('Main');
+            }
+        };
+        checkToken();
+    }, []);
+
     const handleLogin = async () => {
         if (!mobile || mobile.length < 10) {
             alert("Please enter a valid 10-digit mobile number");

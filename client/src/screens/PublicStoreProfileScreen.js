@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, Image, TouchableOpacity, FlatList, ActivityIndicator, useWindowDimensions, Platform, StatusBar, Linking, Alert } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ChevronLeft, MapPin, Package, Shield, User, Map as MapIcon, LayoutGrid, List } from 'lucide-react-native';
+import { ChevronLeft, MapPin, Package as LucidePackage, Shield, User, Map as MapIcon, LayoutGrid, List } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { colors } from '../theme/colors';
@@ -207,7 +207,7 @@ const PublicStoreProfileScreen = ({ route, navigation }) => {
                             </View>
                         ) : (
                             <View className="items-center py-20 bg-white rounded-[40px] border border-dashed border-surface">
-                                <Package size={48} color={colors.surface} />
+                                <LucidePackage size={48} color={colors.surface} />
                                 <Text className="text-textSecondary font-bold mt-4">No Active Deals Right Now</Text>
                             </View>
                         )}

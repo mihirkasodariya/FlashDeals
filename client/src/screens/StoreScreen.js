@@ -5,7 +5,7 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Store, MapPin, Shield, Navigation2, ChevronRight, Package, Edit3, LayoutGrid, Edit2 } from 'lucide-react-native';
+import { Store, MapPin, Shield, Navigation2, ChevronRight, Package as LucidePackage, Edit3, LayoutGrid, Edit2 } from 'lucide-react-native';
 import { colors } from '../theme/colors';
 import { API_BASE_URL } from '../config';
 
@@ -210,7 +210,7 @@ const StoreScreen = () => {
                             className="w-[48%] bg-white rounded-[32px] p-6 items-center border border-surface shadow-sm"
                         >
                             <View className="w-14 h-14 bg-primary/5 rounded-2xl items-center justify-center mb-4">
-                                <Package size={28} color={colors.primary} strokeWidth={2} />
+                                <LucidePackage size={28} color={colors.primary} strokeWidth={2} />
                             </View>
                             <Text className="text-primary font-black text-center text-sm leading-5">Launch{"\n"}Flash Deal</Text>
                         </TouchableOpacity>
