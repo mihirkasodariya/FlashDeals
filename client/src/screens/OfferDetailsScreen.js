@@ -3,6 +3,7 @@ import { View, Text, ScrollView, Image, TouchableOpacity, Share, useWindowDimens
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronLeft, Share2, Heart, MapPin, Clock, Store, Info, Phone, Map, Sparkles, ChevronRight } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { colors } from '../theme/colors';
 import { API_BASE_URL } from '../config';
@@ -22,6 +23,56 @@ const OfferDetailsScreen = ({ route, navigation }) => {
     const { width, height } = useWindowDimensions();
     const [isFavorite, setIsFavorite] = useState(false);
     const [isRedeeming, setIsRedeeming] = useState(false);
+
+    // Initial check for wishlist status
+    React.useEffect(() => {
+        const checkWishlistStatus = async () => {
+            try {
+                const token = await AsyncStorage.getItem('userToken');
+                if (!token) return;
+                const response = await fetch(`${API_BASE_URL}/wishlist/status`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                if (data.success && data.offerIds.includes(offer._id)) {
+                    setIsFavorite(true);
+                }
+            } catch (error) {
+                console.error('Error fetching wishlist status:', error);
+            }
+        };
+        checkWishlistStatus();
+    }, [offer._id]);
+
+    const handleToggleWishlist = async () => {
+        try {
+            const token = await AsyncStorage.getItem('userToken');
+            if (!token) {
+                Alert.alert("Login Required", "Please login to wishlist offers.");
+                return;
+            }
+
+            setIsFavorite(!isFavorite); // Optimistic
+
+            const response = await fetch(`${API_BASE_URL}/wishlist/toggle`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ offerId: offer._id })
+            });
+
+            const data = await response.json();
+            if (!data.success) {
+                setIsFavorite(isFavorite); // Revert
+                Alert.alert("Error", "Could not update wishlist");
+            }
+        } catch (error) {
+            console.error('Wishlist toggle error:', error);
+            setIsFavorite(isFavorite); // Revert
+        }
+    };
 
     const isTablet = width > 768;
     const imageHeight = isTablet ? height * 0.5 : 400;
@@ -125,7 +176,7 @@ const OfferDetailsScreen = ({ route, navigation }) => {
                         <Share2 size={20} color={colors.primary} strokeWidth={2.5} />
                     </TouchableOpacity>
                     <TouchableOpacity
-                        onPress={() => setIsFavorite(!isFavorite)}
+                        onPress={handleToggleWishlist}
                         className="w-12 h-12 bg-white/90 rounded-2xl items-center justify-center shadow-lg"
                     >
                         <Heart size={20} color={isFavorite ? colors.error : colors.primary} fill={isFavorite ? colors.error : 'transparent'} strokeWidth={2.5} />

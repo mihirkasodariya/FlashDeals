@@ -1,10 +1,45 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { MapPin, Clock, Heart } from 'lucide-react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors } from '../theme/colors';
 import { API_BASE_URL } from '../config';
 
-const OfferCard = ({ offer, onPress, grid }) => {
+const OfferCard = ({ offer, onPress, grid, isFavorite = false, onRefresh }) => {
+    const [localFavorite, setLocalFavorite] = React.useState(isFavorite);
+
+    React.useEffect(() => {
+        setLocalFavorite(isFavorite);
+    }, [isFavorite]);
+
+    const toggleWishlist = async () => {
+        try {
+            const token = await AsyncStorage.getItem('userToken');
+            if (!token) return;
+
+            setLocalFavorite(!localFavorite); // Optimistic UI update
+
+            const response = await fetch(`${API_BASE_URL}/wishlist/toggle`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ offerId: offer._id })
+            });
+
+            const data = await response.json();
+            if (!data.success) {
+                // Revert if failed
+                setLocalFavorite(localFavorite);
+            } else if (onRefresh) {
+                onRefresh();
+            }
+        } catch (error) {
+            console.error('Wishlist toggle error:', error);
+            setLocalFavorite(localFavorite); // Revert
+        }
+    };
     // Prefix image if it's a local path (Remove /api from base URL for static files)
     const STATIC_BASE_URL = API_BASE_URL.replace('/api', '');
 
@@ -71,9 +106,10 @@ const OfferCard = ({ offer, onPress, grid }) => {
                     </View>
 
                     <TouchableOpacity
+                        onPress={toggleWishlist}
                         className={`${grid ? 'w-7 h-7' : 'w-9 h-9'} bg-white/80 backdrop-blur-xl rounded-full items-center justify-center border border-white/80`}
                     >
-                        <Heart size={grid ? 14 : 16} color={colors.primary} strokeWidth={2.5} />
+                        <Heart size={grid ? 14 : 16} color={localFavorite ? colors.error : colors.primary} fill={localFavorite ? colors.error : 'transparent'} strokeWidth={2.5} />
                     </TouchableOpacity>
                 </View>
             </View>

@@ -1,18 +1,47 @@
-import React from 'react';
-import { View, Text, FlatList, Image, TouchableOpacity, useWindowDimensions } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, FlatList, Image, TouchableOpacity, useWindowDimensions, ActivityIndicator } from 'react-native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Heart, ShoppingBag, Sparkles } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { colors } from '../theme/colors';
 import CustomButton from '../components/CustomButton';
+import OfferCard from '../components/OfferCard';
+import { API_BASE_URL } from '../config';
 
 const WishlistScreen = () => {
     const navigation = useNavigation();
     const { width } = useWindowDimensions();
-    // Semi-empty state for now
-    const [favorites, setFavorites] = React.useState([]);
+    const [favorites, setFavorites] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    const fetchWishlist = async () => {
+        try {
+            const token = await AsyncStorage.getItem('userToken');
+            if (!token) return;
+
+            const response = await fetch(`${API_BASE_URL}/wishlist`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                setFavorites(data.offers);
+            }
+        } catch (error) {
+            console.error('Error fetching wishlist:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useFocusEffect(
+        useCallback(() => {
+            fetchWishlist();
+        }, [])
+    );
 
     return (
         <SafeAreaView className="flex-1 bg-[#FAFAFA]" edges={['top']}>
@@ -24,7 +53,11 @@ const WishlistScreen = () => {
                 </View>
             </View>
 
-            {favorites.length === 0 ? (
+            {loading ? (
+                <View className="flex-1 justify-center items-center">
+                    <ActivityIndicator size="large" color={colors.primary} />
+                </View>
+            ) : favorites.length === 0 ? (
                 <View className="flex-1 justify-center items-center px-8">
                     <TouchableOpacity
                         activeOpacity={0.7}
@@ -55,14 +88,15 @@ const WishlistScreen = () => {
             ) : (
                 <FlatList
                     data={favorites}
-                    keyExtractor={(item) => item.id}
+                    keyExtractor={(item) => item._id}
                     contentContainerStyle={{ padding: 24, paddingBottom: 100 }}
-
                     renderItem={({ item }) => (
                         <View className="mb-6">
                             <OfferCard
                                 offer={item}
+                                isFavorite={true}
                                 onPress={() => navigation.navigate('OfferDetails', { offer: item })}
+                                onRefresh={fetchWishlist}
                             />
                         </View>
                     )}

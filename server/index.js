@@ -8,6 +8,7 @@ const authRoutes = require('./routes/authRoutes');
 const offerRoutes = require('./routes/offerRoutes');
 const vendorRoutes = require('./routes/vendorRoutes');
 const ticketRoutes = require('./routes/ticketRoutes');
+const wishlistRoutes = require('./routes/wishlistRoutes');
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/offers', offerRoutes);
 app.use('/api/vendor', vendorRoutes);
 app.use('/api/tickets', ticketRoutes);
+app.use('/api/wishlist', wishlistRoutes);
 
 app.get('/', (req, res) => {
     res.send('FlashDeals API is running in MVC Structure...');

@@ -7,6 +7,7 @@ import { colors } from '../theme/colors';
 import OfferCard from '../components/OfferCard';
 import LocationSelectorModal from '../components/LocationSelectorModal';
 import { API_BASE_URL } from '../config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const CATEGORIES = [
     { id: '1', name: 'All', icon: '🛍️' },
@@ -27,18 +28,32 @@ const HomeScreen = () => {
     const [radius, setRadius] = useState(5);
     const [viewMode, setViewMode] = useState('grid');
     const [offers, setOffers] = useState([]);
+    const [wishlistIds, setWishlistIds] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
 
-    const fetchOffers = async () => {
+    const fetchData = async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/offers`);
-            const data = await response.json();
-            if (data.success) {
-                setOffers(data.offers);
+            const token = await AsyncStorage.getItem('userToken');
+
+            const [offersRes, wishlistRes] = await Promise.all([
+                fetch(`${API_BASE_URL}/offers`),
+                token ? fetch(`${API_BASE_URL}/wishlist/status`, { headers: { 'Authorization': `Bearer ${token}` } }) : Promise.resolve(null)
+            ]);
+
+            const offersData = await offersRes.json();
+            if (offersData.success) {
+                setOffers(offersData.offers);
+            }
+
+            if (wishlistRes) {
+                const wishlistData = await wishlistRes.json();
+                if (wishlistData.success) {
+                    setWishlistIds(wishlistData.offerIds);
+                }
             }
         } catch (error) {
-            console.error("Fetch offers error:", error);
+            console.error("Fetch data error:", error);
         } finally {
             setLoading(false);
             setRefreshing(false);
@@ -47,13 +62,13 @@ const HomeScreen = () => {
 
     useFocusEffect(
         React.useCallback(() => {
-            fetchOffers();
+            fetchData();
         }, [])
     );
 
     const onRefresh = () => {
         setRefreshing(true);
-        fetchOffers();
+        fetchData();
     };
 
     const filteredOffers = offers.filter(offer => {
@@ -167,9 +182,6 @@ const HomeScreen = () => {
                                         </View>
                                         <Text className="text-3xl font-black text-primary tracking-tighter">Hot Deals</Text>
                                     </View>
-                                    <TouchableOpacity className="bg-primary/5 px-5 py-2.5 rounded-2xl border border-primary/5">
-                                        <Text className="text-primary font-black text-xs tracking-tight">Browse All</Text>
-                                    </TouchableOpacity>
                                 </View>
                                 <FlatList
                                     horizontal
@@ -181,6 +193,7 @@ const HomeScreen = () => {
                                         <View style={{ width: width > 600 ? 350 : width * 0.85 }} className="mr-6">
                                             <OfferCard
                                                 offer={item}
+                                                isFavorite={wishlistIds.includes(item._id)}
                                                 onPress={() => navigation.navigate('OfferDetails', { offer: item })}
                                             />
                                         </View>
@@ -227,6 +240,7 @@ const HomeScreen = () => {
                                     <OfferCard
                                         offer={offer}
                                         grid={isTablet || viewMode === 'grid'}
+                                        isFavorite={wishlistIds.includes(offer._id)}
                                         onPress={() => navigation.navigate('OfferDetails', { offer })}
                                     />
                                 </View>
