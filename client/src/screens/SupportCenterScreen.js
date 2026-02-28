@@ -36,7 +36,6 @@ import {
     RefreshCw,
     Shield
 } from 'lucide-react-native';
-import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import { colors } from '../theme/colors';
@@ -44,8 +43,7 @@ import { API_BASE_URL } from '../config';
 
 const { width, height } = Dimensions.get('window');
 
-const SupportCenterScreen = () => {
-    const navigation = useNavigation();
+const SupportCenterScreen = ({ navigation }) => {
     const [loading, setLoading] = useState(false);
     const [tickets, setTickets] = useState([]);
     const [isModalVisible, setIsModalVisible] = useState(false);

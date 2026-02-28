@@ -22,12 +22,9 @@ import CustomButton from '../components/CustomButton';
 
 import ProgressSteps from '../components/ProgressSteps';
 import * as ImagePicker from 'expo-image-picker';
-import { useNavigation, useRoute } from '@react-navigation/native';
 import { API_BASE_URL } from '../config';
 
-const VendorRegisterScreen = () => {
-    const navigation = useNavigation();
-    const route = useRoute();
+const VendorRegisterScreen = ({ navigation, route }) => {
     const [step, setStep] = useState(0); // 0 or 1
     const [formData, setFormData] = useState({
         name: '',

@@ -9,7 +9,7 @@ import {
     Animated
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { } from '@react-navigation/native';
 import {
     ChevronLeft,
     Bell,
@@ -51,8 +51,7 @@ const NOTIFICATIONS = [
     }
 ];
 
-const NotificationScreen = () => {
-    const navigation = useNavigation();
+const NotificationScreen = ({ navigation }) => {
     const [notifications, setNotifications] = useState(NOTIFICATIONS);
 
     const markAllRead = () => {

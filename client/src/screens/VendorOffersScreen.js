@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Image, ActivityIndicator, Alert, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
 import { ChevronLeft, Package as LucidePackage, Trash2, Calendar, Tag } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors } from '../theme/colors';
 import { API_BASE_URL } from '../config';
 
-const VendorOffersScreen = () => {
-    const navigation = useNavigation();
+const VendorOffersScreen = ({ navigation }) => {
     const { width } = useWindowDimensions();
     const [offers, setOffers] = useState([]);
     const [loading, setLoading] = useState(true);

@@ -12,13 +12,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Lock, ShieldCheck } from 'lucide-react-native';
 import FloatingInput from '../components/FloatingInput';
 import CustomButton from '../components/CustomButton';
-import { useNavigation } from '@react-navigation/native';
 import { API_BASE_URL } from '../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors } from '../theme/colors';
 
-const ChangePasswordScreen = () => {
-    const navigation = useNavigation();
+const ChangePasswordScreen = ({ navigation }) => {
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');

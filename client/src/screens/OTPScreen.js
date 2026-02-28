@@ -11,13 +11,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft } from 'lucide-react-native';
 import OTPInput from '../components/OTPInput';
 import CustomButton from '../components/CustomButton';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { } from '@react-navigation/native';
 import { API_BASE_URL } from '../config';
 
-const OTPScreen = () => {
-    const navigation = useNavigation();
-    const route = useRoute();
-    const { mobile = "9876543210" } = route.params || {};
+const OTPScreen = ({ navigation, route }) => {
+    const { mobile } = route.params || {};
     const [timer, setTimer] = useState(30);
     const [otp, setOtp] = useState('');
     const [loading, setLoading] = useState(false);

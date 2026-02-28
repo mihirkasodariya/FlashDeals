@@ -7,10 +7,9 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CheckCircle2, Clock, ShieldCheck } from 'lucide-react-native';
 import CustomButton from '../components/CustomButton';
-import { useNavigation } from '@react-navigation/native';
+import { } from '@react-navigation/native';
 
-const ActivationStatusScreen = () => {
-    const navigation = useNavigation();
+const ActivationStatusScreen = ({ navigation }) => {
     const steps = [
         { title: 'Application Submitted', status: 'completed', desc: 'Your registration details have been received.' },
         { title: 'Under Review', status: 'active', desc: 'Our team is verifying your documents.' },

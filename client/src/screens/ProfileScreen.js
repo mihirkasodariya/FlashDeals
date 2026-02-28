@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, useWindowDimensions, Modal, Pressable, Alert, ActivityIndicator, StyleSheet, TextInput, Platform } from 'react-native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -14,8 +14,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { colors } from '../theme/colors';
 import { API_BASE_URL } from '../config';
 
-const ProfileScreen = () => {
-    const navigation = useNavigation();
+const ProfileScreen = ({ navigation }) => {
     const { width } = useWindowDimensions();
     const [isLogoutModalVisible, setIsLogoutModalVisible] = React.useState(false);
     const [isEditModalVisible, setIsEditModalVisible] = React.useState(false);
@@ -63,13 +62,21 @@ const ProfileScreen = () => {
         }
     };
 
-    useFocusEffect(
-        React.useCallback(() => {
-            const isMounted = { current: true };
-            fetchProfile(isMounted);
-            return () => { isMounted.current = false; };
-        }, [])
-    );
+    React.useEffect(() => {
+        const isMounted = { current: true };
+        fetchProfile(isMounted);
+
+        if (navigation && navigation.addListener) {
+            const unsubscribe = navigation.addListener('focus', () => {
+                const innerMounted = { current: true };
+                fetchProfile(innerMounted);
+            });
+            return () => {
+                isMounted.current = false;
+                unsubscribe();
+            };
+        }
+    }, [navigation]);
 
 
     const isVendor = user && user.role === 'vendor';

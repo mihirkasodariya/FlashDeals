@@ -18,13 +18,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import FloatingInput from '../components/FloatingInput';
 import AddressAutocomplete from '../components/AddressAutocomplete';
-import { useNavigation, useRoute } from '@react-navigation/native';
 import { API_BASE_URL } from '../config';
 import { colors } from '../theme/colors';
 
-const EditStoreScreen = () => {
-    const navigation = useNavigation();
-    const route = useRoute();
+const EditStoreScreen = ({ navigation, route }) => {
     const { vendorData } = route.params || {};
 
     const [formData, setFormData] = useState({

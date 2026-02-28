@@ -14,7 +14,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Monitor, Smartphone, Clock, ShieldCheck, Globe, LogOut, ChevronRight, Fingerprint, MapPin, Tablet, ShieldAlert, Zap } from 'lucide-react-native';
-import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE_URL } from '../config';
@@ -22,8 +21,7 @@ import { colors } from '../theme/colors';
 
 const { width } = Dimensions.get('window');
 
-const LoginHistoryScreen = () => {
-    const navigation = useNavigation();
+const LoginHistoryScreen = ({ navigation }) => {
     const [devices, setDevices] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);

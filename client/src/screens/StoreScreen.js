@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, StyleSheet, Platform, useWindowDimensions, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -9,8 +9,7 @@ import { Store, MapPin, Shield, Navigation2, ChevronRight, Package as LucidePack
 import { colors } from '../theme/colors';
 import { API_BASE_URL } from '../config';
 
-const StoreScreen = () => {
-    const navigation = useNavigation();
+const StoreScreen = ({ navigation }) => {
     const { width } = useWindowDimensions();
     const [user, setUser] = React.useState(null);
     const [loading, setLoading] = React.useState(true);
@@ -38,13 +37,21 @@ const StoreScreen = () => {
         }
     };
 
-    useFocusEffect(
-        React.useCallback(() => {
-            const isMounted = { current: true };
-            fetchProfile(isMounted);
-            return () => { isMounted.current = false; };
-        }, [])
-    );
+    React.useEffect(() => {
+        const isMounted = { current: true };
+        fetchProfile(isMounted);
+
+        if (navigation && navigation.addListener) {
+            const unsubscribe = navigation.addListener('focus', () => {
+                const innerMounted = { current: true };
+                fetchProfile(innerMounted);
+            });
+            return () => {
+                isMounted.current = false;
+                unsubscribe();
+            };
+        }
+    }, [navigation]);
 
     const handleUpdateLocation = async () => {
         setLocationLoading(true);

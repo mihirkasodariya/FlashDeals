@@ -3,17 +3,15 @@ import React from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { enableScreens } from 'react-native-screens';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Home as HomeIcon, Heart, User, Store as StoreIcon } from 'lucide-react-native';
 import { colors } from './src/theme/colors';
 import { API_BASE_URL } from './src/config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform, View, Text } from 'react-native';
-
-// Essential for performance - call before any components are rendered
-enableScreens();
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 // Import Screens
 import LoginScreen from './src/screens/LoginScreen';
@@ -38,11 +36,10 @@ import SupportCenterScreen from './src/screens/SupportCenterScreen';
 import TicketDetailsScreen from './src/screens/TicketDetailsScreen';
 import NotificationScreen from './src/screens/NotificationScreen';
 
-const Stack = createStackNavigator();
+const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 function MainTabs() {
-  const insets = useSafeAreaInsets();
   const [role, setRole] = React.useState(null);
 
   React.useEffect(() => {
@@ -91,7 +88,7 @@ function MainTabs() {
           marginTop: 2,
           letterSpacing: 0.5,
         },
-        tabBarIcon: ({ color, size, focused }) => {
+        tabBarIcon: ({ color, focused }) => {
           let icon;
           const iconSize = 24;
           const strokeWidth = focused ? 2.5 : 2;
@@ -101,36 +98,21 @@ function MainTabs() {
           if (route.name === 'Store') icon = <StoreIcon size={iconSize} color={color} strokeWidth={strokeWidth} />;
           if (route.name === 'Profile') icon = <User size={iconSize} color={color} strokeWidth={strokeWidth} />;
 
-          return (
-            <View>
-              {icon}
-            </View>
-          );
+          return <View>{icon}</View>;
         },
       })}
     >
+      <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: 'Home' }} />
+      <Tab.Screen name="Wishlist" component={WishlistScreen} options={{ tabBarLabel: 'WishList' }} />
       <Tab.Screen
-        name="Home"
-        component={HomeScreen}
-        options={{ tabBarLabel: 'Home' }}
+        name="Store"
+        component={StoreScreen}
+        options={{
+          tabBarLabel: 'Store',
+          tabBarItemStyle: { display: role === 'vendor' ? 'flex' : 'none' }
+        }}
       />
-      <Tab.Screen
-        name="Wishlist"
-        component={WishlistScreen}
-        options={{ tabBarLabel: 'WishList' }}
-      />
-      {role === 'vendor' && (
-        <Tab.Screen
-          name="Store"
-          component={StoreScreen}
-          options={{ tabBarLabel: 'Store' }}
-        />
-      )}
-      <Tab.Screen
-        name="Profile"
-        component={ProfileScreen}
-        options={{ tabBarLabel: 'Account' }}
-      />
+      <Tab.Screen name="Profile" component={ProfileScreen} options={{ tabBarLabel: 'Account' }} />
     </Tab.Navigator>
   );
 }
@@ -141,7 +123,7 @@ function RootStack() {
       initialRouteName="Login"
       screenOptions={{
         headerShown: false,
-        cardStyle: { backgroundColor: '#FFFFFF' },
+        contentStyle: { backgroundColor: '#FFFFFF' },
       }}
     >
       <Stack.Screen name="Login" component={LoginScreen} />
@@ -169,11 +151,13 @@ function RootStack() {
 export default function App() {
   // Navigation Container Initialized Here
   return (
-    <SafeAreaProvider>
-      <NavigationContainer>
-        <StatusBar style="dark" />
-        <RootStack />
-      </NavigationContainer>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <NavigationContainer>
+          <StatusBar style="dark" />
+          <RootStack />
+        </NavigationContainer>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }

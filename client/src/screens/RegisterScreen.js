@@ -14,11 +14,10 @@ import { ChevronLeft, Camera, Check } from 'lucide-react-native';
 import FloatingInput from '../components/FloatingInput';
 import CustomButton from '../components/CustomButton';
 import * as ImagePicker from 'expo-image-picker';
-import { useNavigation } from '@react-navigation/native';
+import { } from '@react-navigation/native';
 import { API_BASE_URL } from '../config';
 
-const RegisterScreen = () => {
-    const navigation = useNavigation();
+const RegisterScreen = ({ navigation }) => {
     const [name, setName] = useState('');
     const [mobile, setMobile] = useState('');
     const [password, setPassword] = useState('');

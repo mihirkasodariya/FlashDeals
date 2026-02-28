@@ -24,16 +24,13 @@ import {
     Clock,
     ShieldCheck
 } from 'lucide-react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
 import { colors } from '../theme/colors';
 import { API_BASE_URL } from '../config';
 import CustomButton from '../components/CustomButton';
 
 const { width, height } = Dimensions.get('window');
 
-const TicketDetailsScreen = () => {
-    const navigation = useNavigation();
-    const route = useRoute();
+const TicketDetailsScreen = ({ navigation, route }) => {
     const { ticket } = route.params;
     const [infoVisible, setInfoVisible] = useState(false);
 

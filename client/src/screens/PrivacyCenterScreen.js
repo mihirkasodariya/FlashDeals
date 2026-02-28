@@ -22,14 +22,11 @@ import {
     CheckCircle2,
     Headphones
 } from 'lucide-react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
 import { colors } from '../theme/colors';
 
 const { width } = Dimensions.get('window');
 
-const PrivacyCenterScreen = () => {
-    const navigation = useNavigation();
-    const route = useRoute();
+const PrivacyCenterScreen = ({ navigation, route }) => {
     const scrollViewRef = React.useRef(null);
     const [expandedPolicy, setExpandedPolicy] = useState(null);
     const [itemPositions, setItemPositions] = useState({});

@@ -11,8 +11,7 @@ import { API_BASE_URL } from '../config';
 
 const CATEGORIES = ['Food', 'Grocery', 'Fashion', 'Electronics', 'Health', 'Other'];
 
-const AddOfferScreen = () => {
-    const navigation = useNavigation();
+const AddOfferScreen = ({ navigation }) => {
     const [loading, setLoading] = useState(false);
     const [image, setImage] = useState(null);
     const [title, setTitle] = useState('');

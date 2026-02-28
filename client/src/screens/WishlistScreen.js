@@ -1,6 +1,6 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, FlatList, Image, TouchableOpacity, useWindowDimensions, ActivityIndicator } from 'react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Heart, ShoppingBag, Sparkles } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -11,8 +11,7 @@ import CustomButton from '../components/CustomButton';
 import OfferCard from '../components/OfferCard';
 import { API_BASE_URL } from '../config';
 
-const WishlistScreen = () => {
-    const navigation = useNavigation();
+const WishlistScreen = ({ navigation }) => {
     const { width } = useWindowDimensions();
     const [favorites, setFavorites] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -37,11 +36,18 @@ const WishlistScreen = () => {
         }
     };
 
-    useFocusEffect(
-        useCallback(() => {
-            fetchWishlist();
-        }, [])
-    );
+    useEffect(() => {
+        // Initial fetch
+        fetchWishlist();
+
+        // Refetch when screen comes into focus
+        if (navigation && navigation.addListener) {
+            const unsubscribe = navigation.addListener('focus', () => {
+                fetchWishlist();
+            });
+            return unsubscribe;
+        }
+    }, [navigation]);
 
     return (
         <SafeAreaView className="flex-1 bg-[#FAFAFA]" edges={['top']}>

@@ -6,6 +6,7 @@ import { colors } from '../theme/colors';
 import { API_BASE_URL } from '../config';
 
 const OfferCard = ({ offer, onPress, grid, isFavorite = false, onRefresh }) => {
+    if (!offer) return null;
     const [localFavorite, setLocalFavorite] = React.useState(isFavorite);
 
     React.useEffect(() => {

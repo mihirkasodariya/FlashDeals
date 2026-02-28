@@ -14,12 +14,11 @@ import FloatingInput from '../components/FloatingInput';
 
 import CustomButton from '../components/CustomButton';
 import TabSwitcher from '../components/TabSwitcher';
-import { useNavigation } from '@react-navigation/native';
+import { } from '@react-navigation/native';
 import { Chrome as Google, Facebook } from 'lucide-react-native';
 import { API_BASE_URL } from '../config';
 
-const LoginScreen = () => {
-    const navigation = useNavigation();
+const LoginScreen = ({ navigation }) => {
     const [mobile, setMobile] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);

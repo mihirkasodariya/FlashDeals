@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, FlatList, Image, StatusBar, useWindowDimensions, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, FlatList, Image, useWindowDimensions, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Search, MapPin, SlidersHorizontal, Bell, ChevronDown, Flame, Filter, LayoutGrid, List } from 'lucide-react-native';
 import { colors } from '../theme/colors';
 import OfferCard from '../components/OfferCard';
@@ -18,8 +17,7 @@ const CATEGORIES = [
     { id: '6', name: 'Health', icon: '💊' },
 ];
 
-const HomeScreen = () => {
-    const navigation = useNavigation();
+const HomeScreen = ({ navigation }) => {
     const { width } = useWindowDimensions();
     const [selectedCategory, setSelectedCategory] = useState('1');
     const [location, setLocation] = useState('Ahmedabad, Gujarat');
@@ -34,6 +32,7 @@ const HomeScreen = () => {
 
     const fetchData = async () => {
         try {
+            console.log("Fetching Home Data...");
             const token = await AsyncStorage.getItem('userToken');
 
             const [offersRes, wishlistRes] = await Promise.all([
@@ -43,13 +42,13 @@ const HomeScreen = () => {
 
             const offersData = await offersRes.json();
             if (offersData.success) {
-                setOffers(offersData.offers);
+                setOffers(offersData.offers || []);
             }
 
             if (wishlistRes) {
                 const wishlistData = await wishlistRes.json();
                 if (wishlistData.success) {
-                    setWishlistIds(wishlistData.offerIds);
+                    setWishlistIds(wishlistData.offerIds || []);
                 }
             }
         } catch (error) {
@@ -60,30 +59,45 @@ const HomeScreen = () => {
         }
     };
 
-    useFocusEffect(
-        React.useCallback(() => {
-            fetchData();
-        }, [])
-    );
+    useEffect(() => {
+        // Initial fetch
+        fetchData();
+
+        // Refetch when screen comes into focus
+        if (navigation && navigation.addListener) {
+            const unsubscribe = navigation.addListener('focus', () => {
+                fetchData();
+            });
+            return unsubscribe;
+        }
+    }, [navigation]);
 
     const onRefresh = () => {
         setRefreshing(true);
         fetchData();
     };
 
-    const filteredOffers = offers.filter(offer => {
-        const matchesCategory = selectedCategory === '1' || offer.category === CATEGORIES.find(c => c.id === selectedCategory)?.name;
-        const matchesSearch = offer.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    const filteredOffers = (offers || []).filter(offer => {
+        if (!offer) return false;
+
+        // Safety guard for category matching
+        const categoryObj = CATEGORIES.find(c => c.id === selectedCategory);
+        const categoryName = categoryObj ? categoryObj.name : 'All';
+
+        const matchesCategory = selectedCategory === '1' ||
+            (offer.category && offer.category.toLowerCase() === categoryName.toLowerCase());
+
+        const matchesSearch = (offer.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
             (offer.vendorId?.storeName || '').toLowerCase().includes(searchQuery.toLowerCase());
+
         return matchesCategory && matchesSearch;
     });
 
-    const trendingOffers = filteredOffers.filter(o => o.isTrending || o.status === 'active').slice(0, 5);
+    const trendingOffers = filteredOffers.filter(o => o && (o.isTrending || o.status === 'active')).slice(0, 5);
     const isTablet = width > 768;
 
     return (
         <SafeAreaView className="flex-1 bg-[#FAFAFA]" edges={['top']}>
-            <StatusBar barStyle="dark-content" />
 
             {/* Header */}
             <View className="bg-white px-4 pb-4 pt-2 shadow-sm">
@@ -140,29 +154,37 @@ const HomeScreen = () => {
             >
                 {/* Categories */}
                 <View className="py-6 bg-white">
-                    <FlatList
+                    <ScrollView
                         horizontal
                         showsHorizontalScrollIndicator={false}
-                        data={CATEGORIES}
-                        keyExtractor={(item) => item.id}
                         contentContainerStyle={{ paddingHorizontal: 16 }}
-                        renderItem={({ item }) => (
+                    >
+                        {CATEGORIES.map((item) => (
                             <TouchableOpacity
+                                key={item.id}
                                 onPress={() => setSelectedCategory(item.id)}
-                                activeOpacity={0.8}
-                                className={`mr-4 px-6 py-3 rounded-2xl flex-row items-center ${selectedCategory === item.id
-                                    ? 'bg-primary shadow-lg shadow-primary/40'
-                                    : 'bg-[#F3F4F6]'
-                                    }`}
+                                style={{
+                                    marginRight: 16,
+                                    paddingHorizontal: 24,
+                                    paddingVertical: 12,
+                                    borderRadius: 16,
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    borderWidth: 1,
+                                    borderColor: selectedCategory === item.id ? colors.primary : '#E5E7EB',
+                                    backgroundColor: selectedCategory === item.id ? colors.primary : '#FFFFFF'
+                                }}
                             >
-                                <Text className="mr-2 text-lg">{item.icon}</Text>
-                                <Text className={`font-black text-sm ${selectedCategory === item.id ? 'text-white' : 'text-primary'
-                                    }`}>
+                                <Text style={{ fontSize: 18, marginRight: 8 }}>{item.icon}</Text>
+                                <Text style={{
+                                    fontWeight: 'bold',
+                                    color: selectedCategory === item.id ? '#FFFFFF' : colors.primary
+                                }}>
                                     {item.name}
                                 </Text>
                             </TouchableOpacity>
-                        )}
-                    />
+                        ))}
+                    </ScrollView>
                 </View>
 
                 {loading ? (
@@ -187,13 +209,13 @@ const HomeScreen = () => {
                                     horizontal
                                     showsHorizontalScrollIndicator={false}
                                     data={trendingOffers}
-                                    keyExtractor={(item) => item._id}
+                                    keyExtractor={(item, index) => item?._id || index.toString()}
                                     contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 16 }}
                                     renderItem={({ item }) => (
                                         <View style={{ width: width > 600 ? 350 : width * 0.85 }} className="mr-6">
                                             <OfferCard
                                                 offer={item}
-                                                isFavorite={wishlistIds.includes(item._id)}
+                                                isFavorite={wishlistIds.includes(item?._id)}
                                                 onPress={() => navigation.navigate('OfferDetails', { offer: item })}
                                             />
                                         </View>
@@ -229,9 +251,9 @@ const HomeScreen = () => {
                         </View>
 
                         <View className={`px-4 py-2 flex-row flex-wrap justify-between`}>
-                            {filteredOffers.map(offer => (
+                            {filteredOffers.map((offer, index) => (
                                 <View
-                                    key={offer._id}
+                                    key={offer?._id || `offer-${index}`}
                                     style={{
                                         width: isTablet || viewMode === 'grid' ? '48.5%' : '100%'
                                     }}
@@ -240,7 +262,7 @@ const HomeScreen = () => {
                                     <OfferCard
                                         offer={offer}
                                         grid={isTablet || viewMode === 'grid'}
-                                        isFavorite={wishlistIds.includes(offer._id)}
+                                        isFavorite={wishlistIds.includes(offer?._id)}
                                         onPress={() => navigation.navigate('OfferDetails', { offer })}
                                     />
                                 </View>

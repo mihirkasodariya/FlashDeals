@@ -11,10 +11,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Lock } from 'lucide-react-native';
 import FloatingInput from '../components/FloatingInput';
 import CustomButton from '../components/CustomButton';
-import { useNavigation } from '@react-navigation/native';
+import { } from '@react-navigation/native';
 
-const ForgotPasswordScreen = () => {
-    const navigation = useNavigation();
+const ForgotPasswordScreen = ({ navigation }) => {
     const [mobile, setMobile] = useState('');
     const [loading, setLoading] = useState(false);
 
