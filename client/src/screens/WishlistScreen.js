@@ -83,7 +83,7 @@ const WishlistScreen = ({ navigation }) => {
 
                     <Text className="text-3xl font-black text-primary mb-3 text-center tracking-tighter">Your Heart is Empty</Text>
                     <Text className="text-textSecondary text-center mb-12 font-medium leading-6 opacity-70">
-                        Don't let these exclusive deals slip away! Start tapping the heart to save your top picks.
+                        Don't let these exclusive offers slip away! Start tapping the heart to save your top picks.
                     </Text>
 
                     <CustomButton

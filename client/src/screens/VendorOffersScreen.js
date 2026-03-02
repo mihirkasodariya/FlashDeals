@@ -71,7 +71,7 @@ const VendorOffersScreen = ({ navigation }) => {
                 <TouchableOpacity onPress={() => navigation.goBack()} className="w-10 h-10 items-center justify-center bg-white rounded-xl shadow-sm border border-surface">
                     <ChevronLeft size={24} color={colors.primary} />
                 </TouchableOpacity>
-                <Text className="ml-4 text-2xl font-black text-primary">My Flash Deals</Text>
+                <Text className="ml-4 text-2xl font-black text-primary">My Flash Offers</Text>
             </View>
 
             {loading ? (
@@ -89,13 +89,13 @@ const VendorOffersScreen = ({ navigation }) => {
                             <View className="w-20 h-20 bg-surface rounded-full items-center justify-center mb-4">
                                 <LucidePackage size={40} color={colors.border} strokeWidth={1.5} />
                             </View>
-                            <Text className="text-xl font-black text-primary">No Active Deals</Text>
-                            <Text className="text-textSecondary text-center mt-2">You haven't launched any flash deals yet.</Text>
+                            <Text className="text-xl font-black text-primary">No Active Offers</Text>
+                            <Text className="text-textSecondary text-center mt-2">You haven't launched any flash offers yet.</Text>
                             <TouchableOpacity
                                 onPress={() => navigation.navigate('AddOffer')}
                                 className="mt-8 bg-primary px-8 py-4 rounded-2xl"
                             >
-                                <Text className="text-white font-black text-xs tracking-widest">Create First Deal</Text>
+                                <Text className="text-white font-black text-xs tracking-widest">Create First Offer</Text>
                             </TouchableOpacity>
                         </View>
                     }

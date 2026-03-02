@@ -133,7 +133,7 @@ const HomeScreen = ({ navigation }) => {
                         <Search size={22} color={colors.textSecondary} strokeWidth={2.5} />
                         <TextInput
                             className="flex-1 ml-3 text-primary font-bold text-sm"
-                            placeholder="Discover deals, stores..."
+                            placeholder="Discover offers, stores..."
                             placeholderTextColor="#9CA3AF"
                             value={searchQuery}
                             onChangeText={setSearchQuery}
@@ -202,7 +202,7 @@ const HomeScreen = ({ navigation }) => {
                                             <View className="w-2 h-2 bg-error rounded-full mr-2" />
                                             <Text className="text-[10px] font-black text-error tracking-[3px]">On Fire Now</Text>
                                         </View>
-                                        <Text className="text-3xl font-black text-primary tracking-tighter">Hot Deals</Text>
+                                        <Text className="text-3xl font-black text-primary tracking-tighter">Hot Offers</Text>
                                     </View>
                                 </View>
                                 <FlatList
@@ -274,7 +274,7 @@ const HomeScreen = ({ navigation }) => {
                                     </View>
                                     <Text className="text-primary text-2xl font-black text-center">No Treasures Found</Text>
                                     <Text className="text-textSecondary text-center px-10 mt-2 font-medium">
-                                        We couldn't find any deals matching your current filters.
+                                        We couldn't find any offers matching your current filters.
                                     </Text>
                                 </View>
                             )}

@@ -150,7 +150,7 @@ const AddOfferScreen = ({ navigation }) => {
                 <TouchableOpacity onPress={() => navigation.goBack()} className="w-10 h-10 items-center justify-center bg-surface rounded-xl">
                     <ChevronLeft size={24} color={colors.primary} />
                 </TouchableOpacity>
-                <Text className="ml-4 text-xl font-black text-primary">Add New Flash Deal</Text>
+                <Text className="ml-4 text-xl font-black text-primary">Add New Flash Offer</Text>
             </View>
 
             <ScrollView className="flex-1 px-6 pt-6" showsVerticalScrollIndicator={false}>
@@ -192,7 +192,7 @@ const AddOfferScreen = ({ navigation }) => {
                             <FileText size={18} color={colors.primary} className="mr-3 mt-1" />
                             <TextInput
                                 className="flex-1 font-bold text-primary"
-                                placeholder="Tell users about the deal, terms, etc."
+                                placeholder="Tell users about the offer, terms, etc."
                                 multiline
                                 numberOfLines={4}
                                 value={description}
@@ -258,7 +258,7 @@ const AddOfferScreen = ({ navigation }) => {
                     {loading ? (
                         <ActivityIndicator color="white" />
                     ) : (
-                        <Text className="text-white font-black text-sm tracking-widest">Publish Flash Deal</Text>
+                        <Text className="text-white font-black text-sm tracking-widest">Publish Flash Offer</Text>
                     )}
                 </TouchableOpacity>
             </View>
