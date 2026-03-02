@@ -3,7 +3,6 @@ import React from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Home as HomeIcon, Heart, User, Store as StoreIcon } from 'lucide-react-native';
@@ -36,7 +35,7 @@ import SupportCenterScreen from './src/screens/SupportCenterScreen';
 import TicketDetailsScreen from './src/screens/TicketDetailsScreen';
 import NotificationScreen from './src/screens/NotificationScreen';
 
-const Stack = createNativeStackNavigator();
+const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
 function MainTabs({ navigation }) {
@@ -132,7 +131,7 @@ function RootStack() {
       initialRouteName="Login"
       screenOptions={{
         headerShown: false,
-        contentStyle: { backgroundColor: '#FFFFFF' },
+        cardStyle: { backgroundColor: '#FFFFFF' },
       }}
     >
       <Stack.Screen name="Login" component={LoginScreen} />
@@ -158,7 +157,6 @@ function RootStack() {
 }
 
 export default function App() {
-  // Navigation Container Initialized Here
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>

@@ -16,7 +16,7 @@ import {
 import * as Location from 'expo-location';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { usePreventRemove } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ChevronLeft, Upload, CheckCircle2, AlertCircle, RefreshCw, Shield, Camera } from 'lucide-react-native';
 import { colors } from '../theme/colors';
 
@@ -28,8 +28,10 @@ import ProgressSteps from '../components/ProgressSteps';
 import * as ImagePicker from 'expo-image-picker';
 import { API_BASE_URL } from '../config';
 
+
 const VendorRegisterScreen = ({ navigation, route }) => {
     const [step, setStep] = useState(0); // 0 or 1
+    const [activeIdType, setActiveIdType] = useState('GSTIN');
     const [formData, setFormData] = useState({
         name: '',
         mobile: '',
@@ -38,7 +40,6 @@ const VendorRegisterScreen = ({ navigation, route }) => {
         location: null,
         password: '',
         confirmPassword: '',
-        idType: 'GSTIN',
         idNumber: '',
     });
 
@@ -49,7 +50,7 @@ const VendorRegisterScreen = ({ navigation, route }) => {
         if (route.params?.formData) {
             setFormData(prev => ({ ...prev, ...route.params.formData }));
         }
-    }, [route.params]);
+    }, [route.params?.step, route.params?.formData]);
 
     const [docImage, setDocImage] = useState(null);
     const [profileImage, setProfileImage] = useState(null);
@@ -58,31 +59,23 @@ const VendorRegisterScreen = ({ navigation, route }) => {
     const [loading, setLoading] = useState(false);
     const [registrationFinished, setRegistrationFinished] = useState(false);
     const [isExitModalVisible, setIsExitModalVisible] = useState(false);
-    const [blockedAction, setBlockedAction] = useState(null);
-
-    usePreventRemove(
-        (step === 1 && !registrationFinished),
-        (e) => {
-            setBlockedAction(e.data.action);
+    const handleBack = () => {
+        if (step === 1 && !registrationFinished) {
             setIsExitModalVisible(true);
+            return true;
         }
-    );
+        if (step === 0) {
+            navigation.goBack();
+        } else {
+            setStep(0);
+        }
+        return true;
+    };
 
     React.useEffect(() => {
-        const backAction = () => {
-            if (step === 1 && !registrationFinished) {
-                setIsExitModalVisible(true);
-                return true;
-            }
-            return false;
-        };
-
-        const backHandler = BackHandler.addEventListener("hardwareBackPress", backAction);
-
-        return () => {
-            backHandler.remove();
-        };
-    }, [navigation, step, registrationFinished]);
+        const backHandler = BackHandler.addEventListener("hardwareBackPress", handleBack);
+        return () => backHandler.remove();
+    }, [step, registrationFinished]);
 
     const pickProfileImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
@@ -219,7 +212,7 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                 formDataToSend.append('userId', userId);
                 formDataToSend.append('storeName', formData.storeName);
                 formDataToSend.append('storeAddress', formData.storeAddress);
-                formDataToSend.append('idType', formData.idType);
+                formDataToSend.append('idType', activeIdType);
 
                 if (formData.location) {
                     formDataToSend.append('location', JSON.stringify(formData.location));
@@ -261,11 +254,11 @@ const VendorRegisterScreen = ({ navigation, route }) => {
     };
 
     return (
-        <SafeAreaView className="flex-1 bg-[#FAFAFA]">
+        <SafeAreaView className="flex-1 bg-[#FAFAFA]" edges={['top']}>
             {/* Minimalist Premium Header */}
             <View className="bg-white px-6 pb-6 pt-2 flex-row items-center border-b border-surface">
                 <TouchableOpacity
-                    onPress={() => step === 0 ? navigation.goBack() : setStep(0)}
+                    onPress={handleBack}
                     className="w-10 h-10 bg-surface rounded-full items-center justify-center"
                 >
                     <ChevronLeft size={24} color={colors.primary} strokeWidth={3} />
@@ -356,10 +349,22 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                                     {['GSTIN', 'Aadhaar'].map((type) => (
                                         <TouchableOpacity
                                             key={type}
-                                            className={`flex-1 py-3.5 items-center rounded-xl ${formData.idType === type ? 'bg-white shadow-xl' : ''}`}
-                                            onPress={() => setFormData({ ...formData, idType: type })}
+                                            activeOpacity={0.9}
+                                            style={{
+                                                flex: 1,
+                                                paddingVertical: 14,
+                                                alignItems: 'center',
+                                                borderRadius: 12,
+                                                backgroundColor: activeIdType === type ? '#FFFFFF' : 'transparent',
+                                                shadowColor: activeIdType === type ? '#000' : 'transparent',
+                                                shadowOffset: { width: 0, height: 2 },
+                                                shadowOpacity: 0.1,
+                                                shadowRadius: 4,
+                                                elevation: activeIdType === type ? 3 : 0
+                                            }}
+                                            onPress={() => setActiveIdType(type)}
                                         >
-                                            <Text className={`text-[10px] font-black tracking-widest ${formData.idType === type ? 'text-primary' : 'text-gray-400'}`}>{type}</Text>
+                                            <Text className={`text-[10px] font-black tracking-widest ${activeIdType === type ? 'text-primary' : 'text-gray-400'}`}>{type}</Text>
                                         </TouchableOpacity>
                                     ))}
                                 </View>
@@ -377,9 +382,9 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                                     <View className="mt-6">
                                         <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-3 ml-1 opacity-50">Tax Identity (Optional)</Text>
                                         <FloatingInput
-                                            label={`${formData.idType} Reference`}
+                                            label={`${activeIdType} Reference`}
                                             value={formData.idNumber}
-                                            onChangeText={(val) => setFormData({ ...formData, idNumber: val })}
+                                            onChangeText={(val) => setFormData(prev => ({ ...prev, idNumber: val }))}
                                         />
                                     </View>
 
@@ -493,11 +498,7 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                             <TouchableOpacity
                                 onPress={() => {
                                     setIsExitModalVisible(false);
-                                    if (blockedAction) {
-                                        navigation.dispatch(blockedAction);
-                                    } else {
-                                        navigation.goBack();
-                                    }
+                                    navigation.goBack();
                                 }}
                                 className="w-full py-5 items-center mt-2"
                             >
