@@ -43,6 +43,16 @@ const OfferDetailsScreen = ({ route, navigation }) => {
             }
         };
         checkWishlistStatus();
+
+        // Increment visit count
+        const recordVisit = async () => {
+            try {
+                await fetch(`${API_BASE_URL}/offers/visit/${offer._id}`, { method: 'POST' });
+            } catch (error) {
+                console.error('Error recording visit:', error);
+            }
+        };
+        recordVisit();
     }, [offer._id]);
 
     const handleToggleWishlist = async () => {

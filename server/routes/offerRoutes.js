@@ -7,5 +7,6 @@ const { uploadOffer } = require('../middleware/uploadMiddleware');
 router.get('/', offerController.getOffers);
 router.get('/vendor/:vendorId', offerController.getVendorOffers);
 router.post('/add', authenticateToken, uploadOffer.single('image'), offerController.addOffer);
+router.post('/visit/:offerId', offerController.incrementOfferVisits);
 
 module.exports = router;

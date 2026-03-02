@@ -77,23 +77,33 @@ const HomeScreen = ({ navigation }) => {
         fetchData();
     };
 
-    const filteredOffers = (offers || []).filter(offer => {
+    const now = new Date();
+    const allOffers = (offers || []).filter(offer => {
         if (!offer) return false;
-
-        // Safety guard for category matching
-        const categoryObj = CATEGORIES.find(c => c.id === selectedCategory);
-        const categoryName = categoryObj ? categoryObj.name : 'All';
-
         const matchesCategory = selectedCategory === '1' ||
-            (offer.category && offer.category.toLowerCase() === categoryName.toLowerCase());
-
+            (offer.category && offer.category.toLowerCase() === CATEGORIES.find(c => c.id === selectedCategory)?.name.toLowerCase());
         const matchesSearch = (offer.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
             (offer.vendorId?.storeName || '').toLowerCase().includes(searchQuery.toLowerCase());
-
         return matchesCategory && matchesSearch;
     });
 
-    const trendingOffers = filteredOffers.filter(o => o && (o.isTrending || o.status === 'active')).slice(0, 5);
+    // Currently Live Offers
+    const activeOffers = allOffers.filter(offer => {
+        const start = new Date(offer.startDate);
+        const end = new Date(offer.endDate);
+        return now >= start && now <= end;
+    });
+
+    // Top 4 Hot Offers based on visits (must be active)
+    const hotOffers = [...activeOffers]
+        .sort((a, b) => (b.visits || 0) - (a.visits || 0))
+        .slice(0, 4);
+
+    // Upcoming Offers (not yet started)
+    const upcomingOffers = allOffers.filter(offer => {
+        const start = new Date(offer.startDate);
+        return start > now;
+    });
     const isTablet = width > 768;
 
     return (
@@ -193,14 +203,14 @@ const HomeScreen = ({ navigation }) => {
                     </View>
                 ) : (
                     <>
-                        {/* Trending Section */}
-                        {trendingOffers.length > 0 && searchQuery === '' && (
+                        {/* Hot Offers Section */}
+                        {hotOffers.length > 0 && searchQuery === '' && (
                             <View className="mt-8">
                                 <View className="px-6 flex-row items-end justify-between mb-6">
                                     <View>
                                         <View className="flex-row items-center mb-1">
                                             <View className="w-2 h-2 bg-error rounded-full mr-2" />
-                                            <Text className="text-[10px] font-black text-error tracking-[3px]">On Fire Now</Text>
+                                            <Text className="text-[10px] font-black text-error tracking-[3px]">Most Visited</Text>
                                         </View>
                                         <Text className="text-3xl font-black text-primary tracking-tighter">Hot Offers</Text>
                                     </View>
@@ -208,7 +218,38 @@ const HomeScreen = ({ navigation }) => {
                                 <FlatList
                                     horizontal
                                     showsHorizontalScrollIndicator={false}
-                                    data={trendingOffers}
+                                    data={hotOffers}
+                                    keyExtractor={(item, index) => item?._id || index.toString()}
+                                    contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 16 }}
+                                    renderItem={({ item }) => (
+                                        <View style={{ width: width > 600 ? 350 : width * 0.85 }} className="mr-6">
+                                            <OfferCard
+                                                offer={item}
+                                                isFavorite={wishlistIds.includes(item?._id)}
+                                                onPress={() => navigation.navigate('OfferDetails', { offer: item })}
+                                            />
+                                        </View>
+                                    )}
+                                />
+                            </View>
+                        )}
+
+                        {/* Upcoming Offers Section */}
+                        {upcomingOffers.length > 0 && searchQuery === '' && (
+                            <View className="mt-8">
+                                <View className="px-6 flex-row items-end justify-between mb-6">
+                                    <View>
+                                        <View className="flex-row items-center mb-1">
+                                            <View className="w-2.5 h-2.5 bg-warning rounded-full mr-2" />
+                                            <Text className="text-[10px] font-black text-warning tracking-[3px]">Coming Soon</Text>
+                                        </View>
+                                        <Text className="text-3xl font-black text-primary tracking-tighter">Upcoming Offers</Text>
+                                    </View>
+                                </View>
+                                <FlatList
+                                    horizontal
+                                    showsHorizontalScrollIndicator={false}
+                                    data={upcomingOffers}
                                     keyExtractor={(item, index) => item?._id || index.toString()}
                                     contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 16 }}
                                     renderItem={({ item }) => (
@@ -251,7 +292,7 @@ const HomeScreen = ({ navigation }) => {
                         </View>
 
                         <View className={`px-4 py-2 flex-row flex-wrap justify-between`}>
-                            {filteredOffers.map((offer, index) => (
+                            {activeOffers.map((offer, index) => (
                                 <View
                                     key={offer?._id || `offer-${index}`}
                                     style={{
@@ -267,7 +308,7 @@ const HomeScreen = ({ navigation }) => {
                                     />
                                 </View>
                             ))}
-                            {filteredOffers.length === 0 && (
+                            {activeOffers.length === 0 && (
                                 <View className="py-24 items-center w-full">
                                     <View className="w-40 h-40 bg-surface rounded-full items-center justify-center mb-6">
                                         <Search size={64} color={colors.border} />

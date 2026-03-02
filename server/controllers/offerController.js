@@ -56,8 +56,19 @@ const getVendorOffers = async (req, res) => {
     }
 };
 
+const incrementOfferVisits = async (req, res) => {
+    try {
+        const { offerId } = req.params;
+        await Offer.findByIdAndUpdate(offerId, { $inc: { visits: 1 } });
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 module.exports = {
     addOffer,
     getOffers,
-    getVendorOffers
+    getVendorOffers,
+    incrementOfferVisits
 };
