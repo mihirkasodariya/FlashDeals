@@ -268,6 +268,7 @@ const ProfileScreen = ({ navigation }) => {
         { icon: Bell, label: 'Notifications', color: colors.warning, onPress: () => navigation.navigate('Notifications') },
         { icon: Shield, label: 'Privacy Center', color: colors.primary, onPress: () => navigation.navigate('PrivacyCenter') },
         { icon: Headphones, label: 'Support Center', color: colors.secondary, onPress: () => navigation.navigate('SupportCenter') },
+        { icon: Settings, label: 'App Settings', color: colors.primary, onPress: () => navigation.navigate('AppSettings') },
     ];
 
     if (loading) {
@@ -325,7 +326,7 @@ const ProfileScreen = ({ navigation }) => {
 
                 {/* Settings Menu Sections */}
                 <View className="px-6 py-6">
-                    <Text className="text-[10px] font-black text-textSecondary tracking-[4px] mb-6 opacity-40">System Dashboard</Text>
+                    <Text className="text-[10px] font-black text-textSecondary tracking-[4px] mb-6 opacity-40">Account Settings</Text>
 
                     <View className="bg-white rounded-[32px] p-4 shadow-sm border border-surface">
                         {menuItems.map((item, index) => (

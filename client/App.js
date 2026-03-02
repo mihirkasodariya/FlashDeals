@@ -34,6 +34,7 @@ import PrivacyCenterScreen from './src/screens/PrivacyCenterScreen';
 import SupportCenterScreen from './src/screens/SupportCenterScreen';
 import TicketDetailsScreen from './src/screens/TicketDetailsScreen';
 import NotificationScreen from './src/screens/NotificationScreen';
+import AppSettingsScreen from './src/screens/AppSettingsScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -152,6 +153,7 @@ function RootStack() {
       <Stack.Screen name="SupportCenter" component={SupportCenterScreen} />
       <Stack.Screen name="TicketDetails" component={TicketDetailsScreen} />
       <Stack.Screen name="Notifications" component={NotificationScreen} />
+      <Stack.Screen name="AppSettings" component={AppSettingsScreen} />
     </Stack.Navigator>
   );
 }
