@@ -74,6 +74,14 @@ const OfferCard = ({ offer, onPress, grid, isFavorite = false, onRefresh }) => {
         return `${totalHours}h`;
     };
 
+    // Format Date helper
+    const formatDate = (dateStr) => {
+        if (!dateStr) return 'TBA';
+        const date = new Date(dateStr);
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return `${date.getDate().toString().padStart(2, '0')} ${months[date.getMonth()]}`;
+    };
+
     return (
         <TouchableOpacity
             onPress={onPress}
@@ -132,7 +140,7 @@ const OfferCard = ({ offer, onPress, grid, isFavorite = false, onRefresh }) => {
                     <View className={`flex-row items-center bg-primary/5 ${grid ? 'px-1.5 py-1' : 'px-3 py-2'} rounded-lg border border-primary/5`}>
                         <Clock size={grid ? 8 : 10} color={colors.primary} strokeWidth={3} />
                         <Text className={`text-primary font-black ${grid ? 'text-[7px]' : 'text-[10px]'} ml-1`}>
-                            {calculateExpiry()} left
+                            {formatDate(offer.startDate)} - {formatDate(offer.endDate)}
                         </Text>
                     </View>
                 </View>

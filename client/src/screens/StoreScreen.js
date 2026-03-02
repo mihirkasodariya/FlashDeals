@@ -208,7 +208,7 @@ const StoreScreen = ({ navigation }) => {
                             <View className="w-14 h-14 bg-secondary/10 rounded-2xl items-center justify-center mb-4">
                                 <LayoutGrid size={28} color={colors.secondary} strokeWidth={2} />
                             </View>
-                            <Text className="text-primary font-black text-center text-sm leading-5">Manage Your{"\n"}Deals</Text>
+                            <Text className="text-primary font-black text-center text-sm leading-5">Manage Your{"\n"}Offers</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
