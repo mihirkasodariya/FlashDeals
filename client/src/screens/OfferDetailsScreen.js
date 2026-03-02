@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Image, TouchableOpacity, Share, useWindowDimensions, Alert, ActivityIndicator, StatusBar, Platform, Linking } from 'react-native';
+import { View, Text, ScrollView, Image, TouchableOpacity, Share, useWindowDimensions, Alert, ActivityIndicator, StatusBar, Platform, Linking, Modal } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ChevronLeft, Share2, Heart, MapPin, Clock, Store, Info, Phone, Map, Sparkles, ChevronRight } from 'lucide-react-native';
+import { ChevronLeft, Share2, Heart, MapPin, Clock, Store, Info, Phone, Map, Sparkles, ChevronRight, X } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -23,6 +23,7 @@ const OfferDetailsScreen = ({ route, navigation }) => {
     const { width, height } = useWindowDimensions();
     const [isFavorite, setIsFavorite] = useState(false);
     const [isRedeeming, setIsRedeeming] = useState(false);
+    const [isImageModalVisible, setIsImageModalVisible] = useState(false);
 
     // Initial check for wishlist status
     React.useEffect(() => {
@@ -92,13 +93,12 @@ const OfferDetailsScreen = ({ route, navigation }) => {
         ? { uri: (offer.vendorId.storeImage.startsWith('http') ? offer.vendorId.storeImage : `${STATIC_BASE_URL}${offer.vendorId.storeImage}`) }
         : defaultLogo;
 
-    const calculateExpiry = () => {
-        if (!offer.endDate) return '24';
-        const end = new Date(offer.endDate);
-        const now = new Date();
-        const diff = end - now;
-        const hours = Math.floor(diff / (1000 * 60 * 60));
-        return hours > 0 ? hours : '0';
+    // Format Date helper
+    const formatDate = (dateStr) => {
+        if (!dateStr) return 'TBA';
+        const date = new Date(dateStr);
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return `${date.getDate().toString().padStart(2, '0')} ${months[date.getMonth()]}`;
     };
 
     const handleShare = async () => {
@@ -185,7 +185,11 @@ const OfferDetailsScreen = ({ route, navigation }) => {
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} className="flex-1" bounces={false}>
-                <View className="relative">
+                <TouchableOpacity
+                    activeOpacity={0.9}
+                    onPress={() => setIsImageModalVisible(true)}
+                    className="relative"
+                >
                     <Image
                         source={{ uri: imageUrl }}
                         style={{ width: '100%', height: imageHeight }}
@@ -198,15 +202,15 @@ const OfferDetailsScreen = ({ route, navigation }) => {
 
                     <View className="absolute bottom-10 left-6 right-6 flex-row justify-end items-end">
                         <View className="bg-white/90 px-4 py-2 rounded-2xl shadow-lg border border-white/20">
-                            <Text className="text-error font-black text-xs tracking-widest">Expires In {calculateExpiry()}h</Text>
+                            <Text className="text-secondary font-black text-xs tracking-widest">Valid: {formatDate(offer.startDate)} - {formatDate(offer.endDate)}</Text>
                         </View>
                     </View>
-                </View>
+                </TouchableOpacity>
 
                 <View className="px-6 py-8">
                     <View className="mb-8">
-                        <Text className="text-[10px] font-black text-secondary tracking-[4px] mb-2">
-                            {offer.category ? offer.category.charAt(0).toUpperCase() + offer.category.slice(1).toLowerCase() : ''}
+                        <Text className="text-[10px] font-black text-secondary tracking-[2px] mb-2">
+                            {offer.category || 'Offer'}
                         </Text>
                         <Text className="text-4xl font-black text-primary tracking-tighter leading-[44px]">
                             {offer.title}
@@ -250,7 +254,7 @@ const OfferDetailsScreen = ({ route, navigation }) => {
                     <View className="mb-10">
                         <View className="flex-row items-center mb-4">
                             <View className="w-1.5 h-6 bg-secondary rounded-full mr-3" />
-                            <Text className="text-xl font-black text-primary tracking-tight">Deals Details</Text>
+                            <Text className="text-xl font-black text-primary tracking-tight">Offer Details</Text>
                         </View>
                         <Text className="text-textSecondary text-base leading-7 font-medium">
                             {offer.description}
@@ -267,22 +271,7 @@ const OfferDetailsScreen = ({ route, navigation }) => {
                                 <Clock size={12} color={colors.primary} strokeWidth={3} />
                             </View>
                             <Text className="text-primary font-bold text-sm flex-1 leading-6">
-                                {(() => {
-                                    if (!offer.endDate) return 'This offer is live for the rest of the week.';
-                                    const end = new Date(offer.endDate);
-                                    const now = new Date();
-                                    const diff = end - now;
-                                    const totalHours = Math.floor(diff / (1000 * 60 * 60));
-
-                                    if (totalHours <= 0) return 'This offer is expiring very soon!';
-
-                                    if (totalHours > 24) {
-                                        const days = Math.floor(totalHours / 24);
-                                        return `This offer is live for ${days} more ${days === 1 ? 'Day' : 'Days'}.`;
-                                    }
-
-                                    return `This offer is live for ${totalHours} more ${totalHours === 1 ? 'hour' : 'hours'}.`;
-                                })()}
+                                This offer is valid from {formatDate(offer.startDate)} to {formatDate(offer.endDate)}.
                             </Text>
                         </View>
                     </View>
@@ -290,6 +279,55 @@ const OfferDetailsScreen = ({ route, navigation }) => {
 
                 <View className="h-20" />
             </ScrollView>
+
+            {/* Premium Full Screen Image Viewer */}
+            <Modal
+                visible={isImageModalVisible}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setIsImageModalVisible(false)}
+            >
+                <View style={{ flex: 1, backgroundColor: 'black' }}>
+                    <StatusBar barStyle="light-content" backgroundColor="black" />
+
+                    {/* Close Button UI */}
+                    <View
+                        style={{ top: insets.top + (Platform.OS === 'ios' ? 0 : 20) }}
+                        className="absolute right-6 z-50"
+                    >
+                        <TouchableOpacity
+                            onPress={() => setIsImageModalVisible(false)}
+                            className="w-12 h-12 bg-white/10 rounded-2xl items-center justify-center border border-white/20"
+                        >
+                            <X size={24} color="white" strokeWidth={3} />
+                        </TouchableOpacity>
+                    </View>
+
+                    <ScrollView
+                        horizontal={false}
+                        contentContainerStyle={{ flex: 1, justifyContent: 'center' }}
+                        maximumZoomScale={5}
+                        minimumZoomScale={1}
+                        showsHorizontalScrollIndicator={false}
+                        showsVerticalScrollIndicator={false}
+                        centerContent={true}
+                    >
+                        <Image
+                            source={{ uri: imageUrl }}
+                            style={{ width: width, height: height * 0.8 }}
+                            resizeMode="contain"
+                        />
+                    </ScrollView>
+
+                    {/* Footer Info in Modal */}
+                    <View
+                        style={{ bottom: insets.bottom + 20 }}
+                        className="absolute left-0 right-0 items-center"
+                    >
+                        <Text className="text-white/40 text-[10px] font-black tracking-[2px]">Pinch to Zoom · Swipe to Explore</Text>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 };

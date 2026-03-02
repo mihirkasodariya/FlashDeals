@@ -139,13 +139,6 @@ const PublicStoreProfileScreen = ({ route, navigation }) => {
 
                 <View className="px-6 -mt-8">
                     <View className="bg-white rounded-[40px] p-8 shadow-sm border border-surface">
-                        <View className="mb-8">
-                            <View className="flex-row items-center mb-1">
-                                <User size={14} color={colors.textSecondary} />
-                                <Text className="text-[10px] font-black text-textSecondary tracking-widest ml-2">Store Owner</Text>
-                            </View>
-                            <Text className="text-xl font-black text-primary">{vendor.name}</Text>
-                        </View>
 
                         <View className="mb-8">
                             <View className="flex-row items-center mb-2">
