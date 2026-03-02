@@ -252,6 +252,69 @@ const switchToUser = async (req, res) => {
     }
 };
 
+const sendOTP = async (req, res) => {
+    try {
+        const { mobile } = req.body;
+        const user = await User.findOne({ mobile });
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+        // Simulation: No actual SMS sent, just returning success for demo
+        res.json({ success: true, message: 'OTP sent successfully', mobile });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+const loginWithOTP = async (req, res) => {
+    try {
+        const { mobile, otp, deviceInfo, os } = req.body;
+
+        // Demo OTP check
+        if (otp !== '123456') {
+            return res.status(400).json({ success: false, message: 'Invalid OTP' });
+        }
+
+        const user = await User.findOne({ mobile });
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        const deviceId = new mongoose.Types.ObjectId();
+        const token = jwt.sign(
+            { userId: user._id, role: user.role, isVerified: user.isVerified, deviceId: deviceId },
+            JWT_SECRET,
+            { expiresIn: '30d' }
+        );
+
+        user.loginDevices.push({
+            _id: deviceId,
+            deviceInfo: deviceInfo || 'Unknown Device',
+            os: os || 'Unknown OS',
+            lastLogin: new Date(),
+            isActive: true
+        });
+
+        if (user.loginDevices.length > 10) user.loginDevices.shift();
+        await user.save();
+
+        res.json({
+            success: true,
+            token,
+            user: {
+                id: user._id,
+                name: user.name,
+                mobile: user.mobile,
+                role: user.role,
+                isVerified: user.isVerified,
+                profileImage: user.profileImage
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 module.exports = {
     login,
     register,
@@ -262,5 +325,7 @@ module.exports = {
     getLoginHistory,
     logoutDevice,
     switchToVendor,
-    switchToUser
+    switchToUser,
+    sendOTP,
+    loginWithOTP
 };

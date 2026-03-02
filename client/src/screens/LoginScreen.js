@@ -19,9 +19,23 @@ import { Chrome as Google, Facebook } from 'lucide-react-native';
 import { API_BASE_URL } from '../config';
 
 const LoginScreen = ({ navigation }) => {
+    const [loginMode, setLoginMode] = useState('password'); // 'password' or 'otp'
     const [mobile, setMobile] = useState('');
     const [password, setPassword] = useState('');
+    const [otp, setOtp] = useState('');
     const [loading, setLoading] = useState(false);
+    const [otpSent, setOtpSent] = useState(false);
+    const [timer, setTimer] = useState(0);
+
+    React.useEffect(() => {
+        let interval = null;
+        if (timer > 0) {
+            interval = setInterval(() => setTimer(t => t - 1), 1000);
+        } else {
+            clearInterval(interval);
+        }
+        return () => clearInterval(interval);
+    }, [timer]);
 
     React.useEffect(() => {
         const checkToken = async () => {
@@ -33,54 +47,91 @@ const LoginScreen = ({ navigation }) => {
         checkToken();
     }, []);
 
+    const handleSendOTP = async () => {
+        if (!mobile || mobile.length < 10) {
+            alert("Enter valid mobile number first");
+            return;
+        }
+        setLoading(true);
+        try {
+            const response = await fetch(`${API_BASE_URL}/auth/send-otp`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mobile })
+            });
+            const data = await response.json();
+            setLoading(false);
+            if (data.success) {
+                setOtpSent(true);
+                setTimer(30);
+                alert("Demo OTP: 123456 sent!");
+            } else {
+                alert(data.message || "Failed to send OTP");
+            }
+        } catch (error) {
+            setLoading(false);
+            alert("Network error");
+        }
+    };
+
     const handleLogin = async () => {
         if (!mobile || mobile.length < 10) {
             alert("Please enter a valid 10-digit mobile number");
             return;
         }
-        if (!password) {
+
+        if (loginMode === 'password' && !password) {
             alert("Please enter your password");
             return;
         }
 
+        if (loginMode === 'otp' && (!otp || otp.length < 6)) {
+            alert("Please enter 6-digit OTP");
+            return;
+        }
+
         setLoading(true);
-        console.log("Attempting login at:", `${API_BASE_URL}/auth/login`);
         try {
-            const response = await fetch(`${API_BASE_URL}/auth/login`, {
+            const endpoint = loginMode === 'password' ? 'login' : 'login-with-otp';
+            const body = loginMode === 'password'
+                ? { mobile, password }
+                : { mobile, otp };
+
+            const response = await fetch(`${API_BASE_URL}/auth/${endpoint}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    mobile,
-                    password,
+                    ...body,
                     deviceInfo: Device.modelName || (Platform.OS === 'ios' ? 'iPhone' : 'Android Device'),
                     os: `${Platform.OS} ${Platform.Version}`
                 })
             });
 
-            console.log("Response status:", response.status);
             const data = await response.json();
-
             setLoading(false);
 
             if (data.success) {
-                // Save JWT Token in local storage
                 await AsyncStorage.setItem('userToken', data.token);
-
                 if (data.user.role === 'vendor' && !data.user.isVerified) {
                     navigation.navigate('ActivationStatus');
                 } else {
                     navigation.navigate('Main');
                 }
             } else {
-
                 alert(data.message || "Login failed");
             }
         } catch (error) {
             setLoading(false);
-            console.error("Login connection error:", error);
-            alert("Server connection failed: " + error.message);
+            alert("Server connection failed");
         }
+    };
 
+    const handleAction = () => {
+        if (loginMode === 'otp' && !otpSent) {
+            handleSendOTP();
+        } else {
+            handleLogin();
+        }
     };
 
     return (
@@ -103,31 +154,95 @@ const LoginScreen = ({ navigation }) => {
                         <Text className="text-sm text-gray-500 text-center">Login to access the best deals nearby.</Text>
                     </View>
 
-                    <FloatingInput
-                        label="Mobile Number"
-                        value={mobile}
-                        onChangeText={setMobile}
-                        keyboardType="phone-pad"
-                        maxLength={10}
-                    />
+                    {/* Premium Login Switcher */}
+                    <View className="flex-row bg-surface/50 p-1.5 rounded-2xl border border-surface mb-8">
+                        {['password', 'otp'].map((mode) => (
+                            <TouchableOpacity
+                                key={mode}
+                                activeOpacity={0.9}
+                                style={{
+                                    flex: 1,
+                                    paddingVertical: 12,
+                                    alignItems: 'center',
+                                    borderRadius: 12,
+                                    backgroundColor: loginMode === mode ? '#FFFFFF' : 'transparent',
+                                    shadowColor: loginMode === mode ? '#000' : 'transparent',
+                                    shadowOffset: { width: 0, height: 2 },
+                                    shadowOpacity: 0.1,
+                                    shadowRadius: 4,
+                                    elevation: loginMode === mode ? 3 : 0
+                                }}
+                                onPress={() => setLoginMode(mode)}
+                            >
+                                <Text className={`text-[11px] font-black tracking-wider ${loginMode === mode ? 'text-primary' : 'text-gray-400'}`}>
+                                    {mode === 'password' ? 'Password' : 'OTP Login'}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
 
-                    <FloatingInput
-                        label="Password"
-                        value={password}
-                        onChangeText={setPassword}
-                        secureTextEntry
-                    />
+                    {loginMode === 'otp' && otpSent ? (
+                        <View>
+                            <View className="mb-6 items-center">
+                                <Text className="text-gray-400 text-xs font-bold tracking-widest mb-1">Enter Code Sent OTP</Text>
+                                <View className="flex-row items-center">
+                                    <Text className="text-primary font-black text-sm">+91 {mobile}</Text>
+                                    <TouchableOpacity onPress={() => { setOtpSent(false); setOtp(''); }}>
+                                        <Text className="ml-2 text-secondary font-bold text-xs underline">Change</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                            <FloatingInput
+                                label="6-Digit OTP"
+                                value={otp}
+                                onChangeText={setOtp}
+                                keyboardType="number-pad"
+                                maxLength={6}
+                            />
+                            <View className="items-center mb-6">
+                                {timer > 0 ? (
+                                    <Text className="text-gray-400 text-xs font-bold">Resend OTP in {timer}s</Text>
+                                ) : (
+                                    <TouchableOpacity onPress={handleSendOTP}>
+                                        <Text className="text-secondary font-black text-xs tracking-widest underline">Resend code</Text>
+                                    </TouchableOpacity>
+                                )}
+                            </View>
+                        </View>
+                    ) : (
+                        <View>
+                            <FloatingInput
+                                label="Mobile Number"
+                                value={mobile}
+                                onChangeText={setMobile}
+                                keyboardType="phone-pad"
+                                maxLength={10}
+                                editable={!otpSent}
+                            />
 
-                    <TouchableOpacity
-                        className="self-end mb-5"
-                        onPress={() => navigation.navigate('ForgotPassword')}
-                    >
-                        <Text className="text-accent font-semibold text-sm">Forgot Password?</Text>
-                    </TouchableOpacity>
+                            {loginMode === 'password' && (
+                                <FloatingInput
+                                    label="Password"
+                                    value={password}
+                                    onChangeText={setPassword}
+                                    secureTextEntry
+                                />
+                            )}
+                        </View>
+                    )}
+
+                    {loginMode === 'password' && (
+                        <TouchableOpacity
+                            className="self-end mb-5"
+                            onPress={() => navigation.navigate('ForgotPassword')}
+                        >
+                            <Text className="text-accent font-semibold text-sm">Forgot Password?</Text>
+                        </TouchableOpacity>
+                    )}
 
                     <CustomButton
-                        title="Login"
-                        onPress={handleLogin}
+                        title={loginMode === 'otp' ? (otpSent ? "Verify & Login" : "Get Verification Code") : "Login"}
+                        onPress={handleAction}
                         loading={loading}
                     />
 

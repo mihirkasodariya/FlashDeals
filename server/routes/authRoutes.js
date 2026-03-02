@@ -6,6 +6,8 @@ const { authenticateToken } = require('../middleware/authMiddleware');
 const { upload } = require('../middleware/uploadMiddleware');
 
 router.post('/login', authController.login);
+router.post('/send-otp', authController.sendOTP);
+router.post('/login-with-otp', authController.loginWithOTP);
 router.post('/register', upload.single('profileImage'), authController.register);
 router.get('/me', authenticateToken, authController.getMe);
 router.post('/verify-otp', authController.verifyOTP);
