@@ -8,11 +8,15 @@ import {
     Platform,
     Image,
     ActivityIndicator,
-    Alert
+    Alert,
+    BackHandler,
+    DeviceEventEmitter,
+    Modal
 } from 'react-native';
 import * as Location from 'expo-location';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { usePreventRemove } from '@react-navigation/native';
 import { ChevronLeft, Upload, CheckCircle2, AlertCircle, RefreshCw, Shield, Camera } from 'lucide-react-native';
 import { colors } from '../theme/colors';
 
@@ -52,6 +56,33 @@ const VendorRegisterScreen = ({ navigation, route }) => {
     const [validationStatus, setValidationStatus] = useState('none');
     const [uploadProgress, setUploadProgress] = useState(0);
     const [loading, setLoading] = useState(false);
+    const [registrationFinished, setRegistrationFinished] = useState(false);
+    const [isExitModalVisible, setIsExitModalVisible] = useState(false);
+    const [blockedAction, setBlockedAction] = useState(null);
+
+    usePreventRemove(
+        (step === 1 && !registrationFinished),
+        (e) => {
+            setBlockedAction(e.data.action);
+            setIsExitModalVisible(true);
+        }
+    );
+
+    React.useEffect(() => {
+        const backAction = () => {
+            if (step === 1 && !registrationFinished) {
+                setIsExitModalVisible(true);
+                return true;
+            }
+            return false;
+        };
+
+        const backHandler = BackHandler.addEventListener("hardwareBackPress", backAction);
+
+        return () => {
+            backHandler.remove();
+        };
+    }, [navigation, step, registrationFinished]);
 
     const pickProfileImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
@@ -163,8 +194,16 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                 alert("Server connection failed");
             }
         } else {
-            if (!docImage || !formData.idNumber || !formData.storeAddress || !formData.storeName) {
-                alert("Please fill all details and upload document");
+            if (!formData.storeName) {
+                alert("Store Name is required");
+                return;
+            }
+            if (!formData.storeAddress) {
+                alert("Store Address is required");
+                return;
+            }
+            if (!formData.location) {
+                alert("Please sync your GPS Location to continue");
                 return;
             }
 
@@ -181,20 +220,24 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                 formDataToSend.append('storeName', formData.storeName);
                 formDataToSend.append('storeAddress', formData.storeAddress);
                 formDataToSend.append('idType', formData.idType);
-                formDataToSend.append('idNumber', formData.idNumber);
 
                 if (formData.location) {
                     formDataToSend.append('location', JSON.stringify(formData.location));
                 }
+                if (formData.idNumber) {
+                    formDataToSend.append('idNumber', formData.idNumber);
+                }
 
-                const fileName = docImage.split('/').pop();
-                const fileType = fileName.split('.').pop() || 'jpg';
+                if (docImage) {
+                    const fileName = docImage.split('/').pop();
+                    const fileType = fileName.split('.').pop() || 'jpg';
 
-                formDataToSend.append('idDocument', {
-                    uri: Platform.OS === 'android' ? docImage : docImage.replace('file://', ''),
-                    name: fileName,
-                    type: `image/${fileType === 'png' ? 'png' : 'jpeg'}`,
-                });
+                    formDataToSend.append('idDocument', {
+                        uri: Platform.OS === 'android' ? docImage : docImage.replace('file://', ''),
+                        name: fileName,
+                        type: `image/${fileType === 'png' ? 'png' : 'jpeg'}`,
+                    });
+                }
 
                 const response = await fetch(`${API_BASE_URL}/vendor/complete-registration`, {
                     method: 'POST',
@@ -204,6 +247,8 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                 const data = await response.json();
                 setLoading(false);
                 if (data.success) {
+                    setRegistrationFinished(true); // Mark as done to prevent reversal
+                    DeviceEventEmitter.emit('roleChanged');
                     navigation.navigate('ActivationStatus');
                 } else {
                     alert(data.message || "Failed to submit documents");
@@ -330,7 +375,7 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                                     </View>
 
                                     <View className="mt-6">
-                                        <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-3 ml-1 opacity-50">Tax Identity</Text>
+                                        <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-3 ml-1 opacity-50">Tax Identity (Optional)</Text>
                                         <FloatingInput
                                             label={`${formData.idType} Reference`}
                                             value={formData.idNumber}
@@ -360,7 +405,7 @@ const VendorRegisterScreen = ({ navigation, route }) => {
 
                                     {/* Document Upload Zone */}
                                     <View className="mt-10">
-                                        <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-4 ml-1 opacity-50">Proof of Existence</Text>
+                                        <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-4 ml-1 opacity-50">Proof of Existence (Optional)</Text>
                                         <TouchableOpacity className="h-[220px] border-2 border-surface border-dashed rounded-[32px] justify-center items-center bg-[#FAFAFA] overflow-hidden" onPress={pickDocument}>
                                             {docImage ? (
                                                 <View className="w-full h-full">
@@ -421,6 +466,47 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                     </View>
                 </ScrollView>
             </KeyboardAvoidingView>
+
+            {/* Custom Exit Confirmation Modal */}
+            <Modal visible={isExitModalVisible} animationType="fade" transparent={true}>
+                <View className="flex-1 justify-center items-center bg-black/80 px-8">
+                    <View className="bg-white rounded-[60px] p-10 w-full items-center shadow-2xl relative overflow-hidden">
+                        {/* Decorative Background Blob */}
+                        <View className="absolute -top-10 -right-10 w-32 h-32 bg-error/5 rounded-full" />
+
+                        <View className="w-24 h-24 bg-error/10 rounded-[40px] items-center justify-center mb-8 rotate-12">
+                            <AlertCircle size={48} color={colors.error} strokeWidth={1.5} className="-rotate-12" />
+                        </View>
+
+                        <Text className="text-3xl font-black text-primary mb-3 text-center tracking-tighter">Exit Setup?</Text>
+                        <Text className="text-textSecondary text-center mb-12 font-medium leading-6 opacity-70">
+                            Your store details aren't saved yet. Quitting now will revert your account to a regular user.
+                        </Text>
+
+                        <View className="w-full space-y-4">
+                            <TouchableOpacity
+                                onPress={() => setIsExitModalVisible(false)}
+                                className="w-full bg-primary py-5 rounded-[30px] items-center shadow-lg shadow-primary/30"
+                            >
+                                <Text className="text-white font-black text-sm tracking-widest">Continue Setup</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setIsExitModalVisible(false);
+                                    if (blockedAction) {
+                                        navigation.dispatch(blockedAction);
+                                    } else {
+                                        navigation.goBack();
+                                    }
+                                }}
+                                className="w-full py-5 items-center mt-2"
+                            >
+                                <Text className="text-error font-black text-xs tracking-[3px] uppercase">Quit & Revert</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
         </SafeAreaView>
     );
 };

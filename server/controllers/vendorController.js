@@ -11,6 +11,7 @@ const completeRegistration = async (req, res) => {
             storeAddress,
             idType,
             idNumber,
+            role: 'vendor', // Finally convert to vendor
             status: 'under_review'
         };
 

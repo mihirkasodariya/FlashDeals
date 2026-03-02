@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Offer = require('../models/Offer');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_key_flashdeals';
@@ -205,6 +206,52 @@ const logoutDevice = async (req, res) => {
     }
 };
 
+const switchToVendor = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        user.role = 'vendor_pending'; // Intermediate state
+        user.status = 'submitted';
+        await user.save();
+
+        res.json({ success: true, message: 'Role changed to vendor successfully', user });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+const switchToUser = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        // Delete all offers by this vendor
+        await Offer.deleteMany({ vendorId: req.user.userId });
+
+        // Clear vendor fields
+        user.role = 'user';
+        user.storeName = undefined;
+        user.storeAddress = undefined;
+        user.storeImage = undefined;
+        user.location = undefined;
+        user.idType = undefined;
+        user.idNumber = undefined;
+        user.idDocument = undefined;
+        user.status = 'submitted';
+
+        await user.save();
+
+        res.json({ success: true, message: 'Role changed to user successfully. Store and offers deleted.', user });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 module.exports = {
     login,
     register,
@@ -213,5 +260,7 @@ module.exports = {
     verifyOTP,
     changePassword,
     getLoginHistory,
-    logoutDevice
+    logoutDevice,
+    switchToVendor,
+    switchToUser
 };

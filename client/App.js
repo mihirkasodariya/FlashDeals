@@ -10,7 +10,7 @@ import { Home as HomeIcon, Heart, User, Store as StoreIcon } from 'lucide-react-
 import { colors } from './src/theme/colors';
 import { API_BASE_URL } from './src/config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform, View, Text } from 'react-native';
+import { Platform, View, Text, DeviceEventEmitter } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 // Import Screens
@@ -39,28 +39,37 @@ import NotificationScreen from './src/screens/NotificationScreen';
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-function MainTabs() {
+function MainTabs({ navigation }) {
   const [role, setRole] = React.useState(null);
 
-  React.useEffect(() => {
-    const fetchUserRole = async () => {
-      try {
-        const token = await AsyncStorage.getItem('userToken');
-        if (token) {
-          const response = await fetch(`${API_BASE_URL}/auth/me`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-          const data = await response.json();
-          if (data.success) {
-            setRole(data.user.role);
-          }
+  const fetchUserRole = async () => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      if (token) {
+        const response = await fetch(`${API_BASE_URL}/auth/me`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        if (data.success) {
+          setRole(data.user.role);
         }
-      } catch (error) {
-        console.error("Error fetching role:", error);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching role:", error);
+    }
+  };
+
+  React.useEffect(() => {
+    const focusUnsubscribe = navigation.addListener('focus', fetchUserRole);
+    const eventSubscription = DeviceEventEmitter.addListener('roleChanged', fetchUserRole);
+
     fetchUserRole();
-  }, []);
+
+    return () => {
+      focusUnsubscribe();
+      eventSubscription.remove();
+    };
+  }, [navigation]);
 
   return (
     <Tab.Navigator

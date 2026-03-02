@@ -13,5 +13,7 @@ router.post('/change-password', authenticateToken, authController.changePassword
 router.get('/login-history', authenticateToken, authController.getLoginHistory);
 router.post('/logout-device', authenticateToken, authController.logoutDevice);
 router.put('/update', authenticateToken, upload.single('profileImage'), authController.updateProfile);
+router.post('/switch-role/vendor', authenticateToken, authController.switchToVendor);
+router.post('/switch-role/user', authenticateToken, authController.switchToUser);
 
 module.exports = router;

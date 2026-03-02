@@ -1,12 +1,12 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, useWindowDimensions, Modal, Pressable, Alert, ActivityIndicator, StyleSheet, TextInput, Platform } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image, useWindowDimensions, Modal, Pressable, Alert, ActivityIndicator, StyleSheet, TextInput, Platform, DeviceEventEmitter } from 'react-native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import { LinearGradient } from 'expo-linear-gradient';
-import { User, Settings, Bell, Shield, HelpCircle, LogOut, ChevronRight, MapPin, Package as LucidePackage, Store, Map as MapIcon, Edit3, Navigation2, Camera, Lock, History, Headphones } from 'lucide-react-native';
+import { User, Settings, Bell, Shield, HelpCircle, LogOut, ChevronRight, MapPin, Package as LucidePackage, Store, Map as MapIcon, Edit3, Navigation2, Camera, Lock, History, Headphones, AlertCircle, CheckCircle2 } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 
 
@@ -18,6 +18,10 @@ const ProfileScreen = ({ navigation }) => {
     const { width } = useWindowDimensions();
     const [isLogoutModalVisible, setIsLogoutModalVisible] = React.useState(false);
     const [isEditModalVisible, setIsEditModalVisible] = React.useState(false);
+    const [isRoleSwitchModalVisible, setIsRoleSwitchModalVisible] = React.useState(false);
+    const [roleSwitchMode, setRoleSwitchMode] = React.useState(null); // 'vendor' or 'user'
+    const [isSuccessModalVisible, setIsSuccessModalVisible] = React.useState(false);
+    const [successMessage, setSuccessMessage] = React.useState('');
 
     // Dynamic user data
     const [user, setUser] = React.useState(null);
@@ -29,6 +33,7 @@ const ProfileScreen = ({ navigation }) => {
     const [editMobile, setEditMobile] = React.useState('');
     const [editImage, setEditImage] = React.useState(null);
     const [saving, setSaving] = React.useState(false);
+    const [switching, setSwitching] = React.useState(false);
 
     const fetchProfile = async (isMounted) => {
         try {
@@ -147,6 +152,60 @@ const ProfileScreen = ({ navigation }) => {
 
         if (!result.canceled) {
             setEditImage(result.assets[0].uri);
+        }
+    };
+
+    const handleSwitchToVendor = () => {
+        setRoleSwitchMode('vendor');
+        setIsRoleSwitchModalVisible(true);
+    };
+
+    const handleSwitchToUser = () => {
+        setRoleSwitchMode('user');
+        setIsRoleSwitchModalVisible(true);
+    };
+
+    const performRoleSwitch = async () => {
+        if (roleSwitchMode === 'vendor') {
+            setIsRoleSwitchModalVisible(false);
+            navigation.navigate('VendorRegister', {
+                step: 1,
+                userId: user._id,
+                formData: {
+                    name: user.name,
+                    mobile: user.mobile,
+                    storeName: user.storeName || '',
+                    storeAddress: user.storeAddress || '',
+                    location: user.location || null
+                }
+            });
+            return;
+        }
+
+        setSwitching(true);
+        try {
+            const token = await AsyncStorage.getItem('userToken');
+            const response = await fetch(`${API_BASE_URL}/auth/switch-role/user`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                setIsRoleSwitchModalVisible(false);
+                setSuccessMessage("Switched to Personal Account successfully!");
+                setIsSuccessModalVisible(true);
+                fetchProfile({ current: true });
+                DeviceEventEmitter.emit('roleChanged');
+            } else {
+                Alert.alert("Error", data.message || "Failed to switch role");
+            }
+        } catch (error) {
+            console.error("Role switch error:", error);
+            Alert.alert("Error", "Server connection failed");
+        } finally {
+            setSwitching(false);
         }
     };
 
@@ -285,19 +344,34 @@ const ProfileScreen = ({ navigation }) => {
                     </View>
 
                     <TouchableOpacity
-                        className="flex-row items-center justify-center py-8 mt-4"
+                        className="flex-row items-center justify-center py-5 mt-8 bg-primary rounded-[28px] shadow-lg shadow-primary/40 px-8"
+                        onPress={isVendor ? handleSwitchToUser : handleSwitchToVendor}
+                        disabled={switching}
+                    >
+                        {switching ? (
+                            <ActivityIndicator size="small" color={colors.primary} />
+                        ) : (
+                            <>
+                                <Store size={20} color="white" />
+                                <Text className="ml-3 text-white font-black text-sm tracking-widest">
+                                    {isVendor ? 'Switch to Personal Account' : 'Become a Vendor Account'}
+                                </Text>
+                            </>
+                        )}
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        className="flex-row items-center justify-center py-5 mt-4 bg-[#FF4444] rounded-[28px] shadow-lg shadow-[#FF4444]/40 px-8"
                         onPress={() => setIsLogoutModalVisible(true)}
                     >
-                        <View className="bg-error/5 px-6 py-3 rounded-full flex-row items-center">
-                            <LogOut size={18} color={colors.error} />
-                            <Text className="ml-3 text-error font-black text-sm tracking-widest">Secure Logout</Text>
-                        </View>
+                        <LogOut size={20} color="white" />
+                        <Text className="ml-3 text-white font-black text-sm tracking-widest">Secure Sign Out</Text>
                     </TouchableOpacity>
-                </View>
 
-                {/* Version & Credits */}
-                <View className="items-center pb-32">
-                    <Text className="text-[9px] font-black text-textSecondary/40 tracking-[5px]">NextGen Core v2.2</Text>
+                    {/* Version & Credits */}
+                    <View className="items-center mt-6">
+                        <Text className="text-[10px] font-black tracking-[2px]">FlashDeals v.0.1</Text>
+                    </View>
                 </View>
             </ScrollView>
 
@@ -402,6 +476,100 @@ const ProfileScreen = ({ navigation }) => {
                                 className="w-full py-5 items-center mt-2"
                             >
                                 <Text className="text-primary font-black text-xs tracking-[3px]">Cancel</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
+
+            {/* Custom Role Switch Modal */}
+            <Modal visible={isRoleSwitchModalVisible} animationType="slide" transparent={true}>
+                <View className="flex-1 justify-end bg-black/60">
+                    <Pressable
+                        className="flex-1"
+                        onPress={() => !switching && setIsRoleSwitchModalVisible(false)}
+                    />
+                    <View className="bg-white rounded-t-[50px] p-10 pb-16 shadow-2xl">
+                        <View className="w-16 h-1.5 bg-[#E5E7EB] rounded-full self-center mb-10" />
+
+                        <View className="items-center mb-8">
+                            <View className={`w-20 h-20 rounded-[30px] items-center justify-center ${roleSwitchMode === 'vendor' ? 'bg-primary/10' : 'bg-warning/10'}`}>
+                                {roleSwitchMode === 'vendor' ? (
+                                    <Store size={40} color={colors.primary} strokeWidth={1.5} />
+                                ) : (
+                                    <User size={40} color={colors.warning} strokeWidth={1.5} />
+                                )}
+                            </View>
+                        </View>
+
+                        <Text className="text-3xl font-black text-primary mb-3 text-center">
+                            {roleSwitchMode === 'vendor' ? 'Start Selling?' : 'Switch to Personal?'}
+                        </Text>
+
+                        <Text className="text-textSecondary text-center mb-10 font-medium leading-6 opacity-70 px-4">
+                            {roleSwitchMode === 'vendor'
+                                ? "Open your vendor portal to reach thousands of local customers. You can skip the verification process for now."
+                                : "Warning: Switching to a personal account will permanently deactivate your store and delete all active offers."
+                            }
+                        </Text>
+
+                        {roleSwitchMode === 'user' && (
+                            <View className="bg-error/5 p-5 rounded-[24px] mb-10 border border-error/10 flex-row items-center">
+                                <AlertCircle size={20} color={colors.error} />
+                                <Text className="ml-3 flex-1 text-error text-[11px] font-black uppercase tracking-wider">
+                                    All store data will be deleted instantly
+                                </Text>
+                            </View>
+                        )}
+
+                        <View className="flex-row gap-4">
+                            <TouchableOpacity
+                                onPress={() => setIsRoleSwitchModalVisible(false)}
+                                disabled={switching}
+                                className="flex-1 bg-surface py-5 rounded-[24px] items-center"
+                            >
+                                <Text className="text-primary font-black text-sm tracking-widest">Discard</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={performRoleSwitch}
+                                disabled={switching}
+                                className={`flex-[2] py-5 rounded-[24px] items-center shadow-lg ${roleSwitchMode === 'vendor' ? 'bg-primary shadow-primary/30' : 'bg-secondary shadow-secondary/30'}`}
+                            >
+                                {switching ? (
+                                    <ActivityIndicator size="small" color="white" />
+                                ) : (
+                                    <Text className="text-white font-black text-sm tracking-widest">
+                                        {roleSwitchMode === 'vendor' ? 'Accept & Continue' : 'Confirm Deletion'}
+                                    </Text>
+                                )}
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
+
+            {/* Custom Success Modal */}
+            <Modal visible={isSuccessModalVisible} animationType="fade" transparent={true}>
+                <View className="flex-1 justify-center items-center bg-black/80 px-8">
+                    <View className="bg-white rounded-[60px] p-10 w-full items-center shadow-2xl relative overflow-hidden">
+                        {/* Decorative Background Blob */}
+                        <View className="absolute -top-10 -right-10 w-32 h-32 bg-success/5 rounded-full" />
+
+                        <View className="w-24 h-24 bg-success/10 rounded-[40px] items-center justify-center mb-8 rotate-12">
+                            <CheckCircle2 size={48} color={colors.success} strokeWidth={1.5} className="-rotate-12" />
+                        </View>
+
+                        <Text className="text-3xl font-black text-primary mb-3 text-center tracking-tighter">Success!</Text>
+                        <Text className="text-textSecondary text-center mb-12 font-medium leading-6 opacity-70">
+                            {successMessage}
+                        </Text>
+
+                        <View className="w-full">
+                            <TouchableOpacity
+                                onPress={() => setIsSuccessModalVisible(false)}
+                                className="w-full bg-primary py-5 rounded-[30px] items-center shadow-lg shadow-primary/30"
+                            >
+                                <Text className="text-white font-black text-sm tracking-widest">Great!</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
