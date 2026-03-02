@@ -62,7 +62,8 @@ const OfferDetailsScreen = ({ route, navigation }) => {
         try {
             const token = await AsyncStorage.getItem('userToken');
             if (!token) {
-                Alert.alert("Login Required", "Please login to wishlist offers.");
+                await AsyncStorage.setItem('pendingWishlistOfferId', offer._id);
+                navigation.navigate('Login');
                 return;
             }
 

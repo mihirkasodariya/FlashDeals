@@ -114,6 +114,25 @@ const LoginScreen = ({ navigation }) => {
 
             if (data.success) {
                 await AsyncStorage.setItem('userToken', data.token);
+
+                // Auto-fulfill pending wishlist if any
+                const pendingId = await AsyncStorage.getItem('pendingWishlistOfferId');
+                if (pendingId) {
+                    try {
+                        await fetch(`${API_BASE_URL}/wishlist/toggle`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${data.token}`
+                            },
+                            body: JSON.stringify({ offerId: pendingId })
+                        });
+                        await AsyncStorage.removeItem('pendingWishlistOfferId');
+                    } catch (e) {
+                        console.log('Pending wishlist fill error:', e);
+                    }
+                }
+
                 if (data.user.role === 'vendor' && !data.user.isVerified) {
                     navigation.navigate('ActivationStatus');
                 } else {
@@ -267,7 +286,7 @@ const LoginScreen = ({ navigation }) => {
 
                     <TouchableOpacity
                         className="items-center mb-6"
-                        onPress={() => { }}
+                        onPress={() => navigation.navigate('Main')}
                     >
                         <Text style={{ color: colors.textSecondary }} className="text-sm font-semibold underline">Skip Login</Text>
                     </TouchableOpacity>

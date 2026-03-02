@@ -85,7 +85,17 @@ const AppSettingsScreen = ({ navigation }) => {
             "Would you like to see the welcome intro again on next restart?",
             [
                 { text: "Cancel", style: "cancel" },
-                { text: "Yes, Reset", onPress: () => Alert.alert("Success", "Onboarding has been reset!") }
+                {
+                    text: "Yes, Reset",
+                    onPress: async () => {
+                        try {
+                            await AsyncStorage.removeItem('hasSeenOnboarding');
+                            Alert.alert("Success", "Onboarding has been reset! Restart the app to see it.");
+                        } catch (e) {
+                            Alert.alert("Error", "Failed to reset intro.");
+                        }
+                    }
+                }
             ]
         );
     };

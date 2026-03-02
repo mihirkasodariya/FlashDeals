@@ -6,9 +6,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors as staticColors } from '../theme/colors';
 import { useTheme } from '../context/ThemeContext';
 import { API_BASE_URL } from '../config';
+import { useNavigation } from '@react-navigation/native';
 
 const OfferCard = ({ offer, onPress, grid, isFavorite = false, onRefresh }) => {
     if (!offer) return null;
+    const navigation = useNavigation();
     const { colors, isDarkMode } = useTheme();
     const [localFavorite, setLocalFavorite] = React.useState(isFavorite);
 
@@ -19,7 +21,11 @@ const OfferCard = ({ offer, onPress, grid, isFavorite = false, onRefresh }) => {
     const toggleWishlist = async () => {
         try {
             const token = await AsyncStorage.getItem('userToken');
-            if (!token) return;
+            if (!token) {
+                await AsyncStorage.setItem('pendingWishlistOfferId', offer._id);
+                navigation.navigate('Login');
+                return;
+            }
 
             setLocalFavorite(!localFavorite); // Optimistic UI update
 
@@ -85,9 +91,22 @@ const OfferCard = ({ offer, onPress, grid, isFavorite = false, onRefresh }) => {
         return `${date.getDate().toString().padStart(2, '0')} ${months[date.getMonth()]}`;
     };
 
+    const handleCardPress = async () => {
+        try {
+            const token = await AsyncStorage.getItem('userToken');
+            if (!token) {
+                navigation.navigate('Login');
+                return;
+            }
+            if (onPress) onPress();
+        } catch (error) {
+            console.error('Card press error:', error);
+        }
+    };
+
     return (
         <TouchableOpacity
-            onPress={onPress}
+            onPress={handleCardPress}
             activeOpacity={0.9}
             style={[styles.cardContainer, { backgroundColor: colors.card, borderColor: colors.border }]}
             className={`rounded-[24px] mb-6 overflow-hidden border ${grid ? 'mx-1' : ''}`}
