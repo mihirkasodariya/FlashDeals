@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Image, ActivityIndicator, Alert, useWindowDimensions } from 'react-native';
+import Text from '../components/CustomText';
+import { View, FlatList, TouchableOpacity, Image, ActivityIndicator, Alert, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Package as LucidePackage, Trash2, Calendar, Tag } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { colors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
+import { colors as staticColors } from '../theme/colors';
 import { API_BASE_URL } from '../config';
 
 const VendorOffersScreen = ({ navigation }) => {
+    const { colors, isDarkMode } = useTheme();
     const { width } = useWindowDimensions();
     const [offers, setOffers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -40,22 +43,23 @@ const VendorOffersScreen = ({ navigation }) => {
     const renderOfferItem = ({ item }) => {
         const STATIC_BASE_URL = API_BASE_URL.replace('/api', '');
         return (
-            <View className="bg-white rounded-[32px] mb-4 p-4 shadow-sm border border-surface overflow-hidden">
+            <View style={{ backgroundColor: colors.card, borderColor: colors.border }} className="rounded-[32px] mb-4 p-4 shadow-sm border overflow-hidden">
                 <View className="flex-row">
                     <Image
                         source={{ uri: `${STATIC_BASE_URL}${item.image}` }}
-                        className="w-24 h-24 rounded-2xl bg-surface"
+                        style={{ backgroundColor: colors.surface }}
+                        className="w-24 h-24 rounded-2xl"
                         resizeMode="cover"
                     />
                     <View className="ml-4 flex-1">
-                        <View className="bg-primary/5 self-start px-2 py-1 rounded-lg mb-1">
-                            <Text className="text-[10px] font-black text-primary">{item.category}</Text>
+                        <View style={{ backgroundColor: `${colors.primary}15` }} className="self-start px-2 py-1 rounded-lg mb-1">
+                            <Text style={{ color: colors.primary }} className="text-[10px] font-black">{item.category}</Text>
                         </View>
-                        <Text className="text-lg font-black text-primary leading-6" numberOfLines={2}>{item.title}</Text>
+                        <Text style={{ color: colors.text }} className="text-lg font-black leading-6" numberOfLines={2}>{item.title}</Text>
 
-                        <View className="flex-row items-center mt-2 opacity-50">
-                            <Calendar size={12} color={colors.primary} />
-                            <Text className="text-[10px] font-bold text-primary ml-1">
+                        <View className="flex-row items-center mt-2 opacity-60">
+                            <Calendar size={12} color={colors.textSecondary} />
+                            <Text style={{ color: colors.textSecondary }} className="text-[10px] font-bold ml-1">
                                 {new Date(item.startDate).toLocaleDateString()} - {new Date(item.endDate).toLocaleDateString()}
                             </Text>
                         </View>
@@ -66,12 +70,16 @@ const VendorOffersScreen = ({ navigation }) => {
     };
 
     return (
-        <SafeAreaView className="flex-1 bg-[#FAFAFA]" edges={['top']}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
             <View className="flex-row items-center px-6 py-4">
-                <TouchableOpacity onPress={() => navigation.goBack()} className="w-10 h-10 items-center justify-center bg-white rounded-xl shadow-sm border border-surface">
+                <TouchableOpacity
+                    onPress={() => navigation.goBack()}
+                    style={{ backgroundColor: colors.surface }}
+                    className="w-10 h-10 items-center justify-center rounded-xl"
+                >
                     <ChevronLeft size={24} color={colors.primary} />
                 </TouchableOpacity>
-                <Text className="ml-4 text-2xl font-black text-primary">My Flash Offers</Text>
+                <Text style={{ color: colors.text }} className="ml-4 text-2xl font-black">My Flash Offers</Text>
             </View>
 
             {loading ? (
@@ -86,11 +94,11 @@ const VendorOffersScreen = ({ navigation }) => {
                     contentContainerStyle={{ padding: 24, paddingBottom: 100 }}
                     ListEmptyComponent={
                         <View className="items-center justify-center py-20">
-                            <View className="w-20 h-20 bg-surface rounded-full items-center justify-center mb-4">
+                            <View style={{ backgroundColor: colors.surface }} className="w-20 h-20 rounded-full items-center justify-center mb-4">
                                 <LucidePackage size={40} color={colors.border} strokeWidth={1.5} />
                             </View>
-                            <Text className="text-xl font-black text-primary">No Active Offers</Text>
-                            <Text className="text-textSecondary text-center mt-2">You haven't launched any flash offers yet.</Text>
+                            <Text style={{ color: colors.text }} className="text-xl font-black">No Active Offers</Text>
+                            <Text style={{ color: colors.textSecondary }} className="text-center mt-2">You haven't launched any flash offers yet.</Text>
                             <TouchableOpacity
                                 onPress={() => navigation.navigate('AddOffer')}
                                 className="mt-8 bg-primary px-8 py-4 rounded-2xl"

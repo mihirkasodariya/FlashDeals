@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
+import Text from '../components/CustomText';
 import {
     View,
-    Text,
     TouchableOpacity,
     ScrollView,
     Platform,
     Dimensions,
-    LayoutAnimation
+    LayoutAnimation,
+    StatusBar
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -22,11 +23,13 @@ import {
     CheckCircle2,
     Headphones
 } from 'lucide-react-native';
-import { colors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
+import { API_BASE_URL } from '../config';
 
 const { width } = Dimensions.get('window');
 
 const PrivacyCenterScreen = ({ navigation, route }) => {
+    const { colors, isDarkMode } = useTheme();
     const scrollViewRef = React.useRef(null);
     const [expandedPolicy, setExpandedPolicy] = useState(null);
     const [itemPositions, setItemPositions] = useState({});
@@ -100,16 +103,19 @@ const PrivacyCenterScreen = ({ navigation, route }) => {
     ];
 
     return (
-        <SafeAreaView className="flex-1 bg-[#FDFDFF]" edges={['top']}>
-            {/* Glossy Header */}
-            <View className="px-6 py-5 flex-row items-center justify-between bg-white border-b border-slate-100 shadow-sm shadow-slate-200/20">
+        <SafeAreaView style={{ backgroundColor: isDarkMode ? colors.background : '#FDFDFF' }} className="flex-1" edges={['top']}>
+            <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} backgroundColor={isDarkMode ? colors.background : '#FDFDFF'} />
+
+            {/* Header */}
+            <View style={{ backgroundColor: isDarkMode ? colors.card : '#FFFFFF', borderBottomColor: colors.border }} className="px-6 py-5 flex-row items-center justify-between border-b shadow-sm">
                 <TouchableOpacity
                     onPress={() => navigation.goBack()}
-                    className="w-11 h-11 items-center justify-center bg-slate-50 rounded-2xl border border-slate-100"
+                    style={{ backgroundColor: isDarkMode ? colors.surface : '#F8FAFC', borderColor: colors.border }}
+                    className="w-11 h-11 items-center justify-center rounded-2xl border"
                 >
                     <ChevronLeft size={22} color={colors.primary} />
                 </TouchableOpacity>
-                <Text className="text-lg font-black text-primary tracking-tight">Privacy Center</Text>
+                <Text style={{ color: colors.text }} className="text-lg font-black tracking-tight">Privacy Center</Text>
                 <View className="w-11" />
             </View>
 
@@ -121,7 +127,7 @@ const PrivacyCenterScreen = ({ navigation, route }) => {
             >
                 {/* Security Guarantee Banner */}
                 <View className="px-6 mt-8">
-                    <View className="bg-primary p-8 rounded-[40px] relative overflow-hidden shadow-2xl shadow-primary/30">
+                    <View style={{ backgroundColor: colors.primary }} className="p-8 rounded-[40px] relative overflow-hidden shadow-2xl shadow-black/20">
                         {/* Decorative background circle */}
                         <View className="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full" />
 
@@ -132,21 +138,21 @@ const PrivacyCenterScreen = ({ navigation, route }) => {
                             <Text className="ml-4 text-white font-black text-xl tracking-tight">Security Guarantee</Text>
                         </View>
 
-                        <Text className="text-white font-bold text-lg leading-relaxed">
+                        <Text style={{ color: '#FFFFFF' }} className="text-white font-bold text-lg leading-relaxed">
                             All your data is safe and secure with us. We use advanced encryption protocols to protect every piece of your information.
                         </Text>
 
                         <View className="flex-row items-center mt-6 bg-white/10 self-start px-4 py-2 rounded-full border border-white/20">
                             <CheckCircle2 size={14} color="#4ADE80" strokeWidth={3} />
-                            <Text className="text-white/90 text-[10px] font-black tracking-widest ml-2">Verified Protection</Text>
+                            <Text style={{ color: '#FFFFFF' }} className="text-white/90 text-[10px] font-black tracking-widest ml-2 uppercase">Verified Protection</Text>
                         </View>
                     </View>
                 </View>
 
                 {/* Policy List Title */}
                 <View className="px-6 mt-12 mb-6">
-                    <Text className="text-[10px] font-black text-slate-400 tracking-[1px]">Legal Hub</Text>
-                    <Text className="text-2xl font-black text-primary mt-2">Security & Privacy</Text>
+                    <Text style={{ color: colors.secondary }} className="text-[10px] font-black tracking-[3px] uppercase">Legal Hub</Text>
+                    <Text style={{ color: colors.text }} className="text-2xl font-black mt-2">Security & Privacy</Text>
                 </View>
 
                 {/* Interactive Policy Cards */}
@@ -160,7 +166,11 @@ const PrivacyCenterScreen = ({ navigation, route }) => {
                                 setItemPositions(prev => ({ ...prev, [policy.id]: y }));
                             }}
                             onPress={() => togglePolicy(policy.id)}
-                            className={`bg-white rounded-[32px] p-6 mb-4 border border-slate-100 shadow-sm ${expandedPolicy === policy.id ? 'border-primary/20' : ''}`}
+                            style={{
+                                backgroundColor: colors.card,
+                                borderColor: expandedPolicy === policy.id ? colors.primary + '40' : colors.border
+                            }}
+                            className="rounded-[32px] p-6 mb-4 border shadow-sm"
                         >
                             <View className="flex-row items-center justify-between">
                                 <View className="flex-row items-center flex-1">
@@ -170,22 +180,23 @@ const PrivacyCenterScreen = ({ navigation, route }) => {
                                     >
                                         <policy.icon size={22} color={policy.color} strokeWidth={2.5} />
                                     </View>
-                                    <Text className="text-base font-black text-primary tracking-tight">{policy.title}</Text>
+                                    <Text style={{ color: colors.text }} className="text-base font-black tracking-tight">{policy.title}</Text>
                                 </View>
                                 <View
-                                    className={`w-8 h-8 rounded-full items-center justify-center ${expandedPolicy === policy.id ? 'bg-primary' : 'bg-slate-50'}`}
+                                    style={{ backgroundColor: expandedPolicy === policy.id ? colors.primary : colors.surface }}
+                                    className="w-8 h-8 rounded-full items-center justify-center"
                                 >
                                     <ChevronDown
                                         size={16}
-                                        color={expandedPolicy === policy.id ? 'white' : '#94A3B8'}
+                                        color={expandedPolicy === policy.id ? 'white' : colors.textSecondary}
                                         style={{ transform: [{ rotate: expandedPolicy === policy.id ? '180deg' : '0deg' }] }}
                                     />
                                 </View>
                             </View>
 
                             {expandedPolicy === policy.id && (
-                                <View className="mt-6 pt-6 border-t border-slate-50">
-                                    <Text className="text-slate-500 text-sm font-bold leading-relaxed">
+                                <View style={{ borderTopColor: isDarkMode ? '#ffffff10' : '#00000005' }} className="mt-6 pt-6 border-t">
+                                    <Text style={{ color: colors.textSecondary }} className="text-sm font-bold leading-relaxed opacity-80">
                                         {policy.content}
                                     </Text>
                                 </View>
@@ -195,18 +206,18 @@ const PrivacyCenterScreen = ({ navigation, route }) => {
                 </View>
 
                 {/* Transparency Summary */}
-                <View className="mx-6 mt-8 p-10 bg-[#F8FAFF] rounded-[48px] border border-blue-50 items-center">
-                    <View className="w-16 h-16 bg-white rounded-3xl items-center justify-center mb-6 shadow-sm shadow-blue-200">
+                <View style={{ backgroundColor: isDarkMode ? colors.card + '50' : '#F8FAFF', borderColor: colors.border }} className="mx-6 mt-8 p-10 rounded-[48px] border items-center">
+                    <View style={{ backgroundColor: colors.card }} className="w-16 h-16 rounded-3xl items-center justify-center mb-6 shadow-sm shadow-blue-200">
                         <Info size={28} color={colors.secondary} strokeWidth={2.5} />
                     </View>
-                    <Text className="text-primary font-black text-center text-xl tracking-tight">Zero-Leaking Protocol</Text>
-                    <Text className="text-slate-400 text-center text-[13px] font-bold mt-3 leading-relaxed px-2">
+                    <Text style={{ color: colors.text }} className="font-black text-center text-xl tracking-tight">Zero-Leaking Protocol</Text>
+                    <Text style={{ color: colors.textSecondary }} className="text-center text-[13px] font-bold mt-3 leading-relaxed px-2 opacity-60">
                         Your trust is built on our commitment to transparency. We do not share merchant data with any third-party aggregators.
                     </Text>
 
-                    <View className="h-[1px] w-full bg-slate-200/50 my-8" />
+                    <View style={{ backgroundColor: colors.border }} className="h-[1px] w-full my-8 opacity-30" />
 
-                    <Text className="text-slate-300 font-extrabold text-[9px] tracking-[2px]">FlashDeals Trust Engine</Text>
+                    <Text style={{ color: colors.textSecondary }} className="font-extrabold text-[9px] tracking-[3px] uppercase opacity-30">FlashDeals Trust Engine</Text>
                 </View>
             </ScrollView>
         </SafeAreaView>

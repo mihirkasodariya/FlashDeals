@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, TouchableOpacity, Text } from 'react-native';
+import Text from './CustomText';
+import { View, TouchableOpacity} from 'react-native';
 
 const TabSwitcher = ({ tabs, activeTab, onTabChange }) => {
     return (

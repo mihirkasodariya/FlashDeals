@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
+import Text from '../components/CustomText';
 import {
     View,
-    Text,
     TouchableOpacity,
     ScrollView,
     KeyboardAvoidingView,
@@ -18,7 +18,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ChevronLeft, Upload, CheckCircle2, AlertCircle, RefreshCw, Shield, Camera } from 'lucide-react-native';
-import { colors } from '../theme/colors';
+import { colors as staticColors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
 
 import FloatingInput from '../components/FloatingInput';
 import AddressAutocomplete from '../components/AddressAutocomplete';
@@ -30,6 +31,7 @@ import { API_BASE_URL } from '../config';
 
 
 const VendorRegisterScreen = ({ navigation, route }) => {
+    const { colors, isDarkMode } = useTheme();
     const [step, setStep] = useState(0); // 0 or 1
     const [activeIdType, setActiveIdType] = useState('GSTIN');
     const [formData, setFormData] = useState({
@@ -254,18 +256,19 @@ const VendorRegisterScreen = ({ navigation, route }) => {
     };
 
     return (
-        <SafeAreaView className="flex-1 bg-[#FAFAFA]" edges={['top']}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
             {/* Minimalist Premium Header */}
-            <View className="bg-white px-6 pb-6 pt-2 flex-row items-center border-b border-surface">
+            <View style={{ backgroundColor: colors.card, borderColor: colors.border }} className="px-6 pb-6 pt-2 flex-row items-center border-b">
                 <TouchableOpacity
                     onPress={handleBack}
-                    className="w-10 h-10 bg-surface rounded-full items-center justify-center"
+                    style={{ backgroundColor: colors.surface }}
+                    className="w-10 h-10 rounded-full items-center justify-center"
                 >
-                    <ChevronLeft size={24} color={colors.primary} strokeWidth={3} />
+                    <ChevronLeft size={24} color={colors.text} strokeWidth={3} />
                 </TouchableOpacity>
                 <View className="ml-4">
-                    <Text className="text-[10px] font-black text-secondary tracking-[3px] mb-0.5">Commercial</Text>
-                    <Text className="text-xl font-black text-primary">Merchant Portal</Text>
+                    <Text style={{ color: staticColors.secondary }} className="text-[10px] font-black tracking-[3px] mb-0.5">Commercial</Text>
+                    <Text style={{ color: colors.text }} className="text-xl font-black">Merchant Portal</Text>
                 </View>
             </View>
 
@@ -274,31 +277,32 @@ const VendorRegisterScreen = ({ navigation, route }) => {
 
                     <ProgressSteps currentStep={step} />
 
-                    <View className="bg-white rounded-[40px] p-8 shadow-sm border border-surface mt-6">
+                    <View style={{ backgroundColor: colors.card, borderColor: colors.border }} className="rounded-[40px] p-8 shadow-sm border mt-6">
                         {step === 0 ? (
                             <View className="space-y-6">
                                 <View className="items-center mb-6">
                                     <TouchableOpacity
                                         onPress={pickProfileImage}
-                                        className="w-24 h-24 bg-surface rounded-full items-center justify-center border border-surface overflow-hidden"
+                                        style={{ backgroundColor: colors.surface, borderColor: colors.border }}
+                                        className="w-24 h-24 rounded-full items-center justify-center border overflow-hidden"
                                     >
                                         {profileImage ? (
                                             <Image source={{ uri: profileImage }} className="w-full h-full" />
                                         ) : (
                                             <View className="items-center">
-                                                <Shield size={32} color={colors.primary} strokeWidth={1} />
-                                                <Text className="text-[8px] font-black text-primary/40 mt-1 tracking-widest">Identify</Text>
+                                                <Shield size={32} color={colors.textSecondary} strokeWidth={1} />
+                                                <Text style={{ color: colors.textSecondary }} className="text-[8px] font-black mt-1 tracking-widest opacity-40">Identify</Text>
                                             </View>
                                         )}
-                                        <View className="absolute bottom-0 right-0 left-0 bg-primary/20 items-center py-1">
+                                        <View style={{ backgroundColor: `${colors.primary}33` }} className="absolute bottom-0 right-0 left-0 items-center py-1">
                                             <Camera size={12} color={colors.primary} />
                                         </View>
                                     </TouchableOpacity>
-                                    <Text className="mt-3 text-[10px] font-black text-textSecondary/40 tracking-widest">Personal Profile Image</Text>
+                                    <Text style={{ color: colors.textSecondary }} className="mt-3 text-[10px] font-black tracking-widest opacity-40">Personal Profile Image</Text>
                                 </View>
 
                                 <View>
-                                    <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-3 ml-1 opacity-50">Business Lead</Text>
+                                    <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-3 ml-1 opacity-50">Business Lead</Text>
                                     <FloatingInput
                                         label="Full Name"
                                         value={formData.name}
@@ -339,13 +343,13 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                         ) : (
                             <View>
                                 <View className="items-center mb-10">
-                                    <View className="w-16 h-16 bg-primary/5 rounded-[24px] items-center justify-center border border-primary/10">
+                                    <View style={{ backgroundColor: `${colors.primary}0D`, borderColor: `${colors.primary}1A` }} className="w-16 h-16 rounded-[24px] items-center justify-center border">
                                         <Shield size={32} color={colors.primary} strokeWidth={1.5} />
                                     </View>
-                                    <Text className="mt-4 text-primary font-black text-xl tracking-tight">Enterprise Verification</Text>
+                                    <Text style={{ color: colors.text }} className="mt-4 font-black text-xl tracking-tight">Enterprise Verification</Text>
                                 </View>
 
-                                <View className="flex-row mb-10 bg-surface/50 p-1.5 rounded-2xl border border-surface">
+                                <View style={{ backgroundColor: isDarkMode ? `${colors.primary}33` : 'rgba(245, 247, 248, 0.5)', borderColor: colors.border }} className="flex-row mb-10 p-1.5 rounded-2xl border">
                                     {['GSTIN', 'Aadhaar'].map((type) => (
                                         <TouchableOpacity
                                             key={type}
@@ -355,7 +359,7 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                                                 paddingVertical: 14,
                                                 alignItems: 'center',
                                                 borderRadius: 12,
-                                                backgroundColor: activeIdType === type ? '#FFFFFF' : 'transparent',
+                                                backgroundColor: activeIdType === type ? colors.card : 'transparent',
                                                 shadowColor: activeIdType === type ? '#000' : 'transparent',
                                                 shadowOffset: { width: 0, height: 2 },
                                                 shadowOpacity: 0.1,
@@ -364,14 +368,14 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                                             }}
                                             onPress={() => setActiveIdType(type)}
                                         >
-                                            <Text className={`text-[10px] font-black tracking-widest ${activeIdType === type ? 'text-primary' : 'text-gray-400'}`}>{type}</Text>
+                                            <Text style={{ color: activeIdType === type ? colors.text : colors.textSecondary }} className={`text-[10px] font-black tracking-widest`}>{type}</Text>
                                         </TouchableOpacity>
                                     ))}
                                 </View>
 
                                 <View className="space-y-6">
                                     <View>
-                                        <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-3 ml-1 opacity-50">Public Branding</Text>
+                                        <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-3 ml-1 opacity-50">Public Branding</Text>
                                         <FloatingInput
                                             label="Trade / Store Name"
                                             value={formData.storeName}
@@ -388,8 +392,8 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                                         />
                                     </View>
 
-                                    <View className="mt-6">
-                                        <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-3 ml-1 opacity-50">Physical Nexus</Text>
+                                     <View className="mt-6">
+                                        <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-3 ml-1 opacity-50">Physical Nexus</Text>
                                         <AddressAutocomplete
                                             label="Registered Store Address"
                                             value={formData.storeAddress}
@@ -399,10 +403,11 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                                         <TouchableOpacity
                                             activeOpacity={0.8}
                                             onPress={getCurrentLocation}
-                                            className="mt-4 flex-row items-center border border-secondary/10 bg-secondary/5 py-5 rounded-[24px] px-6"
+                                            style={{ borderColor: `${colors.secondary}1A`, backgroundColor: `${colors.secondary}0D` }}
+                                            className="mt-4 flex-row items-center border py-5 rounded-[24px] px-6"
                                         >
                                             <View className={`w-3.5 h-3.5 rounded-full mr-4 shadow-sm ${formData.location ? 'bg-green-500' : 'bg-gray-300'}`} />
-                                            <Text className="text-secondary font-black text-xs tracking-widest">
+                                            <Text style={{ color: staticColors.secondary }} className="font-black text-xs tracking-widest">
                                                 {formData.location ? 'GPS Precision Synced' : 'Detect Live GPS Location'}
                                             </Text>
                                         </TouchableOpacity>
@@ -410,8 +415,8 @@ const VendorRegisterScreen = ({ navigation, route }) => {
 
                                     {/* Document Upload Zone */}
                                     <View className="mt-10">
-                                        <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-4 ml-1 opacity-50">Proof of Existence (Optional)</Text>
-                                        <TouchableOpacity className="h-[220px] border-2 border-surface border-dashed rounded-[32px] justify-center items-center bg-[#FAFAFA] overflow-hidden" onPress={pickDocument}>
+                                        <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-4 ml-1 opacity-50">Proof of Existence (Optional)</Text>
+                                        <TouchableOpacity style={{ borderColor: colors.border, backgroundColor: colors.surface }} className="h-[220px] border-2 border-dashed rounded-[32px] justify-center items-center overflow-hidden" onPress={pickDocument}>
                                             {docImage ? (
                                                 <View className="w-full h-full">
                                                     <Image source={{ uri: docImage }} className="w-full h-full" />
@@ -424,28 +429,27 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                                                 </View>
                                             ) : (
                                                 <View className="items-center">
-                                                    <View className="w-16 h-16 bg-white rounded-3xl items-center justify-center shadow-sm mb-6">
-                                                        <Upload size={28} color={colors.secondary} strokeWidth={2.5} />
+                                                    <View style={{ backgroundColor: colors.card }} className="w-16 h-16 rounded-3xl items-center justify-center shadow-sm mb-6">
+                                                        <Upload size={28} color={staticColors.secondary} strokeWidth={2.5} />
                                                     </View>
-                                                    <Text className="text-primary font-black text-sm tracking-widest">Upload ID Card</Text>
-                                                    <Text className="text-[10px] text-gray-400 mt-2 font-medium tracking-[2px]">PNG, JPG • Max 5MB</Text>
+                                                    <Text style={{ color: colors.text }} className="font-black text-sm tracking-widest">Upload ID Card</Text>
+                                                    <Text style={{ color: colors.textSecondary }} className="text-[10px] mt-2 font-medium tracking-[2px]">PNG, JPG • Max 5MB</Text>
                                                 </View>
                                             )}
                                         </TouchableOpacity>
                                     </View>
 
-                                    {/* AI Validation Status */}
                                     {validationStatus !== 'none' && (
                                         <View className={`flex-row items-center p-6 rounded-[28px] mt-8 border ${validationStatus === 'valid' ? 'bg-green-50 border-green-100' :
                                             validationStatus === 'invalid' ? 'bg-red-50 border-red-100' : 'bg-blue-50 border-blue-100'
                                             }`}>
-                                            {validationStatus === 'checking' && <ActivityIndicator size="small" color={colors.secondary} className="mr-4" />}
+                                            {validationStatus === 'checking' && <ActivityIndicator size="small" color={staticColors.secondary} className="mr-4" />}
                                             {validationStatus === 'valid' && <CheckCircle2 size={24} color="#10B981" strokeWidth={3} className="mr-4" />}
 
                                             <View className="flex-1">
-                                                <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-0.5 opacity-50">AI Core Status</Text>
+                                                <Text style={{ color: colors.text }} className="text-[10px] font-black tracking-widest mb-0.5 opacity-50">AI Core Status</Text>
                                                 <Text className={`text-sm font-black ${validationStatus === 'valid' ? 'text-green-600' :
-                                                    validationStatus === 'invalid' ? 'text-red-500' : 'text-secondary'
+                                                    validationStatus === 'invalid' ? 'text-red-500' : `text-[${staticColors.secondary}]`
                                                     }`}>
                                                     {validationStatus === 'checking' ? `Verifying Authenticity... ${uploadProgress}%` :
                                                         validationStatus === 'valid' ? 'Document Authorized' : 'Authorization Failed'}
@@ -475,16 +479,16 @@ const VendorRegisterScreen = ({ navigation, route }) => {
             {/* Custom Exit Confirmation Modal */}
             <Modal visible={isExitModalVisible} animationType="fade" transparent={true}>
                 <View className="flex-1 justify-center items-center bg-black/80 px-8">
-                    <View className="bg-white rounded-[60px] p-10 w-full items-center shadow-2xl relative overflow-hidden">
+                    <View style={{ backgroundColor: colors.card }} className="rounded-[60px] p-10 w-full items-center shadow-2xl relative overflow-hidden">
                         {/* Decorative Background Blob */}
-                        <View className="absolute -top-10 -right-10 w-32 h-32 bg-error/5 rounded-full" />
+                        <View style={{ backgroundColor: `${staticColors.error}0D` }} className="absolute -top-10 -right-10 w-32 h-32 rounded-full" />
 
-                        <View className="w-24 h-24 bg-error/10 rounded-[40px] items-center justify-center mb-8 rotate-12">
-                            <AlertCircle size={48} color={colors.error} strokeWidth={1.5} className="-rotate-12" />
+                        <View style={{ backgroundColor: `${staticColors.error}1A` }} className="w-24 h-24 rounded-[40px] items-center justify-center mb-8 rotate-12">
+                            <AlertCircle size={48} color={staticColors.error} strokeWidth={1.5} className="-rotate-12" />
                         </View>
 
-                        <Text className="text-3xl font-black text-primary mb-3 text-center tracking-tighter">Exit Setup?</Text>
-                        <Text className="text-textSecondary text-center mb-12 font-medium leading-6 opacity-70">
+                        <Text style={{ color: colors.text }} className="text-3xl font-black mb-3 text-center tracking-tighter">Exit Setup?</Text>
+                        <Text style={{ color: colors.textSecondary }} className="text-center mb-12 font-medium leading-6 opacity-70">
                             Your store details aren't saved yet. Quitting now will revert your account to a regular user.
                         </Text>
 
@@ -502,7 +506,7 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                                 }}
                                 className="w-full py-5 items-center mt-2"
                             >
-                                <Text className="text-error font-black text-xs tracking-[3px] uppercase">Quit & Revert</Text>
+                                <Text style={{ color: staticColors.error }} className="font-black text-xs tracking-[3px] uppercase">Quit & Revert</Text>
                             </TouchableOpacity>
                         </View>
                     </View>

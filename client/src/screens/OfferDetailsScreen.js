@@ -1,21 +1,24 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Image, TouchableOpacity, Share, useWindowDimensions, Alert, ActivityIndicator, StatusBar, Platform, Linking, Modal } from 'react-native';
+import Text from '../components/CustomText';
+import { View, ScrollView, Image, TouchableOpacity, Share, useWindowDimensions, Alert, ActivityIndicator, StatusBar, Platform, Linking, Modal } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronLeft, Share2, Heart, MapPin, Clock, Store, Info, Phone, Map, Sparkles, ChevronRight, X } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { colors } from '../theme/colors';
+import { colors as staticColors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
 import { API_BASE_URL } from '../config';
 
 const OfferDetailsScreen = ({ route, navigation }) => {
     const insets = useSafeAreaInsets();
+    const { colors, isDarkMode } = useTheme();
     const { offer } = route.params || {};
 
     if (!offer) {
         return (
-            <SafeAreaView className="flex-1 bg-white items-center justify-center">
-                <Text className="text-primary font-black">Offer Not Found</Text>
+            <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} className="items-center justify-center">
+                <Text style={{ color: colors.text }} className="font-black">Offer Not Found</Text>
             </SafeAreaView>
         );
     }
@@ -161,11 +164,11 @@ const OfferDetailsScreen = ({ route, navigation }) => {
     };
 
     return (
-        <View className="flex-1 bg-white">
-            <StatusBar barStyle="dark-content" backgroundColor="white" />
+        <View style={{ flex: 1, backgroundColor: colors.background }}>
+            <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={colors.background} />
 
-            {/* White Status Bar Line */}
-            <View style={{ height: Platform.OS === 'ios' ? insets.top - 12 : insets.top, backgroundColor: 'white' }} />
+            {/* Status Bar Line */}
+            <View style={{ height: Platform.OS === 'ios' ? insets.top - 12 : insets.top, backgroundColor: colors.background }} />
 
             <View
                 style={{ top: insets.top + (Platform.OS === 'ios' ? 0 : 12) }}
@@ -173,7 +176,8 @@ const OfferDetailsScreen = ({ route, navigation }) => {
             >
                 <TouchableOpacity
                     onPress={() => navigation.goBack()}
-                    className="w-12 h-12 bg-white/90 rounded-2xl items-center justify-center shadow-lg"
+                    style={{ backgroundColor: isDarkMode ? 'rgba(31, 41, 55, 0.9)' : 'rgba(255, 255, 255, 0.9)' }}
+                    className="w-12 h-12 rounded-2xl items-center justify-center shadow-lg"
                 >
                     <ChevronLeft size={24} color={colors.primary} strokeWidth={3} />
                 </TouchableOpacity>
@@ -181,15 +185,17 @@ const OfferDetailsScreen = ({ route, navigation }) => {
                 <View className="flex-row">
                     <TouchableOpacity
                         onPress={handleShare}
-                        className="w-12 h-12 bg-white/90 rounded-2xl items-center justify-center mr-3 shadow-lg"
+                        style={{ backgroundColor: isDarkMode ? 'rgba(31, 41, 55, 0.9)' : 'rgba(255, 255, 255, 0.9)' }}
+                        className="w-12 h-12 rounded-2xl items-center justify-center mr-3 shadow-lg"
                     >
                         <Share2 size={20} color={colors.primary} strokeWidth={2.5} />
                     </TouchableOpacity>
                     <TouchableOpacity
                         onPress={handleToggleWishlist}
-                        className="w-12 h-12 bg-white/90 rounded-2xl items-center justify-center shadow-lg"
+                        style={{ backgroundColor: isDarkMode ? 'rgba(31, 41, 55, 0.9)' : 'rgba(255, 255, 255, 0.9)' }}
+                        className="w-12 h-12 rounded-2xl items-center justify-center shadow-lg"
                     >
-                        <Heart size={20} color={isFavorite ? colors.error : colors.primary} fill={isFavorite ? colors.error : 'transparent'} strokeWidth={2.5} />
+                        <Heart size={20} color={isFavorite ? staticColors.error : colors.primary} fill={isFavorite ? staticColors.error : 'transparent'} strokeWidth={2.5} />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -202,27 +208,27 @@ const OfferDetailsScreen = ({ route, navigation }) => {
                 >
                     <Image
                         source={{ uri: imageUrl }}
-                        style={{ width: '100%', height: imageHeight }}
+                        style={{ width: '100%', height: imageHeight, backgroundColor: colors.surface }}
                         className="bg-surface"
                     />
                     <LinearGradient
-                        colors={['rgba(0,0,0,0.4)', 'transparent', 'white']}
+                        colors={['rgba(0,0,0,0.4)', 'transparent', colors.background]}
                         className="absolute inset-0"
                     />
 
                     <View className="absolute bottom-10 left-6 right-6 flex-row justify-end items-end">
-                        <View className="bg-white/90 px-4 py-2 rounded-2xl shadow-lg border border-white/20">
-                            <Text className="text-secondary font-black text-xs tracking-widest">Valid: {formatDate(offer.startDate)} - {formatDate(offer.endDate)}</Text>
+                        <View style={{ backgroundColor: isDarkMode ? 'rgba(31, 41, 55, 0.9)' : 'rgba(255, 255, 255, 0.9)', borderColor: colors.border }} className="px-4 py-2 rounded-2xl shadow-lg border">
+                            <Text style={{ color: staticColors.secondary }} className="font-black text-xs tracking-widest">Valid: {formatDate(offer.startDate)} - {formatDate(offer.endDate)}</Text>
                         </View>
                     </View>
                 </TouchableOpacity>
 
                 <View className="px-6 py-8">
                     <View className="mb-8">
-                        <Text className="text-[10px] font-black text-secondary tracking-[2px] mb-2">
+                        <Text style={{ color: staticColors.secondary }} className="text-[10px] font-black tracking-[2px] mb-2">
                             {offer.category || 'Offer'}
                         </Text>
-                        <Text className="text-4xl font-black text-primary tracking-tighter leading-[44px]">
+                        <Text style={{ color: colors.text }} className="text-4xl font-black tracking-tighter leading-[44px]">
                             {offer.title}
                         </Text>
                     </View>
@@ -230,57 +236,59 @@ const OfferDetailsScreen = ({ route, navigation }) => {
                     <TouchableOpacity
                         activeOpacity={0.7}
                         onPress={() => navigation.navigate('PublicStoreProfile', { vendorId: offer.vendorId?._id })}
-                        className="bg-[#FAFAFA] rounded-[32px] p-6 mb-8 border border-surface shadow-sm"
+                        style={{ backgroundColor: colors.card, borderColor: colors.border }}
+                        className="rounded-[32px] p-6 mb-8 border shadow-sm"
                     >
                         <View className="flex-row items-center mb-6">
-                            <View className="w-14 h-14 bg-white rounded-2xl items-center justify-center shadow-md border border-surface overflow-hidden">
+                            <View style={{ backgroundColor: colors.surface, borderColor: colors.border }} className="w-14 h-14 rounded-2xl items-center justify-center shadow-md border overflow-hidden">
                                 <Image source={storeLogoSource} className="w-full h-full" resizeMode="cover" />
                             </View>
                             <View className="ml-4 flex-1">
-                                <Text className="text-primary font-black text-lg">{storeName}</Text>
+                                <Text style={{ color: colors.text }} className="font-black text-lg">{storeName}</Text>
                                 <View className="flex-row items-center mt-1">
                                     <MapPin size={14} color={colors.textSecondary} />
-                                    <Text className="text-textSecondary text-xs font-bold ml-1">{offer.distance || 'Nearby'} km Away</Text>
+                                    <Text style={{ color: colors.textSecondary }} className="text-xs font-bold ml-1">{offer.distance || 'Nearby'} km Away</Text>
                                 </View>
                             </View>
-                            <ChevronRight size={20} color={colors.primary} opacity={0.3} />
+                            <ChevronRight size={20} color={colors.primary} style={{ opacity: 0.3 }} />
                         </View>
 
-                        <Text className="text-textSecondary text-sm font-medium leading-6 mb-6">
+                        <Text style={{ color: colors.textSecondary }} className="text-sm font-medium leading-6 mb-6">
                             {storeAddress}
                         </Text>
 
                         <View className="flex-row gap-3">
                             <TouchableOpacity
                                 onPress={handleGetDirections}
-                                className="flex-1 bg-white border border-surface py-4 rounded-2xl flex-row items-center justify-center shadow-sm"
+                                style={{ backgroundColor: colors.surface, borderColor: colors.border }}
+                                className="flex-1 border py-4 rounded-2xl flex-row items-center justify-center shadow-sm"
                             >
                                 <Map size={18} color={colors.primary} />
-                                <Text className="ml-2 font-black text-primary text-xs tracking-widest">Directions</Text>
+                                <Text style={{ color: colors.primary }} className="ml-2 font-black text-xs tracking-widest">Directions</Text>
                             </TouchableOpacity>
                         </View>
                     </TouchableOpacity>
 
                     <View className="mb-10">
                         <View className="flex-row items-center mb-4">
-                            <View className="w-1.5 h-6 bg-secondary rounded-full mr-3" />
-                            <Text className="text-xl font-black text-primary tracking-tight">Offer Details</Text>
+                            <View style={{ backgroundColor: staticColors.secondary }} className="w-1.5 h-6 rounded-full mr-3" />
+                            <Text style={{ color: colors.text }} className="text-xl font-black tracking-tight">Offer Details</Text>
                         </View>
-                        <Text className="text-textSecondary text-base leading-7 font-medium">
+                        <Text style={{ color: colors.textSecondary }} className="text-base leading-7 font-medium">
                             {offer.description}
                         </Text>
                     </View>
 
-                    <View className="bg-primary/5 p-8 rounded-[40px] border border-primary/5">
+                    <View style={{ backgroundColor: `${colors.primary}10`, borderColor: `${colors.primary}10` }} className="p-8 rounded-[40px] border">
                         <View className="flex-row items-center mb-6">
                             <Sparkles size={16} color={colors.primary} strokeWidth={2} />
-                            <Text className="font-black text-primary text-sm tracking-[3px] ml-3">Verified Offer</Text>
+                            <Text style={{ color: colors.primary }} className="font-black text-sm tracking-[3px] ml-3">Verified Offer</Text>
                         </View>
                         <View className="flex-row items-start mb-4">
-                            <View className="w-6 h-6 rounded-full bg-white items-center justify-center mr-4 shadow-sm">
+                            <View style={{ backgroundColor: colors.card }} className="w-6 h-6 rounded-full items-center justify-center mr-4 shadow-sm">
                                 <Clock size={12} color={colors.primary} strokeWidth={3} />
                             </View>
-                            <Text className="text-primary font-bold text-sm flex-1 leading-6">
+                            <Text style={{ color: colors.text }} className="font-bold text-sm flex-1 leading-6">
                                 This offer is valid from {formatDate(offer.startDate)} to {formatDate(offer.endDate)}.
                             </Text>
                         </View>

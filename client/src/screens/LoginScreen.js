@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
+import Text from '../components/CustomText';
 import {
     View,
-    Text,
     TouchableOpacity,
     ScrollView,
     KeyboardAvoidingView,
@@ -14,11 +14,13 @@ import FloatingInput from '../components/FloatingInput';
 
 import CustomButton from '../components/CustomButton';
 import TabSwitcher from '../components/TabSwitcher';
+import { useTheme } from '../context/ThemeContext';
 import { } from '@react-navigation/native';
 import { Chrome as Google, Facebook } from 'lucide-react-native';
 import { API_BASE_URL } from '../config';
 
 const LoginScreen = ({ navigation }) => {
+    const { colors, isDarkMode } = useTheme();
     const [loginMode, setLoginMode] = useState('password'); // 'password' or 'otp'
     const [mobile, setMobile] = useState('');
     const [password, setPassword] = useState('');
@@ -135,7 +137,7 @@ const LoginScreen = ({ navigation }) => {
     };
 
     return (
-        <SafeAreaView className="flex-1 bg-white">
+        <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 className="flex-1"
@@ -146,16 +148,16 @@ const LoginScreen = ({ navigation }) => {
                 >
                     <View className="mb-8 items-center">
                         <View className="mb-4">
-                            <Text className="text-4xl font-black text-primary tracking-tighter">
-                                Flash<Text className="text-secondary">Deals</Text>
+                            <Text style={{ color: colors.text }} className="text-4xl font-black tracking-tighter">
+                                Flash<Text style={{ color: colors.secondary }}>Deals</Text>
                             </Text>
                         </View>
-                        <Text className="text-2xl font-bold text-primary mb-2">Welcome Back!</Text>
-                        <Text className="text-sm text-gray-500 text-center">Login to access the best deals nearby.</Text>
+                        <Text style={{ color: colors.text }} className="text-2xl font-bold mb-2">Welcome Back!</Text>
+                        <Text style={{ color: colors.textSecondary }} className="text-sm text-center">Login to access the best deals nearby.</Text>
                     </View>
 
                     {/* Premium Login Switcher */}
-                    <View className="flex-row bg-surface/50 p-1.5 rounded-2xl border border-surface mb-8">
+                    <View style={{ backgroundColor: isDarkMode ? `${colors.primary}33` : 'rgba(245, 247, 248, 0.5)', borderColor: colors.border }} className="flex-row p-1.5 rounded-2xl border mb-8">
                         {['password', 'otp'].map((mode) => (
                             <TouchableOpacity
                                 key={mode}
@@ -165,7 +167,7 @@ const LoginScreen = ({ navigation }) => {
                                     paddingVertical: 12,
                                     alignItems: 'center',
                                     borderRadius: 12,
-                                    backgroundColor: loginMode === mode ? '#FFFFFF' : 'transparent',
+                                    backgroundColor: loginMode === mode ? colors.card : 'transparent',
                                     shadowColor: loginMode === mode ? '#000' : 'transparent',
                                     shadowOffset: { width: 0, height: 2 },
                                     shadowOpacity: 0.1,
@@ -174,7 +176,7 @@ const LoginScreen = ({ navigation }) => {
                                 }}
                                 onPress={() => setLoginMode(mode)}
                             >
-                                <Text className={`text-[11px] font-black tracking-wider ${loginMode === mode ? 'text-primary' : 'text-gray-400'}`}>
+                                <Text style={{ color: loginMode === mode ? colors.text : colors.textSecondary }} className={`text-[11px] font-black tracking-wider`}>
                                     {mode === 'password' ? 'Password' : 'OTP Login'}
                                 </Text>
                             </TouchableOpacity>
@@ -184,11 +186,11 @@ const LoginScreen = ({ navigation }) => {
                     {loginMode === 'otp' && otpSent ? (
                         <View>
                             <View className="mb-6 items-center">
-                                <Text className="text-gray-400 text-xs font-bold tracking-widest mb-1">Enter Code Sent OTP</Text>
+                                <Text style={{ color: colors.textSecondary }} className="text-xs font-bold tracking-widest mb-1">Enter Code Sent OTP</Text>
                                 <View className="flex-row items-center">
-                                    <Text className="text-primary font-black text-sm">+91 {mobile}</Text>
+                                    <Text style={{ color: colors.text }} className="font-black text-sm">+91 {mobile}</Text>
                                     <TouchableOpacity onPress={() => { setOtpSent(false); setOtp(''); }}>
-                                        <Text className="ml-2 text-secondary font-bold text-xs underline">Change</Text>
+                                        <Text style={{ color: colors.secondary }} className="ml-2 font-bold text-xs underline">Change</Text>
                                     </TouchableOpacity>
                                 </View>
                             </View>
@@ -201,10 +203,10 @@ const LoginScreen = ({ navigation }) => {
                             />
                             <View className="items-center mb-6">
                                 {timer > 0 ? (
-                                    <Text className="text-gray-400 text-xs font-bold">Resend OTP in {timer}s</Text>
+                                    <Text style={{ color: colors.textSecondary }} className="text-xs font-bold">Resend OTP in {timer}s</Text>
                                 ) : (
                                     <TouchableOpacity onPress={handleSendOTP}>
-                                        <Text className="text-secondary font-black text-xs tracking-widest underline">Resend code</Text>
+                                        <Text style={{ color: colors.secondary }} className="font-black text-xs tracking-widest underline">Resend code</Text>
                                     </TouchableOpacity>
                                 )}
                             </View>
@@ -236,7 +238,7 @@ const LoginScreen = ({ navigation }) => {
                             className="self-end mb-5"
                             onPress={() => navigation.navigate('ForgotPassword')}
                         >
-                            <Text className="text-accent font-semibold text-sm">Forgot Password?</Text>
+                            <Text style={{ color: colors.accent }} className="font-semibold text-sm">Forgot Password?</Text>
                         </TouchableOpacity>
                     )}
 
@@ -247,19 +249,19 @@ const LoginScreen = ({ navigation }) => {
                     />
 
                     <View className="flex-row items-center my-6">
-                        <View className="flex-1 h-[1px] bg-gray-200" />
-                        <Text className="mx-4 text-gray-500 text-xs font-bold">OR</Text>
-                        <View className="flex-1 h-[1px] bg-gray-200" />
+                        <View style={{ backgroundColor: colors.border }} className="flex-1 h-[1px]" />
+                        <Text style={{ color: colors.textSecondary }} className="mx-4 text-xs font-bold">OR</Text>
+                        <View style={{ backgroundColor: colors.border }} className="flex-1 h-[1px]" />
                     </View>
 
                     <View className="flex-row justify-between mb-6">
-                        <TouchableOpacity className="flex-[0.48] flex-row h-[50px] border border-gray-200 rounded-lg justify-center items-center">
+                        <TouchableOpacity style={{ borderColor: colors.border }} className="flex-[0.48] flex-row h-[50px] border rounded-lg justify-center items-center">
                             <Google size={24} color="#DB4437" />
-                            <Text className="ml-2.5 text-sm font-semibold text-primary">Google</Text>
+                            <Text style={{ color: colors.text }} className="ml-2.5 text-sm font-semibold">Google</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity className="flex-[0.48] flex-row h-[50px] border border-gray-200 rounded-lg justify-center items-center">
+                        <TouchableOpacity style={{ borderColor: colors.border }} className="flex-[0.48] flex-row h-[50px] border rounded-lg justify-center items-center">
                             <Facebook size={24} color="#4267B2" />
-                            <Text className="ml-2.5 text-sm font-semibold text-primary">Facebook</Text>
+                            <Text style={{ color: colors.text }} className="ml-2.5 text-sm font-semibold">Facebook</Text>
                         </TouchableOpacity>
                     </View>
 
@@ -267,20 +269,20 @@ const LoginScreen = ({ navigation }) => {
                         className="items-center mb-6"
                         onPress={() => { }}
                     >
-                        <Text className="text-gray-500 text-sm font-semibold underline">Skip Login</Text>
+                        <Text style={{ color: colors.textSecondary }} className="text-sm font-semibold underline">Skip Login</Text>
                     </TouchableOpacity>
 
                     <View className="flex-row justify-center mb-10">
-                        <Text className="text-primary text-sm">Don't have an account? </Text>
+                        <Text style={{ color: colors.text }} className="text-sm">Don't have an account? </Text>
                         <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-                            <Text className="text-secondary font-bold text-sm">Register Now</Text>
+                            <Text style={{ color: colors.secondary }} className="font-bold text-sm">Register Now</Text>
                         </TouchableOpacity>
                     </View>
 
                     <View className="flex-row justify-center items-center">
-                        <Text className="text-xs text-gray-400">Terms & Conditions</Text>
-                        <View className="w-1 h-1 rounded-full bg-gray-300 mx-2" />
-                        <Text className="text-xs text-gray-400">Privacy Policy</Text>
+                        <Text style={{ color: colors.textSecondary }} className="text-xs">Terms & Conditions</Text>
+                        <View style={{ backgroundColor: colors.border }} className="w-1 h-1 rounded-full mx-2" />
+                        <Text style={{ color: colors.textSecondary }} className="text-xs">Privacy Policy</Text>
                     </View>
                 </ScrollView>
             </KeyboardAvoidingView>

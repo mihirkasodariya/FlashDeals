@@ -1,12 +1,15 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import Text from './CustomText';
+import { View, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { MapPin, Clock, Heart } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { colors } from '../theme/colors';
+import { colors as staticColors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
 import { API_BASE_URL } from '../config';
 
 const OfferCard = ({ offer, onPress, grid, isFavorite = false, onRefresh }) => {
     if (!offer) return null;
+    const { colors, isDarkMode } = useTheme();
     const [localFavorite, setLocalFavorite] = React.useState(isFavorite);
 
     React.useEffect(() => {
@@ -86,11 +89,11 @@ const OfferCard = ({ offer, onPress, grid, isFavorite = false, onRefresh }) => {
         <TouchableOpacity
             onPress={onPress}
             activeOpacity={0.9}
-            style={styles.cardContainer}
-            className={`bg-white rounded-[24px] mb-6 overflow-hidden border border-[#E5E7EB]/60 ${grid ? 'mx-1' : ''}`}
+            style={[styles.cardContainer, { backgroundColor: colors.card, borderColor: colors.border }]}
+            className={`rounded-[24px] mb-6 overflow-hidden border ${grid ? 'mx-1' : ''}`}
         >
             {/* Minimalist Image View */}
-            <View className={`relative bg-[#F9FAFB] ${grid ? 'h-40' : 'h-56'}`}>
+            <View style={{ backgroundColor: colors.surface }} className={`relative ${grid ? 'h-40' : 'h-56'}`}>
                 <Image
                     source={{ uri: imageUrl }}
                     className="w-full h-full"
@@ -99,7 +102,7 @@ const OfferCard = ({ offer, onPress, grid, isFavorite = false, onRefresh }) => {
 
                 {/* Subtle Brand Overlay */}
                 <View className={`absolute bottom-3 left-3 right-3 flex-row justify-between items-center ${grid ? 'bottom-2 left-2 right-2' : ''}`}>
-                    <View className="bg-white/90 backdrop-blur-md px-2 py-1 rounded-lg flex-row items-center border border-white/50 shadow-sm leading-none">
+                    <View style={{ backgroundColor: colors.card + 'E6', borderColor: colors.border }} className="backdrop-blur-md px-2 py-1 rounded-lg flex-row items-center border shadow-sm">
                         <View className={`${grid ? 'w-4 h-4' : 'w-5 h-5'} bg-white rounded-md items-center justify-center overflow-hidden mr-1.5`}>
                             <Image
                                 source={storeLogoSource}
@@ -108,7 +111,7 @@ const OfferCard = ({ offer, onPress, grid, isFavorite = false, onRefresh }) => {
                             />
                         </View>
                         {!grid && (
-                            <Text className="text-primary font-black text-[9px] tracking-wider" numberOfLines={1}>
+                            <Text style={{ color: colors.text }} className="font-black text-[9px] tracking-wider" numberOfLines={1}>
                                 {storeName}
                             </Text>
                         )}
@@ -116,30 +119,31 @@ const OfferCard = ({ offer, onPress, grid, isFavorite = false, onRefresh }) => {
 
                     <TouchableOpacity
                         onPress={toggleWishlist}
-                        className={`${grid ? 'w-7 h-7' : 'w-9 h-9'} bg-white/80 backdrop-blur-xl rounded-full items-center justify-center border border-white/80`}
+                        style={{ backgroundColor: colors.card + 'CC', borderColor: colors.border }}
+                        className={`${grid ? 'w-7 h-7' : 'w-9 h-9'} backdrop-blur-xl rounded-full items-center justify-center border`}
                     >
-                        <Heart size={grid ? 14 : 16} color={localFavorite ? colors.error : colors.primary} fill={localFavorite ? colors.error : 'transparent'} strokeWidth={2.5} />
+                        <Heart size={grid ? 14 : 16} color={localFavorite ? staticColors.error : colors.primary} fill={localFavorite ? staticColors.error : 'transparent'} strokeWidth={2.5} />
                     </TouchableOpacity>
                 </View>
             </View>
 
             {/* Content Area */}
             <View className={`${grid ? 'p-3' : 'p-5'}`}>
-                <Text className={`text-primary font-black tracking-tight ${grid ? 'text-xs mb-2 h-10' : 'text-lg mb-3'}`} numberOfLines={2}>
+                <Text style={{ color: colors.text }} className={`font-black tracking-tight ${grid ? 'text-xs mb-2 h-10' : 'text-lg mb-3'}`} numberOfLines={2}>
                     {offer.title}
                 </Text>
 
                 <View className="flex-row items-center justify-between mt-auto">
-                    <View className={`flex-row items-center bg-[#F3F4F6] ${grid ? 'px-1.5 py-1' : 'px-3 py-2'} rounded-lg`}>
-                        <MapPin size={grid ? 8 : 10} color={colors.secondary} strokeWidth={3} />
-                        <Text className={`text-primary font-bold ${grid ? 'text-[7px]' : 'text-[10px]'} ml-1 tracking-tight`}>
+                    <View style={{ backgroundColor: colors.surface }} className={`flex-row items-center ${grid ? 'px-1.5 py-1' : 'px-3 py-2'} rounded-lg`}>
+                        <MapPin size={grid ? 8 : 10} color={staticColors.secondary} strokeWidth={3} />
+                        <Text style={{ color: colors.text }} className={`font-bold ${grid ? 'text-[7px]' : 'text-[10px]'} ml-1 tracking-tight`}>
                             {offer.distance || 'Near'} km
                         </Text>
                     </View>
 
-                    <View className={`flex-row items-center bg-primary/5 ${grid ? 'px-1.5 py-1' : 'px-3 py-2'} rounded-lg border border-primary/5`}>
+                    <View style={{ backgroundColor: `${colors.primary}1A`, borderColor: `${colors.primary}1A` }} className={`flex-row items-center ${grid ? 'px-1.5 py-1' : 'px-3 py-2'} rounded-lg border`}>
                         <Clock size={grid ? 8 : 10} color={colors.primary} strokeWidth={3} />
-                        <Text className={`text-primary font-black ${grid ? 'text-[7px]' : 'text-[10px]'} ml-1`}>
+                        <Text style={{ color: colors.primary }} className={`font-black ${grid ? 'text-[7px]' : 'text-[10px]'} ml-1`}>
                             {formatDate(offer.startDate)} - {formatDate(offer.endDate)}
                         </Text>
                     </View>

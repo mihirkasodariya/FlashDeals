@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Modal, TouchableOpacity, ScrollView, TextInput, FlatList } from 'react-native';
+import Text from './CustomText';
+import { View, Modal, TouchableOpacity, ScrollView, TextInput, FlatList } from 'react-native';
 import { X, ChevronRight, MapPin, Search, ChevronLeft, Navigation2 } from 'lucide-react-native';
 
-import { colors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
 
 const LocationSelectorModal = ({ visible, onClose, onSelectLocation }) => {
+    const { colors, isDarkMode } = useTheme();
     const [step, setStep] = useState('state'); // state, district, city, village
     const [selectedState, setSelectedState] = useState(null);
     const [selectedDistrict, setSelectedDistrict] = useState(null);
@@ -72,40 +74,41 @@ const LocationSelectorModal = ({ visible, onClose, onSelectLocation }) => {
     return (
         <Modal visible={visible} animationType="slide" transparent={true}>
             <View className="flex-1 justify-end bg-black/60">
-                <View className="bg-white rounded-t-[40px] h-[85%] shadow-2xl">
+                <View style={{ backgroundColor: colors.card }} className="rounded-t-[40px] h-[85%] shadow-2xl">
                     {/* Premium Handle */}
-                    <View className="w-12 h-1 bg-[#E5E7EB] rounded-full self-center mt-4 mb-2" />
+                    <View style={{ backgroundColor: colors.border }} className="w-12 h-1 rounded-full self-center mt-4 mb-2" />
 
                     {/* Header */}
                     <View className="flex-row items-center justify-between px-6 py-4">
                         <View className="flex-row items-center flex-1">
                             {step !== 'state' && (
-                                <TouchableOpacity onPress={handleBack} className="mr-4 w-10 h-10 bg-[#F3F4F6] rounded-full items-center justify-center">
+                                <TouchableOpacity onPress={handleBack} style={{ backgroundColor: colors.surface }} className="mr-4 w-10 h-10 rounded-full items-center justify-center">
                                     <ChevronLeft size={20} color={colors.primary} strokeWidth={3} />
                                 </TouchableOpacity>
                             )}
                             <View>
-                                <Text className="text-[10px] font-black text-secondary uppercase tracking-widest mb-0.5">Location Hub</Text>
-                                <Text className="text-2xl font-black text-primary">
+                                <Text style={{ color: colors.secondary }} className="text-[10px] font-black uppercase tracking-widest mb-0.5">Location Hub</Text>
+                                <Text style={{ color: colors.text }} className="text-2xl font-black">
                                     {step === 'state' ? 'Choose State' :
                                         step === 'district' ? 'Select District' :
                                             step === 'city' ? 'Select City' : 'Select Village'}
                                 </Text>
                             </View>
                         </View>
-                        <TouchableOpacity onPress={handleClose} className="w-10 h-10 bg-[#F3F4F6] rounded-full items-center justify-center">
+                        <TouchableOpacity onPress={handleClose} style={{ backgroundColor: colors.surface }} className="w-10 h-10 rounded-full items-center justify-center">
                             <X size={20} color={colors.primary} strokeWidth={3} />
                         </TouchableOpacity>
                     </View>
 
                     {/* Modern Search */}
                     <View className="px-6 py-4">
-                        <View className="flex-row items-center bg-[#F3F4F6] rounded-2xl px-5 py-4 border border-transparent focus:border-primary/20">
+                        <View style={{ backgroundColor: colors.surface }} className="flex-row items-center rounded-2xl px-5 py-4 border border-transparent">
                             <Search size={20} color={colors.textSecondary} strokeWidth={2.5} />
                             <TextInput
-                                className="flex-1 ml-3 text-primary font-bold text-sm"
+                                style={{ color: colors.text }}
+                                className="flex-1 ml-3 font-bold text-sm"
                                 placeholder={`Find your ${step}...`}
-                                placeholderTextColor="#9CA3AF"
+                                placeholderTextColor={colors.textSecondary + '80'}
                                 value={searchQuery}
                                 onChangeText={setSearchQuery}
                             />
@@ -135,39 +138,41 @@ const LocationSelectorModal = ({ visible, onClose, onSelectLocation }) => {
                         contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 40, paddingTop: 10 }}
                         ListHeaderComponent={step === 'state' && (
                             <TouchableOpacity
-                                className="flex-row items-center p-6 bg-secondary/5 rounded-3xl mb-4 border border-secondary/10"
+                                style={{ backgroundColor: `${colors.secondary}1A`, borderColor: `${colors.secondary}1A` }}
+                                className="flex-row items-center p-6 rounded-3xl mb-4 border"
                                 onPress={() => {
                                     onSelectLocation('Current Location (GPS)');
                                     handleClose();
                                 }}
                             >
-                                <View className="w-12 h-12 bg-secondary/20 rounded-2xl items-center justify-center">
+                                <View style={{ backgroundColor: `${colors.secondary}33` }} className="w-12 h-12 rounded-2xl items-center justify-center">
                                     <Navigation2 size={22} color={colors.secondary} strokeWidth={3} />
                                 </View>
                                 <View className="ml-4">
-                                    <Text className="text-primary font-black text-base">Detect Current</Text>
-                                    <Text className="text-secondary font-bold text-xs uppercase tracking-tighter">Using GPS Precision</Text>
+                                    <Text style={{ color: colors.text }} className="font-black text-base">Detect Current</Text>
+                                    <Text style={{ color: colors.secondary }} className="font-bold text-xs uppercase tracking-tighter">Using GPS Precision</Text>
                                 </View>
                             </TouchableOpacity>
                         )}
                         renderItem={({ item }) => (
                             <TouchableOpacity
-                                className="flex-row items-center justify-between py-5 border-b border-surface"
+                                style={{ borderBottomColor: colors.surface }}
+                                className="flex-row items-center justify-between py-5 border-b"
                                 onPress={() => handleSelect(item)}
                             >
                                 <View className="flex-row items-center">
-                                    <View className="w-10 h-10 bg-primary/5 rounded-xl items-center justify-center mr-4">
+                                    <View style={{ backgroundColor: `${colors.primary}1A` }} className="w-10 h-10 rounded-xl items-center justify-center mr-4">
                                         <MapPin size={18} color={colors.primary} />
                                     </View>
-                                    <Text className="text-primary text-base font-bold">{item}</Text>
+                                    <Text style={{ color: colors.text }} className="text-base font-bold">{item}</Text>
                                 </View>
-                                <ChevronRight size={18} color="#D1D5DB" strokeWidth={3} />
+                                <ChevronRight size={18} color={colors.border} strokeWidth={3} />
                             </TouchableOpacity>
                         )}
                         ListEmptyComponent={
                             <View className="items-center justify-center py-20">
-                                <Search size={48} color="#E5E7EB" />
-                                <Text className="text-textSecondary font-bold mt-4">We couldn't find that place</Text>
+                                <Search size={48} color={colors.border} />
+                                <Text style={{ color: colors.textSecondary }} className="font-bold mt-4">We couldn't find that place</Text>
                             </View>
                         }
                     />

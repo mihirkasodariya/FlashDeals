@@ -1,8 +1,11 @@
 import React, { useState, useRef } from 'react';
-import { View, TextInput, Text, Animated, TouchableOpacity } from 'react-native';
+import Text from './CustomText';
+import { View, TextInput, Animated, TouchableOpacity } from 'react-native';
 import { Eye, EyeOff } from 'lucide-react-native';
+import { useTheme } from '../context/ThemeContext';
 
 const FloatingInput = ({ label, value, onChangeText, secureTextEntry, keyboardType, error, ...props }) => {
+    const { colors, isDarkMode } = useTheme();
     const [isFocused, setIsFocused] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const animatedValue = useRef(new Animated.Value(value ? 1 : 0)).current;
@@ -40,21 +43,26 @@ const FloatingInput = ({ label, value, onChangeText, secureTextEntry, keyboardTy
         }),
         color: animatedValue.interpolate({
             inputRange: [0, 1],
-            outputRange: ['#54757C', '#002F34'],
+            outputRange: [colors.textSecondary, colors.text],
         }),
     };
 
     return (
         <View className="mb-4 w-full">
             <View
-                className={`h-[60px] rounded-lg border px-4 pt-4 flex-row items-center ${isFocused ? 'border-primary bg-white border-2' : 'border-gray-200 bg-surface'
-                    } ${error ? 'border-red-500' : ''}`}
+                style={{ 
+                    backgroundColor: isFocused ? colors.background : colors.surface, 
+                    borderColor: error ? 'red' : (isFocused ? colors.primary : colors.border),
+                    borderWidth: isFocused ? 2 : 1
+                }}
+                className={`h-[60px] rounded-lg px-4 pt-4 flex-row items-center`}
             >
                 <Animated.Text style={labelStyle}>
                     {label}
                 </Animated.Text>
                 <TextInput
-                    className="flex-1 text-base text-primary h-full pt-1.5"
+                    style={{ color: colors.text }}
+                    className="flex-1 text-base h-full pt-1.5"
                     value={value}
                     onChangeText={onChangeText}
                     onFocus={handleFocus}
@@ -70,9 +78,9 @@ const FloatingInput = ({ label, value, onChangeText, secureTextEntry, keyboardTy
                         className="p-2.5"
                     >
                         {showPassword ? (
-                            <EyeOff size={20} color="#54757C" />
+                            <EyeOff size={20} color={colors.textSecondary} />
                         ) : (
-                            <Eye size={20} color="#54757C" />
+                            <Eye size={20} color={colors.textSecondary} />
                         )}
                     </TouchableOpacity>
                 )}

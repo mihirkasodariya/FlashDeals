@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
+import Text from '../components/CustomText';
 import {
     View,
-    Text,
     TouchableOpacity,
     KeyboardAvoidingView,
     Platform,
@@ -14,9 +14,11 @@ import FloatingInput from '../components/FloatingInput';
 import CustomButton from '../components/CustomButton';
 import { API_BASE_URL } from '../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { colors } from '../theme/colors';
+import { colors as staticColors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
 
 const ChangePasswordScreen = ({ navigation }) => {
+    const { colors, isDarkMode } = useTheme();
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -71,15 +73,16 @@ const ChangePasswordScreen = ({ navigation }) => {
     };
 
     return (
-        <SafeAreaView className="flex-1 bg-white">
-            <View className="px-4 pt-2.5 flex-row items-center border-b border-surface pb-4">
+        <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+            <View style={{ borderColor: colors.border }} className="px-4 pt-2.5 flex-row items-center border-b pb-4">
                 <TouchableOpacity
                     onPress={() => navigation.goBack()}
-                    className="w-10 h-10 bg-surface rounded-full items-center justify-center"
+                    style={{ backgroundColor: colors.surface }}
+                    className="w-10 h-10 rounded-full items-center justify-center"
                 >
-                    <ChevronLeft size={24} color={colors.primary} />
+                    <ChevronLeft size={24} color={colors.text} />
                 </TouchableOpacity>
-                <Text className="ml-4 text-xl font-black text-primary">Security Settings</Text>
+                <Text style={{ color: colors.text }} className="ml-4 text-xl font-black">Security Settings</Text>
             </View>
 
             <KeyboardAvoidingView
@@ -91,18 +94,18 @@ const ChangePasswordScreen = ({ navigation }) => {
                     showsVerticalScrollIndicator={false}
                 >
                     <View className="items-center mb-10">
-                        <View className="w-20 h-20 bg-primary/5 rounded-[32px] items-center justify-center border border-primary/10 mb-5">
+                        <View style={{ backgroundColor: `${colors.primary}0D`, borderColor: `${colors.primary}1A` }} className="w-20 h-20 rounded-[32px] items-center justify-center border mb-5">
                             <ShieldCheck size={40} color={colors.primary} />
                         </View>
-                        <Text className="text-2xl font-black text-primary text-center">Update Password</Text>
-                        <Text className="text-sm text-gray-500 text-center mt-2 px-6">
+                        <Text style={{ color: colors.text }} className="text-2xl font-black text-center">Update Password</Text>
+                        <Text style={{ color: colors.textSecondary }} className="text-sm text-center mt-2 px-6">
                             Manage your digital perimeter by keeping your credentials refreshed.
                         </Text>
                     </View>
 
                     <View className="space-y-6">
                         <View>
-                            <Text className="text-[10px] font-black text-secondary tracking-[2px] mb-3 ml-1 uppercase">Authentication Check</Text>
+                            <Text style={{ color: colors.secondary }} className="text-[10px] font-black tracking-[2px] mb-3 ml-1 uppercase">Authentication Check</Text>
                             <FloatingInput
                                 label="Current Password"
                                 value={currentPassword}
@@ -112,7 +115,7 @@ const ChangePasswordScreen = ({ navigation }) => {
                         </View>
 
                         <View className="mt-6">
-                            <Text className="text-[10px] font-black text-primary tracking-[2px] mb-3 ml-1 uppercase">New Credentials</Text>
+                            <Text style={{ color: colors.text }} className="text-[10px] font-black tracking-[2px] mb-3 ml-1 uppercase">New Credentials</Text>
                             <FloatingInput
                                 label="New Password"
                                 value={newPassword}
@@ -138,12 +141,12 @@ const ChangePasswordScreen = ({ navigation }) => {
                             />
                         </View>
 
-                        <View className="mt-8 bg-surface/50 p-6 rounded-[24px] border border-surface">
+                        <View style={{ backgroundColor: isDarkMode ? `${colors.primary}33` : 'rgba(245, 247, 248, 0.5)', borderColor: colors.border }} className="mt-8 p-6 rounded-[24px] border">
                             <View className="flex-row items-center mb-2">
-                                <Lock size={14} color={colors.secondary} />
-                                <Text className="ml-2 text-[10px] font-black text-secondary tracking-widest uppercase">Security Tip</Text>
+                                <Lock size={14} color={staticColors.secondary} />
+                                <Text style={{ color: staticColors.secondary }} className="ml-2 text-[10px] font-black tracking-widest uppercase">Security Tip</Text>
                             </View>
-                            <Text className="text-xs text-gray-500 leading-relaxed font-medium">
+                            <Text style={{ color: colors.textSecondary }} className="text-xs leading-relaxed font-medium">
                                 A strong password contains at least 8 characters, including symbols and numbers to ensure your store data remains secure.
                             </Text>
                         </View>

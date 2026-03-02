@@ -11,6 +11,7 @@ import { API_BASE_URL } from './src/config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform, View, Text, DeviceEventEmitter } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 
 // Import Screens
 import LoginScreen from './src/screens/LoginScreen';
@@ -41,6 +42,7 @@ const Tab = createBottomTabNavigator();
 
 function MainTabs({ navigation }) {
   const [role, setRole] = React.useState(null);
+  const { colors, isDarkMode } = useTheme();
 
   const fetchUserRole = async () => {
     try {
@@ -76,19 +78,19 @@ function MainTabs({ navigation }) {
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: '#94A3B8',
+        tabBarInactiveTintColor: isDarkMode ? '#94A3B8' : '#94A3B8',
         tabBarShowLabel: true,
         tabBarStyle: {
-          backgroundColor: '#FFFFFF',
+          backgroundColor: colors.card,
           borderTopWidth: 1,
-          borderTopColor: '#F1F5F9',
+          borderTopColor: colors.border,
           height: Platform.OS === 'ios' ? 88 : 92,
           paddingBottom: Platform.OS === 'ios' ? 30 : 12,
           paddingTop: 10,
           elevation: 20,
           shadowColor: '#000',
           shadowOffset: { width: 0, height: -10 },
-          shadowOpacity: 0.05,
+          shadowOpacity: isDarkMode ? 0.3 : 0.05,
           shadowRadius: 15,
         },
         tabBarLabelStyle: {
@@ -127,12 +129,13 @@ function MainTabs({ navigation }) {
 }
 
 function RootStack() {
+  const { colors } = useTheme();
   return (
     <Stack.Navigator
       initialRouteName="Login"
       screenOptions={{
         headerShown: false,
-        cardStyle: { backgroundColor: '#FFFFFF' },
+        cardStyle: { backgroundColor: colors.background },
       }}
     >
       <Stack.Screen name="Login" component={LoginScreen} />
@@ -158,14 +161,24 @@ function RootStack() {
   );
 }
 
+function AppContent() {
+  const { isDarkMode, colors } = useTheme();
+
+  return (
+    <NavigationContainer>
+      <StatusBar style={isDarkMode ? "light" : "dark"} />
+      <RootStack />
+    </NavigationContainer>
+  );
+}
+
 export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <NavigationContainer>
-          <StatusBar style="dark" />
-          <RootStack />
-        </NavigationContainer>
+        <ThemeProvider>
+          <AppContent />
+        </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

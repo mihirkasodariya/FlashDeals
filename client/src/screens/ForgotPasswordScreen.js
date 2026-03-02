@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
+import Text from '../components/CustomText';
 import {
     View,
-    Text,
     TouchableOpacity,
     KeyboardAvoidingView,
     Platform,
@@ -11,9 +11,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Lock } from 'lucide-react-native';
 import FloatingInput from '../components/FloatingInput';
 import CustomButton from '../components/CustomButton';
-import { } from '@react-navigation/native';
+import { useTheme } from '../context/ThemeContext';
 
 const ForgotPasswordScreen = ({ navigation }) => {
+    const { colors } = useTheme();
     const [mobile, setMobile] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -30,10 +31,14 @@ const ForgotPasswordScreen = ({ navigation }) => {
     };
 
     return (
-        <SafeAreaView className="flex-1 bg-white">
-            <View className="px-4 pt-2.5">
-                <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <ChevronLeft size={28} color="#002F34" />
+        <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+            <View className="px-4 py-3">
+                <TouchableOpacity
+                    onPress={() => navigation.goBack()}
+                    style={{ backgroundColor: colors.surface }}
+                    className="w-10 h-10 items-center justify-center rounded-xl"
+                >
+                    <ChevronLeft size={24} color={colors.primary} />
                 </TouchableOpacity>
             </View>
 
@@ -41,12 +46,12 @@ const ForgotPasswordScreen = ({ navigation }) => {
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 className="flex-1 px-6 pt-10 items-center"
             >
-                <View className="w-20 h-20 rounded-full bg-surface justify-center items-center mb-8">
-                    <Lock size={40} color="#00A49F" />
+                <View style={{ backgroundColor: colors.surface }} className="w-20 h-20 rounded-full justify-center items-center mb-8">
+                    <Lock size={40} color={colors.primary} />
                 </View>
 
-                <Text className="text-[26px] font-bold text-primary mb-3 text-center">Forgot Password?</Text>
-                <Text className="text-sm text-gray-500 text-center leading-tight mb-10 px-2.5">
+                <Text style={{ color: colors.text }} className="text-[26px] font-bold mb-3 text-center">Forgot Password?</Text>
+                <Text style={{ color: colors.textSecondary }} className="text-sm text-center leading-tight mb-10 px-2.5">
                     No worries! Enter your registered mobile number and we'll send you an OTP to reset your password.
                 </Text>
 
@@ -68,7 +73,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
                     className="mt-8"
                     onPress={() => navigation.navigate('Login')}
                 >
-                    <Text className="text-secondary font-bold text-sm">Back to Login</Text>
+                    <Text style={{ color: colors.secondary }} className="font-bold text-sm">Back to Login</Text>
                 </TouchableOpacity>
             </KeyboardAvoidingView>
         </SafeAreaView>

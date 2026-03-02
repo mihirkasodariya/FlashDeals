@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import Text from './CustomText';
+import { View} from 'react-native';
 
 const ProgressSteps = ({ currentStep, totalSteps = 2 }) => {
     return (

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import Text from '../components/CustomText';
 import {
     View,
-    Text,
     TouchableOpacity,
     KeyboardAvoidingView,
     Platform,
@@ -11,10 +11,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft } from 'lucide-react-native';
 import OTPInput from '../components/OTPInput';
 import CustomButton from '../components/CustomButton';
-import { } from '@react-navigation/native';
+import { useTheme } from '../context/ThemeContext';
 import { API_BASE_URL } from '../config';
 
 const OTPScreen = ({ navigation, route }) => {
+    const { colors } = useTheme();
     const { mobile } = route.params || {};
     const [timer, setTimer] = useState(30);
     const [otp, setOtp] = useState('');
@@ -79,10 +80,14 @@ const OTPScreen = ({ navigation, route }) => {
     };
 
     return (
-        <SafeAreaView className="flex-1 bg-white">
-            <View className="px-4 pt-2.5">
-                <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <ChevronLeft size={28} color="#002F34" />
+        <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+            <View className="px-4 py-3">
+                <TouchableOpacity
+                    onPress={() => navigation.goBack()}
+                    style={{ backgroundColor: colors.surface }}
+                    className="w-10 h-10 items-center justify-center rounded-xl"
+                >
+                    <ChevronLeft size={24} color={colors.primary} />
                 </TouchableOpacity>
             </View>
 
@@ -90,20 +95,20 @@ const OTPScreen = ({ navigation, route }) => {
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 className="flex-1 px-6 pt-5"
             >
-                <Text className="text-[28px] font-bold text-primary mb-2.5">Verify OTP</Text>
-                <Text className="text-[15px] text-gray-500 leading-tight mb-5">
+                <Text style={{ color: colors.text }} className="text-[28px] font-bold mb-2.5">Verify OTP</Text>
+                <Text style={{ color: colors.textSecondary }} className="text-[15px] leading-tight mb-5">
                     We've sent a 6-digit verification code to
-                    <Text className="text-primary font-bold"> +91 {mobile}</Text>
+                    <Text style={{ color: colors.text }} className="font-bold"> +91 {mobile}</Text>
                 </Text>
 
                 <OTPInput onComplete={setOtp} />
 
                 <View className="items-center mb-8">
                     {timer > 0 ? (
-                        <Text className="text-sm text-gray-500">Resend code in <Text className="text-secondary font-bold">{timer}s</Text></Text>
+                        <Text style={{ color: colors.textSecondary }} className="text-sm">Resend code in <Text style={{ color: colors.secondary }} className="font-bold">{timer}s</Text></Text>
                     ) : (
                         <TouchableOpacity onPress={handleResend}>
-                            <Text className="text-secondary font-bold text-sm underline">Resend OTP</Text>
+                            <Text style={{ color: colors.secondary }} className="font-bold text-sm underline">Resend OTP</Text>
                         </TouchableOpacity>
                     )}
                 </View>

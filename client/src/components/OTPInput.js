@@ -1,7 +1,9 @@
 import React, { useRef, useState } from 'react';
 import { View, TextInput, Keyboard, useWindowDimensions } from 'react-native';
+import { useTheme } from '../context/ThemeContext';
 
 const OTPInput = ({ length = 6, onComplete }) => {
+    const { colors, isDarkMode } = useTheme();
     const { width } = useWindowDimensions();
     const [otp, setOtp] = useState(new Array(length).fill(''));
     const inputs = useRef([]);
@@ -36,9 +38,14 @@ const OTPInput = ({ length = 6, onComplete }) => {
             {otp.map((digit, index) => (
                 <TextInput
                     key={index}
-                    style={{ width: boxWidth, height: boxHeight }}
-                    className={`border-1.5 rounded-lg text-center text-xl font-bold text-primary ${otp[index] ? 'border-secondary bg-white' : 'border-gray-200 bg-surface'
-                        }`}
+                    style={{ 
+                        width: boxWidth, 
+                        height: boxHeight,
+                        backgroundColor: otp[index] ? colors.background : colors.surface,
+                        borderColor: otp[index] ? colors.secondary : colors.border,
+                        color: colors.text
+                    }}
+                    className={`border-1.5 rounded-lg text-center text-xl font-bold`}
                     value={digit}
                     onChangeText={(text) => handleChange(text, index)}
                     onKeyPress={(e) => handleKeyPress(e, index)}

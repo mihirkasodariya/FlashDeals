@@ -1,15 +1,16 @@
 import React from 'react';
+import Text from '../components/CustomText';
 import {
     View,
-    Text,
     TouchableOpacity
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CheckCircle2, Clock, ShieldCheck } from 'lucide-react-native';
 import CustomButton from '../components/CustomButton';
-import { } from '@react-navigation/native';
+import { useTheme } from '../context/ThemeContext';
 
 const ActivationStatusScreen = ({ navigation }) => {
+    const { colors } = useTheme();
     const steps = [
         { title: 'Application Submitted', status: 'completed', desc: 'Your registration details have been received.' },
         { title: 'Under Review', status: 'active', desc: 'Our team is verifying your documents.' },
@@ -17,11 +18,11 @@ const ActivationStatusScreen = ({ navigation }) => {
     ];
 
     return (
-        <SafeAreaView className="flex-1 bg-white px-6">
+        <SafeAreaView style={{ flex: 1, backgroundColor: colors.background, paddingHorizontal: 24 }}>
             <View className="items-center mt-14 mb-10">
-                <ShieldCheck size={40} color="#00A49F" />
-                <Text className="text-2xl font-bold text-primary mt-4 mb-2">Registration Pending</Text>
-                <Text className="text-sm text-gray-500 text-center leading-tight">Thank you for joining FlashDeals! Your vendor account is currently being processed.</Text>
+                <ShieldCheck size={40} color={colors.primary} />
+                <Text style={{ color: colors.text }} className="text-2xl font-bold mt-4 mb-2">Registration Pending</Text>
+                <Text style={{ color: colors.textSecondary }} className="text-sm text-center leading-tight">Thank you for joining FlashDeals! Your vendor account is currently being processed.</Text>
             </View>
 
             <View className="pl-2.5">
@@ -42,18 +43,18 @@ const ActivationStatusScreen = ({ navigation }) => {
                             )}
                         </View>
                         <View className="flex-1 pt-0.5">
-                            <Text className={`text-base font-bold ${step.status === 'pending' ? 'text-gray-400' : 'text-primary'}`}>{step.title}</Text>
-                            <Text className="text-[13px] text-gray-500 mt-1">{step.desc}</Text>
+                            <Text style={{ color: step.status === 'pending' ? colors.textSecondary : colors.text }} className={`text-base font-bold`}>{step.title}</Text>
+                            <Text style={{ color: colors.textSecondary }} className="text-[13px] mt-1">{step.desc}</Text>
                         </View>
                     </View>
                 ))}
             </View>
 
-            <View className="flex-row bg-blue-50 p-4 rounded-xl mt-10 items-center">
-                <Clock size={20} color="#3A77FF" />
+            <View style={{ backgroundColor: `${colors.accent}1A` }} className="flex-row p-4 rounded-xl mt-10 items-center">
+                <Clock size={20} color={colors.accent} />
                 <View className="ml-3">
-                    <Text className="text-sm font-bold text-accent">Estimated Time</Text>
-                    <Text className="text-[12px] text-gray-500 mt-0.5">Account activation usually takes between 24 - 48 hours.</Text>
+                    <Text style={{ color: colors.accent }} className="text-sm font-bold">Estimated Time</Text>
+                    <Text style={{ color: colors.textSecondary }} className="text-[12px] mt-0.5">Account activation usually takes between 24 - 48 hours.</Text>
                 </View>
             </View>
 
@@ -64,7 +65,7 @@ const ActivationStatusScreen = ({ navigation }) => {
                     variant="outline"
                 />
                 <TouchableOpacity className="items-center mt-4">
-                    <Text className="text-gray-500 underline text-sm">Contact Support</Text>
+                    <Text style={{ color: colors.textSecondary }} className="underline text-sm">Contact Support</Text>
                 </TouchableOpacity>
             </View>
         </SafeAreaView>

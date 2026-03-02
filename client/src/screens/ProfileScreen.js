@@ -1,34 +1,30 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, useWindowDimensions, Modal, Pressable, Alert, ActivityIndicator, StyleSheet, TextInput, Platform, DeviceEventEmitter } from 'react-native';
-
+import Text from '../components/CustomText';
+import { View, ScrollView, TouchableOpacity, Image, useWindowDimensions, Modal, Pressable, Alert, ActivityIndicator, StyleSheet, TextInput, Platform, DeviceEventEmitter } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
-import { LinearGradient } from 'expo-linear-gradient';
 import { User, Settings, Bell, Shield, HelpCircle, LogOut, ChevronRight, MapPin, Package as LucidePackage, Store, Map as MapIcon, Edit3, Navigation2, Camera, Lock, History, Headphones, AlertCircle, CheckCircle2 } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 
-
-
-import { colors } from '../theme/colors';
+import { colors as staticColors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
 import { API_BASE_URL } from '../config';
 
 const ProfileScreen = ({ navigation }) => {
     const { width } = useWindowDimensions();
+    const { colors, isDarkMode } = useTheme();
     const [isLogoutModalVisible, setIsLogoutModalVisible] = React.useState(false);
     const [isEditModalVisible, setIsEditModalVisible] = React.useState(false);
     const [isRoleSwitchModalVisible, setIsRoleSwitchModalVisible] = React.useState(false);
-    const [roleSwitchMode, setRoleSwitchMode] = React.useState(null); // 'vendor' or 'user'
+    const [roleSwitchMode, setRoleSwitchMode] = React.useState(null);
     const [isSuccessModalVisible, setIsSuccessModalVisible] = React.useState(false);
     const [successMessage, setSuccessMessage] = React.useState('');
 
-    // Dynamic user data
     const [user, setUser] = React.useState(null);
     const [loading, setLoading] = React.useState(true);
     const [locationLoading, setLocationLoading] = React.useState(false);
 
-    // Edit Form State
     const [editName, setEditName] = React.useState('');
     const [editMobile, setEditMobile] = React.useState('');
     const [editImage, setEditImage] = React.useState(null);
@@ -71,18 +67,16 @@ const ProfileScreen = ({ navigation }) => {
         const isMounted = { current: true };
         fetchProfile(isMounted);
 
-        if (navigation && navigation.addListener) {
-            const unsubscribe = navigation.addListener('focus', () => {
-                const innerMounted = { current: true };
-                fetchProfile(innerMounted);
-            });
-            return () => {
-                isMounted.current = false;
-                unsubscribe();
-            };
-        }
-    }, [navigation]);
+        const unsubscribe = navigation.addListener('focus', () => {
+            const innerMounted = { current: true };
+            fetchProfile(innerMounted);
+        });
 
+        return () => {
+            isMounted.current = false;
+            unsubscribe();
+        };
+    }, [navigation]);
 
     const isVendor = user && user.role === 'vendor';
     const isTablet = width > 768;
@@ -95,45 +89,6 @@ const ProfileScreen = ({ navigation }) => {
             index: 0,
             routes: [{ name: 'Login' }],
         });
-    };
-
-    const handleUpdateLocation = async () => {
-        setLocationLoading(true);
-        try {
-            let { status } = await Location.requestForegroundPermissionsAsync();
-            if (status !== 'granted') {
-                Alert.alert('Permission Denied', 'Please allow location access.');
-                setLocationLoading(false);
-                return;
-            }
-
-            let loc = await Location.getCurrentPositionAsync({});
-            const token = await AsyncStorage.getItem('userToken');
-
-            const response = await fetch(`${API_BASE_URL}/vendor/update/${user._id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    location: {
-                        latitude: loc.coords.latitude,
-                        longitude: loc.coords.longitude
-                    }
-                })
-            });
-
-            const data = await response.json();
-            if (data.success) {
-                Alert.alert('Success', 'GPS precise location updated!');
-            }
-        } catch (error) {
-            console.error(error);
-            Alert.alert('Error', 'Failed to sync GPS');
-        } finally {
-            setLocationLoading(false);
-        }
     };
 
     const pickImage = async () => {
@@ -196,7 +151,8 @@ const ProfileScreen = ({ navigation }) => {
                 setIsRoleSwitchModalVisible(false);
                 setSuccessMessage("Switched to Personal Account successfully!");
                 setIsSuccessModalVisible(true);
-                fetchProfile({ current: true });
+                const isMounted = { current: true };
+                fetchProfile(isMounted);
                 DeviceEventEmitter.emit('roleChanged');
             } else {
                 Alert.alert("Error", data.message || "Failed to switch role");
@@ -245,7 +201,8 @@ const ProfileScreen = ({ navigation }) => {
                 setUser(data.user);
                 setIsEditModalVisible(false);
                 setEditImage(null);
-                Alert.alert("Success", "Profile updated successfully!");
+                setSuccessMessage("Profile updated successfully!");
+                setIsSuccessModalVisible(true);
             } else {
                 Alert.alert("Update Failed", data.message || "Could not update profile");
             }
@@ -259,7 +216,8 @@ const ProfileScreen = ({ navigation }) => {
 
     const menuItems = [
         ...(isVendor ? [
-            { icon: LucidePackage, label: 'Add New Offer', color: colors.secondary, onPress: () => navigation.navigate('AddOffer') }
+            { icon: LucidePackage, label: 'Add New Offer', color: colors.secondary, onPress: () => navigation.navigate('AddOffer') },
+            { icon: Store, label: 'Manage Store', color: colors.primary, onPress: () => navigation.navigate('EditStore', { vendorData: user }) }
         ] : [
             { icon: LucidePackage, label: 'Redemption History', color: colors.secondary, onPress: () => { } }
         ]),
@@ -273,8 +231,7 @@ const ProfileScreen = ({ navigation }) => {
 
     if (loading) {
         return (
-            <SafeAreaView className="flex-1 bg-white items-center justify-center" edges={['top']}>
-
+            <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']} className="items-center justify-center">
                 <ActivityIndicator size="large" color={colors.primary} />
             </SafeAreaView>
         );
@@ -283,13 +240,12 @@ const ProfileScreen = ({ navigation }) => {
     if (!user) return null;
 
     return (
-        <SafeAreaView className="flex-1 bg-[#FAFAFA] items-center" edges={['top']}>
-
+        <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} className="items-center" edges={['top']}>
             <ScrollView showsVerticalScrollIndicator={false} style={{ width: contentWidth }}>
                 {/* Minimalist Premium Header */}
-                <View className="bg-white px-6 pt-10 pb-8 rounded-b-[40px] shadow-sm items-center">
-                    <View className="relative">
-                        <View className="w-32 h-32 bg-[#F3F4F6] rounded-full items-center justify-center border-4 border-white shadow-xl overflow-hidden">
+                <View style={{ backgroundColor: colors.card }} className="px-6 pt-6 pb-8 rounded-b-[40px] shadow-sm items-center">
+                    <TouchableOpacity onPress={() => setIsEditModalVisible(true)} activeOpacity={0.9} className="relative">
+                        <View style={{ backgroundColor: colors.surface, borderColor: colors.card }} className="w-[120px] h-[120px] rounded-full items-center justify-center border-4 shadow-xl overflow-hidden">
                             {user.profileImage ? (
                                 <Image
                                     source={{ uri: `${API_BASE_URL.replace('/api', '')}${user.profileImage}` }}
@@ -297,64 +253,58 @@ const ProfileScreen = ({ navigation }) => {
                                     resizeMode="cover"
                                 />
                             ) : (
-                                <User size={80} color="#D1D5DB" strokeWidth={1} />
+                                <User size={50} color={colors.textSecondary} strokeWidth={1.5} />
                             )}
-                            {/* Decorative ring */}
-                            <View className="absolute inset-0 border-[3px] border-primary/10 rounded-full" />
                         </View>
-                        <TouchableOpacity
-                            onPress={() => setIsEditModalVisible(true)}
-                            className="absolute bottom-1 right-1 bg-primary w-10 h-10 rounded-2xl border-4 border-white items-center justify-center shadow-lg"
-                        >
-                            <Settings size={20} color="white" />
-                        </TouchableOpacity>
-                    </View>
-
-                    <Text className="text-3xl font-black text-primary mt-6 tracking-tight">{user.name}</Text>
-                    <Text className="text-textSecondary font-bold mt-1 tracking-widest text-xs opacity-60">
-                        {user.role} Account • {user.mobile}
-                    </Text>
-
-                    <TouchableOpacity
-                        onPress={() => setIsEditModalVisible(true)}
-                        className="mt-6 bg-[#F3F4F6] px-8 py-3 rounded-2xl border border-surface"
-                    >
-                        <Text className="text-primary font-black text-xs tracking-widest">Edit Profile</Text>
+                        <View style={{ backgroundColor: colors.primary, borderColor: colors.card }} className="absolute bottom-1 right-1 w-8 h-8 rounded-full justify-center items-center border-2">
+                            <Camera size={16} color="#FFFFFF" />
+                        </View>
                     </TouchableOpacity>
-                </View>
 
+                    <View className="items-center mt-4">
+                        <Text style={{ color: colors.text }} className="text-3xl font-black tracking-tight">{user.name}</Text>
+                        <View className="flex-row items-center mt-2">
+                            <View style={{ backgroundColor: isVendor ? `${colors.secondary}20` : `${colors.primary}20` }} className="px-2 py-0.5 rounded-full mr-2">
+                                <Text style={{ color: isVendor ? colors.secondary : colors.primary }} className="text-[12px] font-black tracking-widest">{isVendor ? 'Vender' : 'Personal'}</Text>
+                            </View>
+                            <Text style={{ color: colors.textSecondary }} className="text-[12px] font-medium">{user.mobile}</Text>
+                        </View>
+                    </View>
+                </View>
 
                 {/* Settings Menu Sections */}
                 <View className="px-6 py-6">
-                    <Text className="text-[10px] font-black text-textSecondary tracking-[4px] mb-6 opacity-40">Account Settings</Text>
+                    <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-[4px] mb-6 opacity-40 uppercase">Account Settings</Text>
 
-                    <View className="bg-white rounded-[32px] p-4 shadow-sm border border-surface">
+                    <View style={{ backgroundColor: colors.card, borderColor: colors.border }} className="rounded-[32px] p-4 shadow-sm border">
                         {menuItems.map((item, index) => (
                             <TouchableOpacity
                                 key={index}
                                 onPress={item.onPress}
-                                className={`flex-row items-center py-5 ${index !== menuItems.length - 1 ? 'border-b border-surface' : ''}`}
+                                style={{ borderBottomColor: index !== menuItems.length - 1 ? colors.border : 'transparent' }}
+                                className={`flex-row items-center py-5 ${index !== menuItems.length - 1 ? 'border-b' : ''}`}
                             >
                                 <View style={{ backgroundColor: `${item.color}10` }} className="w-12 h-12 rounded-[18px] items-center justify-center">
                                     <item.icon size={22} color={item.color} strokeWidth={2} />
                                 </View>
-                                <Text className="flex-1 ml-5 text-primary font-bold text-sm">{item.label}</Text>
-                                <ChevronRight size={18} color="#D1D5DB" strokeWidth={3} />
+                                <Text style={{ color: colors.text }} className="flex-1 ml-5 font-bold text-sm tracking-tight">{item.label}</Text>
+                                <ChevronRight size={18} color={isDarkMode ? '#4A5568' : "#D1D5DB"} strokeWidth={3} />
                             </TouchableOpacity>
                         ))}
                     </View>
 
+                    {/* Action Buttons */}
                     <TouchableOpacity
                         className="flex-row items-center justify-center py-5 mt-8 bg-primary rounded-[28px] shadow-lg shadow-primary/40 px-8"
                         onPress={isVendor ? handleSwitchToUser : handleSwitchToVendor}
                         disabled={switching}
                     >
                         {switching ? (
-                            <ActivityIndicator size="small" color={colors.primary} />
+                            <ActivityIndicator size="small" color="#FFFFFF" />
                         ) : (
                             <>
                                 <Store size={20} color="white" />
-                                <Text className="ml-3 text-white font-black text-sm tracking-widest">
+                                <Text style={{ color: '#FFFFFF' }} className="ml-3 font-black text-sm tracking-widest">
                                     {isVendor ? 'Switch to Personal Account' : 'Become a Vendor Account'}
                                 </Text>
                             </>
@@ -366,31 +316,26 @@ const ProfileScreen = ({ navigation }) => {
                         onPress={() => setIsLogoutModalVisible(true)}
                     >
                         <LogOut size={20} color="white" />
-                        <Text className="ml-3 text-white font-black text-sm tracking-widest">Secure Sign Out</Text>
+                        <Text style={{ color: '#FFFFFF' }} className="ml-3 font-black text-sm tracking-widest">Secure Sign Out</Text>
                     </TouchableOpacity>
 
                     {/* Version & Credits */}
-                    <View className="items-center mt-6">
-                        <Text className="text-[10px] font-black tracking-[2px]">FlashDeals v.0.1</Text>
+                    <View className="items-center mt-8 mb-10">
+                        <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-[3px] opacity-40">FLASHDEALS V.1.0.4</Text>
                     </View>
                 </View>
             </ScrollView>
 
-            {/* Unique Edit Profile Modal */}
+            {/* Edit Profile Modal */}
             <Modal visible={isEditModalVisible} animationType="slide" transparent={true}>
                 <View className="flex-1 justify-end bg-black/40">
-                    <View className="bg-white rounded-t-[50px] p-10 pb-16 shadow-2xl">
-                        <View className="w-16 h-1.5 bg-[#E5E7EB] rounded-full self-center mb-10" />
+                    <View style={{ backgroundColor: colors.card }} className="rounded-t-[50px] p-10 pb-16 shadow-2xl">
+                        <View style={{ backgroundColor: colors.border }} className="w-16 h-1.5 rounded-full self-center mb-10" />
+                        <Text style={{ color: colors.text }} className="text-3xl font-black mb-2">Edit Identity</Text>
+                        <Text style={{ color: colors.textSecondary }} className="mb-8 font-medium">Update your profile information below.</Text>
 
-                        <Text className="text-3xl font-black text-primary mb-2">Edit Identity</Text>
-                        <Text className="text-textSecondary mb-8 font-medium">Update your profile information below.</Text>
-
-                        {/* Image Picker in Modal */}
                         <View className="items-center mb-8">
-                            <TouchableOpacity
-                                onPress={pickImage}
-                                className="w-24 h-24 bg-surface rounded-full items-center justify-center border-2 border-dashed border-primary/20 overflow-hidden"
-                            >
+                            <TouchableOpacity onPress={pickImage} style={{ backgroundColor: colors.surface, borderColor: `${colors.primary}33` }} className="w-24 h-24 rounded-full items-center justify-center border-2 border-dashed overflow-hidden relative">
                                 {editImage ? (
                                     <Image source={{ uri: editImage }} className="w-full h-full" />
                                 ) : user.profileImage ? (
@@ -399,49 +344,40 @@ const ProfileScreen = ({ navigation }) => {
                                     <Camera size={28} color={colors.primary} opacity={0.5} />
                                 )}
                                 <View className="absolute bottom-0 right-0 left-0 bg-primary/80 py-1.5 items-center">
-                                    <Text className="text-[8px] font-black text-white tracking-widest">Change</Text>
+                                    <Text className="text-[8px] font-black text-white tracking-widest uppercase">Change</Text>
                                 </View>
                             </TouchableOpacity>
                         </View>
 
                         <View className="space-y-6">
                             <View>
-                                <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-3 ml-1">Full Name</Text>
+                                <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-3 ml-1 uppercase">Full Name</Text>
                                 <TextInput
-                                    className="bg-[#F3F4F6] p-5 rounded-[24px] font-bold text-primary border border-transparent focus:border-primary"
+                                    style={{ backgroundColor: colors.surface, color: colors.text, borderColor: colors.border }}
+                                    className="p-5 rounded-[24px] font-bold border"
                                     value={editName}
                                     onChangeText={setEditName}
                                     placeholder="Enter your name"
+                                    placeholderTextColor={isDarkMode ? '#4A5568' : '#94A3B8'}
                                 />
                             </View>
 
                             <View className="mt-6">
-                                <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-3 ml-1">Mobile No</Text>
+                                <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-3 ml-1 uppercase">Mobile No</Text>
                                 <TextInput
-                                    className="bg-[#F3F4F6] p-5 rounded-[24px] font-bold text-primary border border-transparent opacity-50"
+                                    style={{ backgroundColor: colors.surface, color: colors.text, borderColor: colors.border }}
+                                    className="p-5 rounded-[24px] font-bold border opacity-50"
                                     value={editMobile}
                                     editable={false}
-                                    placeholder="Enter mobile number"
                                 />
                             </View>
 
                             <View className="flex-row gap-4 mt-12">
-                                <TouchableOpacity
-                                    onPress={() => setIsEditModalVisible(false)}
-                                    className="flex-1 bg-surface py-5 rounded-[24px] items-center"
-                                >
-                                    <Text className="text-primary font-black text-sm tracking-widest">Discard</Text>
+                                <TouchableOpacity onPress={() => setIsEditModalVisible(false)} style={{ backgroundColor: colors.surface }} className="flex-1 py-5 rounded-[24px] items-center">
+                                    <Text style={{ color: colors.text }} className="font-black text-sm tracking-widest">Discard</Text>
                                 </TouchableOpacity>
-                                <TouchableOpacity
-                                    onPress={handleSaveProfile}
-                                    disabled={saving}
-                                    className="flex-[2] bg-primary py-5 rounded-[24px] items-center shadow-lg shadow-primary/30"
-                                >
-                                    {saving ? (
-                                        <ActivityIndicator size="small" color="white" />
-                                    ) : (
-                                        <Text className="text-white font-black text-sm tracking-widest">Sync Changes</Text>
-                                    )}
+                                <TouchableOpacity onPress={handleSaveProfile} disabled={saving} style={{ backgroundColor: colors.primary }} className="flex-[2] py-5 rounded-[24px] items-center shadow-lg shadow-primary/30">
+                                    {saving ? <ActivityIndicator size="small" color="white" /> : <Text style={{ color: '#FFFFFF' }} className="font-black text-sm tracking-widest">Sync Changes</Text>}
                                 </TouchableOpacity>
                             </View>
                         </View>
@@ -449,137 +385,83 @@ const ProfileScreen = ({ navigation }) => {
                 </View>
             </Modal>
 
-            {/* Custom Logout Confirmation (Very Unique) */}
+            {/* Logout Modal */}
             <Modal visible={isLogoutModalVisible} animationType="fade" transparent={true}>
                 <View className="flex-1 justify-center items-center bg-black/80 px-8">
-                    <View className="bg-white rounded-[60px] p-10 w-full items-center shadow-2xl relative overflow-hidden">
-                        {/* Decorative Background Blob */}
-                        <View className="absolute -top-10 -right-10 w-32 h-32 bg-error/5 rounded-full" />
-
-                        <View className="w-24 h-24 bg-error/10 rounded-[40px] items-center justify-center mb-8 rotate-12">
-                            <LogOut size={48} color={colors.error} strokeWidth={1.5} className="-rotate-12" />
+                    <View style={{ backgroundColor: isDarkMode ? '#1A1A1A' : '#FFFFFF' }} className="rounded-[40px] p-8 w-full items-center shadow-2xl relative overflow-hidden">
+                        {/* Decorative background element for Logout */}
+                        <View style={{ backgroundColor: `${colors.error}15` }} className="w-20 h-20 rounded-[30px] items-center justify-center mb-6">
+                            <LogOut size={40} color="#FF4444" strokeWidth={1.5} />
                         </View>
 
-                        <Text className="text-3xl font-black text-primary mb-3 text-center tracking-tighter">Sign Out?</Text>
-                        <Text className="text-textSecondary text-center mb-12 font-medium leading-6 opacity-70">
-                            You're about to disconnect from your active session. Ready to go?
-                        </Text>
+                        <Text style={{ color: colors.text }} className="text-2xl font-black mb-2 text-center tracking-tight">Sign Out?</Text>
+                        <Text style={{ color: colors.textSecondary }} className="text-center mb-10 font-medium leading-5 opacity-70 px-2">Are you sure you want to disconnect from your active session? Ready to go?</Text>
 
                         <View className="w-full space-y-4">
                             <TouchableOpacity
                                 onPress={handleLogout}
-                                className="w-full bg-primary py-5 rounded-[30px] items-center shadow-lg shadow-primary/30"
+                                style={{ backgroundColor: '#FF4444' }}
+                                className="w-full py-5 rounded-[24px] items-center shadow-lg shadow-red-500/20"
                             >
-                                <Text className="text-white font-black text-sm tracking-widest">Logout</Text>
+                                <Text className="font-black text-sm tracking-widest text-white">YES, LOGOUT</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 onPress={() => setIsLogoutModalVisible(false)}
-                                className="w-full py-5 items-center mt-2"
+                                style={{ backgroundColor: isDarkMode ? '#2D3748' : '#F7FAFC' }}
+                                className="w-full py-5 rounded-[24px] items-center mt-2"
                             >
-                                <Text className="text-primary font-black text-xs tracking-[3px]">Cancel</Text>
+                                <Text style={{ color: colors.text }} className="font-black text-xs tracking-[3px]">CANCEL</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
                 </View>
             </Modal>
 
-            {/* Custom Role Switch Modal */}
+            {/* Role Switch Modal */}
             <Modal visible={isRoleSwitchModalVisible} animationType="slide" transparent={true}>
                 <View className="flex-1 justify-end bg-black/60">
-                    <Pressable
-                        className="flex-1"
-                        onPress={() => !switching && setIsRoleSwitchModalVisible(false)}
-                    />
-                    <View className="bg-white rounded-t-[50px] p-10 pb-16 shadow-2xl">
-                        <View className="w-16 h-1.5 bg-[#E5E7EB] rounded-full self-center mb-10" />
-
+                    <Pressable className="flex-1" onPress={() => !switching && setIsRoleSwitchModalVisible(false)} />
+                    <View style={{ backgroundColor: colors.card }} className="rounded-t-[50px] p-10 pb-16 shadow-2xl">
+                        <View style={{ backgroundColor: colors.border }} className="w-16 h-1.5 rounded-full self-center mb-10" />
                         <View className="items-center mb-8">
-                            <View className={`w-20 h-20 rounded-[30px] items-center justify-center ${roleSwitchMode === 'vendor' ? 'bg-primary/10' : 'bg-warning/10'}`}>
-                                {roleSwitchMode === 'vendor' ? (
-                                    <Store size={40} color={colors.primary} strokeWidth={1.5} />
-                                ) : (
-                                    <User size={40} color={colors.warning} strokeWidth={1.5} />
-                                )}
+                            <View style={{ backgroundColor: roleSwitchMode === 'vendor' ? `${colors.primary}15` : `${colors.warning}15` }} className="w-20 h-20 rounded-[30px] items-center justify-center">
+                                {roleSwitchMode === 'vendor' ? <Store size={40} color={colors.primary} /> : <User size={40} color={colors.warning} />}
                             </View>
                         </View>
-
-                        <Text className="text-3xl font-black text-primary mb-3 text-center">
-                            {roleSwitchMode === 'vendor' ? 'Start Selling?' : 'Switch to Personal?'}
+                        <Text style={{ color: colors.text }} className="text-3xl font-black mb-3 text-center">{roleSwitchMode === 'vendor' ? 'Start Selling?' : 'Switch to Personal?'}</Text>
+                        <Text style={{ color: colors.textSecondary }} className="text-center mb-10 font-medium leading-6 opacity-70 px-4">
+                            {roleSwitchMode === 'vendor' ? "Open your vendor portal to reach local customers. You can launch flash offers and manage your store identity." : "Warning: Switching to a personal account will hide your business dashboard and active flash offers."}
                         </Text>
-
-                        <Text className="text-textSecondary text-center mb-10 font-medium leading-6 opacity-70 px-4">
-                            {roleSwitchMode === 'vendor'
-                                ? "Open your vendor portal to reach thousands of local customers. You can skip the verification process for now."
-                                : "Warning: Switching to a personal account will permanently deactivate your store and delete all active offers."
-                            }
-                        </Text>
-
-                        {roleSwitchMode === 'user' && (
-                            <View className="bg-error/5 p-5 rounded-[24px] mb-10 border border-error/10 flex-row items-center">
-                                <AlertCircle size={20} color={colors.error} />
-                                <Text className="ml-3 flex-1 text-error text-[11px] font-black uppercase tracking-wider">
-                                    All store data will be deleted instantly
-                                </Text>
-                            </View>
-                        )}
-
-                        <View className="flex-row gap-4">
-                            <TouchableOpacity
-                                onPress={() => setIsRoleSwitchModalVisible(false)}
-                                disabled={switching}
-                                className="flex-1 bg-surface py-5 rounded-[24px] items-center"
-                            >
-                                <Text className="text-primary font-black text-sm tracking-widest">Discard</Text>
+                        <View className="flex-row space-x-4">
+                            <TouchableOpacity onPress={() => setIsRoleSwitchModalVisible(false)} style={{ backgroundColor: colors.surface }} className="flex-1 py-5 rounded-[24px] items-center">
+                                <Text style={{ color: colors.text }} className="font-black text-sm tracking-widest">Discard</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity
-                                onPress={performRoleSwitch}
-                                disabled={switching}
-                                className={`flex-[2] py-5 rounded-[24px] items-center shadow-lg ${roleSwitchMode === 'vendor' ? 'bg-primary shadow-primary/30' : 'bg-secondary shadow-secondary/30'}`}
-                            >
-                                {switching ? (
-                                    <ActivityIndicator size="small" color="white" />
-                                ) : (
-                                    <Text className="text-white font-black text-sm tracking-widest">
-                                        {roleSwitchMode === 'vendor' ? 'Accept & Continue' : 'Confirm Deletion'}
-                                    </Text>
-                                )}
+                            <TouchableOpacity onPress={performRoleSwitch} style={{ backgroundColor: roleSwitchMode === 'vendor' ? colors.primary : colors.secondary }} className="flex-[2] py-5 rounded-[24px] items-center shadow-lg">
+                                {switching ? <ActivityIndicator size="small" color="white" /> : <Text style={{ color: '#FFFFFF' }} className="font-black text-sm tracking-widest uppercase">{roleSwitchMode === 'vendor' ? 'Accept & Continue' : 'Confirm Switch'}</Text>}
                             </TouchableOpacity>
                         </View>
                     </View>
                 </View>
             </Modal>
 
-            {/* Custom Success Modal */}
+            {/* Success Animation Modal */}
             <Modal visible={isSuccessModalVisible} animationType="fade" transparent={true}>
                 <View className="flex-1 justify-center items-center bg-black/80 px-8">
-                    <View className="bg-white rounded-[60px] p-10 w-full items-center shadow-2xl relative overflow-hidden">
-                        {/* Decorative Background Blob */}
-                        <View className="absolute -top-10 -right-10 w-32 h-32 bg-success/5 rounded-full" />
-
-                        <View className="w-24 h-24 bg-success/10 rounded-[40px] items-center justify-center mb-8 rotate-12">
+                    <View style={{ backgroundColor: colors.card }} className="rounded-[60px] p-10 w-full items-center shadow-2xl relative overflow-hidden">
+                        <View style={{ backgroundColor: `${colors.success}15` }} className="w-24 h-24 rounded-[40px] items-center justify-center mb-8 rotate-12">
                             <CheckCircle2 size={48} color={colors.success} strokeWidth={1.5} className="-rotate-12" />
                         </View>
-
-                        <Text className="text-3xl font-black text-primary mb-3 text-center tracking-tighter">Success!</Text>
-                        <Text className="text-textSecondary text-center mb-12 font-medium leading-6 opacity-70">
-                            {successMessage}
-                        </Text>
-
-                        <View className="w-full">
-                            <TouchableOpacity
-                                onPress={() => setIsSuccessModalVisible(false)}
-                                className="w-full bg-primary py-5 rounded-[30px] items-center shadow-lg shadow-primary/30"
-                            >
-                                <Text className="text-white font-black text-sm tracking-widest">Great!</Text>
-                            </TouchableOpacity>
-                        </View>
+                        <Text style={{ color: colors.text }} className="text-3xl font-black mb-3 text-center tracking-tighter">Success!</Text>
+                        <Text style={{ color: colors.textSecondary }} className="text-center mb-12 font-medium leading-6 opacity-70">{successMessage}</Text>
+                        <TouchableOpacity onPress={() => setIsSuccessModalVisible(false)} style={{ backgroundColor: colors.primary }} className="w-full py-5 rounded-[30px] items-center">
+                            <Text style={{ color: '#FFFFFF' }} className="text-white font-black text-sm tracking-widest">Great!</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
             </Modal>
         </SafeAreaView>
     );
 };
-
 
 const styles = StyleSheet.create({
     premiumCard: {
@@ -599,4 +481,3 @@ const styles = StyleSheet.create({
 });
 
 export default ProfileScreen;
-

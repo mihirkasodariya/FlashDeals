@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, FlatList, Image, useWindowDimensions, ActivityIndicator, RefreshControl } from 'react-native';
+import Text from '../components/CustomText';
+import { View, ScrollView, TouchableOpacity, TextInput, FlatList, Image, useWindowDimensions, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, MapPin, SlidersHorizontal, Bell, ChevronDown, Flame, Filter, LayoutGrid, List } from 'lucide-react-native';
-import { colors } from '../theme/colors';
+import { colors as staticColors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
 import OfferCard from '../components/OfferCard';
 import LocationSelectorModal from '../components/LocationSelectorModal';
 import { API_BASE_URL } from '../config';
@@ -19,6 +21,7 @@ const CATEGORIES = [
 
 const HomeScreen = ({ navigation }) => {
     const { width } = useWindowDimensions();
+    const { colors, isDarkMode } = useTheme();
     const [selectedCategory, setSelectedCategory] = useState('1');
     const [location, setLocation] = useState('Ahmedabad, Gujarat');
     const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
@@ -107,49 +110,45 @@ const HomeScreen = ({ navigation }) => {
     const isTablet = width > 768;
 
     return (
-        <SafeAreaView className="flex-1 bg-[#FAFAFA]" edges={['top']}>
-
-            {/* Header */}
-            <View className="bg-white px-4 pb-4 pt-2 shadow-sm">
-                <View className="flex-row items-center justify-between mb-4">
-                    <TouchableOpacity
-                        className="flex-row items-center"
-                        onPress={() => setIsLocationModalVisible(true)}
-                    >
-                        <View className="w-10 h-10 bg-secondary/10 rounded-full items-center justify-center">
-                            <MapPin size={22} color={colors.secondary} strokeWidth={2.5} />
+        <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
+            <View style={{ backgroundColor: colors.card }} className="px-6 pt-6 pb-2 shadow-sm">
+                <View className="flex-row items-center justify-between mb-6">
+                    <View className="flex-row items-center">
+                        <View style={{ backgroundColor: `${colors.primary}10` }} className="w-12 h-12 rounded-2xl items-center justify-center">
+                            <MapPin size={24} color={colors.primary} strokeWidth={2.5} />
                         </View>
-                        <View className="ml-3">
-                            <Text className="text-[10px] font-black tracking-widest text-textSecondary">Your Location</Text>
+                        <TouchableOpacity onPress={() => setIsLocationModalVisible(true)} className="ml-4">
                             <View className="flex-row items-center">
-                                <Text className="text-primary font-black text-base" numberOfLines={1}>{location}</Text>
-                                <ChevronDown size={14} color={colors.primary} className="ml-1" />
+                                <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black uppercase tracking-widest mr-1 opacity-60">Your Location</Text>
+                                <ChevronDown size={12} color={colors.textSecondary} />
                             </View>
-                        </View>
-                    </TouchableOpacity>
-
+                            <Text style={{ color: colors.text }} className="text-sm font-black tracking-tight">{location}</Text>
+                        </TouchableOpacity>
+                    </View>
                     <TouchableOpacity
                         onPress={() => navigation.navigate('Notifications')}
-                        className="w-12 h-12 bg-white rounded-2xl items-center justify-center shadow-xl border border-surface"
+                        style={{ backgroundColor: colors.surface }}
+                        className="w-12 h-12 rounded-2xl items-center justify-center border border-surface"
                     >
-                        <Bell size={22} color={colors.primary} />
-                        <View className="absolute top-3 right-3 w-2.5 h-2.5 bg-error rounded-full border-2 border-white" />
+                        <Bell size={22} color={colors.primary} strokeWidth={2.5} />
+                        <View className="absolute top-2.5 right-2.5 w-3 h-3 bg-error rounded-full border-2 border-white" />
                     </TouchableOpacity>
                 </View>
 
-                {/* Search */}
-                <View className="flex-row items-center">
-                    <View className="flex-1 flex-row items-center bg-[#F3F4F6] rounded-2xl px-4 py-3 border border-transparent">
-                        <Search size={22} color={colors.textSecondary} strokeWidth={2.5} />
+                {/* Search Bar */}
+                <View className="flex-row items-center mb-4">
+                    <View style={{ backgroundColor: colors.surface }} className="flex-1 h-14 rounded-2xl flex-row items-center px-5 border border-surface">
+                        <Search size={20} color={colors.textSecondary} strokeWidth={2.5} />
                         <TextInput
-                            className="flex-1 ml-3 text-primary font-bold text-sm"
-                            placeholder="Discover offers, stores..."
-                            placeholderTextColor="#9CA3AF"
+                            style={{ color: colors.text }}
+                            placeholder="Search magic offers..."
+                            placeholderTextColor={colors.textSecondary + '80'}
+                            className="flex-1 ml-4 font-bold text-sm"
                             value={searchQuery}
                             onChangeText={setSearchQuery}
                         />
                     </View>
-                    <TouchableOpacity className="ml-3 w-14 h-14 bg-primary rounded-2xl items-center justify-center shadow-lg">
+                    <TouchableOpacity style={{ backgroundColor: isDarkMode ? '#4bb2f9' : colors.primary }} className="ml-3 w-14 h-14 rounded-2xl items-center justify-center shadow-lg">
                         <SlidersHorizontal size={22} color="white" />
                     </TouchableOpacity>
                 </View>
@@ -163,7 +162,7 @@ const HomeScreen = ({ navigation }) => {
                 }
             >
                 {/* Categories */}
-                <View className="py-6 bg-white">
+                <View style={{ backgroundColor: colors.background }} className="py-6">
                     <ScrollView
                         horizontal
                         showsHorizontalScrollIndicator={false}
@@ -181,8 +180,8 @@ const HomeScreen = ({ navigation }) => {
                                     flexDirection: 'row',
                                     alignItems: 'center',
                                     borderWidth: 1,
-                                    borderColor: selectedCategory === item.id ? colors.primary : '#E5E7EB',
-                                    backgroundColor: selectedCategory === item.id ? colors.primary : '#FFFFFF'
+                                    borderColor: selectedCategory === item.id ? colors.primary : colors.border,
+                                    backgroundColor: selectedCategory === item.id ? colors.primary : colors.card
                                 }}
                             >
                                 <Text style={{ fontSize: 18, marginRight: 8 }}>{item.icon}</Text>
@@ -210,9 +209,9 @@ const HomeScreen = ({ navigation }) => {
                                     <View>
                                         <View className="flex-row items-center mb-1">
                                             <View className="w-2 h-2 bg-error rounded-full mr-2" />
-                                            <Text className="text-[10px] font-black text-error tracking-[3px]">Most Visited</Text>
+                                            <Text style={{ color: colors.secondary }} className="text-[10px] font-black tracking-[2px]">Most Visited</Text>
                                         </View>
-                                        <Text className="text-3xl font-black text-primary tracking-tighter">Hot Offers</Text>
+                                        <Text style={{ color: colors.text }} className="text-3xl font-black tracking-tighter">Hot Offers</Text>
                                     </View>
                                 </View>
                                 <FlatList
@@ -241,9 +240,9 @@ const HomeScreen = ({ navigation }) => {
                                     <View>
                                         <View className="flex-row items-center mb-1">
                                             <View className="w-2.5 h-2.5 bg-warning rounded-full mr-2" />
-                                            <Text className="text-[10px] font-black text-warning tracking-[3px]">Coming Soon</Text>
+                                            <Text style={{ color: colors.secondary }} className="text-[10px] font-black tracking-[2px]">Coming Soon</Text>
                                         </View>
-                                        <Text className="text-3xl font-black text-primary tracking-tighter">Upcoming Offers</Text>
+                                        <Text style={{ color: colors.text }} className="text-3xl font-black tracking-tighter">Upcoming Offers</Text>
                                     </View>
                                 </View>
                                 <FlatList
@@ -268,20 +267,22 @@ const HomeScreen = ({ navigation }) => {
                         {/* Main List */}
                         <View className="px-6 mt-8 flex-row items-center justify-between mb-4">
                             <View>
-                                <Text className="text-[10px] font-black text-secondary tracking-widest mb-1">Flash Sales</Text>
-                                <Text className="text-2xl font-black text-primary">Near Your Place</Text>
+                                <Text style={{ color: colors.secondary }} className="text-[10px] font-black tracking-[2px] mb-1">Flash Sales</Text>
+                                <Text style={{ color: colors.text }} className="text-2xl font-black">Near Your Place</Text>
                             </View>
                             <TouchableOpacity
                                 onPress={() => setRadius(radius === 10 ? 1 : radius === 5 ? 10 : 5)}
-                                className="bg-white px-4 py-2 rounded-xl shadow-md border border-surface flex-row items-center"
+                                style={{ backgroundColor: colors.card, borderColor: colors.border }}
+                                className="px-4 py-2 rounded-xl shadow-md border flex-row items-center"
                             >
                                 <Filter size={14} color={colors.primary} strokeWidth={3} />
-                                <Text className="text-primary text-xs font-black ml-2">{radius}km</Text>
+                                <Text style={{ color: colors.primary }} className="text-xs font-black ml-2">{radius}km</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity
                                 onPress={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
-                                className="bg-white ml-2 w-10 h-10 rounded-xl shadow-md border border-surface items-center justify-center"
+                                style={{ backgroundColor: colors.card, borderColor: colors.border }}
+                                className="ml-2 w-10 h-10 rounded-xl shadow-md border items-center justify-center"
                             >
                                 {viewMode === 'list' ? (
                                     <LayoutGrid size={18} color={colors.primary} strokeWidth={2.5} />
@@ -296,25 +297,26 @@ const HomeScreen = ({ navigation }) => {
                                 <View
                                     key={offer?._id || `offer-${index}`}
                                     style={{
-                                        width: isTablet || viewMode === 'grid' ? '48.5%' : '100%'
+                                        width: (width > 768) || viewMode === 'grid' ? '48.5%' : '100%'
                                     }}
                                     className="mb-2"
                                 >
                                     <OfferCard
                                         offer={offer}
-                                        grid={isTablet || viewMode === 'grid'}
+                                        grid={(width > 768) || viewMode === 'grid'}
                                         isFavorite={wishlistIds.includes(offer?._id)}
+                                        onRefresh={fetchData}
                                         onPress={() => navigation.navigate('OfferDetails', { offer })}
                                     />
                                 </View>
                             ))}
                             {activeOffers.length === 0 && (
                                 <View className="py-24 items-center w-full">
-                                    <View className="w-40 h-40 bg-surface rounded-full items-center justify-center mb-6">
+                                    <View style={{ backgroundColor: colors.surface }} className="w-40 h-40 rounded-full items-center justify-center mb-6">
                                         <Search size={64} color={colors.border} />
                                     </View>
-                                    <Text className="text-primary text-2xl font-black text-center">No Treasures Found</Text>
-                                    <Text className="text-textSecondary text-center px-10 mt-2 font-medium">
+                                    <Text style={{ color: colors.text }} className="text-2xl font-black text-center">No Treasures Found</Text>
+                                    <Text style={{ color: colors.textSecondary }} className="text-center px-10 mt-2 font-medium opacity-60">
                                         We couldn't find any offers matching your current filters.
                                     </Text>
                                 </View>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
+import Text from '../components/CustomText';
 import {
     View,
-    Text,
     TouchableOpacity,
     ScrollView,
     KeyboardAvoidingView,
@@ -19,9 +19,11 @@ import * as ImagePicker from 'expo-image-picker';
 import FloatingInput from '../components/FloatingInput';
 import AddressAutocomplete from '../components/AddressAutocomplete';
 import { API_BASE_URL } from '../config';
-import { colors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
+import { colors as staticColors } from '../theme/colors';
 
 const EditStoreScreen = ({ navigation, route }) => {
+    const { colors, isDarkMode } = useTheme();
     const { vendorData } = route.params || {};
 
     const [formData, setFormData] = useState({
@@ -121,19 +123,18 @@ const EditStoreScreen = ({ navigation, route }) => {
             : null;
 
     return (
-        <SafeAreaView className="flex-1 bg-[#FAFAFA]" edges={['top']}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
             {/* Header */}
-            <View className="px-6 py-4 flex-row items-center justify-between bg-white border-b border-surface/30">
+            {/* Header like Register */}
+            <View className="flex-row items-center justify-between px-4 py-3 border-b" style={{ borderBottomColor: colors.border }}>
                 <TouchableOpacity
                     onPress={() => navigation.goBack()}
-                    activeOpacity={0.7}
-                    className="w-10 h-10 bg-[#F8FAFC] rounded-full items-center justify-center border border-surface/50"
+                    style={{ backgroundColor: colors.surface }}
+                    className="w-10 h-10 items-center justify-center rounded-xl"
                 >
-                    <ChevronLeft size={20} color={colors.primary} strokeWidth={2.5} />
+                    <ChevronLeft size={24} color={colors.primary} />
                 </TouchableOpacity>
-                <View className="items-center">
-                    <Text className="text-lg font-black text-primary tracking-tight">Store Profile</Text>
-                </View>
+                <Text style={{ color: colors.text }} className="text-lg font-bold">Store Profile</Text>
                 <View className="w-10" />
             </View>
 
@@ -142,100 +143,78 @@ const EditStoreScreen = ({ navigation, route }) => {
                 className="flex-1"
             >
                 <ScrollView
-                    contentContainerStyle={{ paddingBottom: 60 }}
+                    contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 15, paddingBottom: 40 }}
                     showsVerticalScrollIndicator={false}
                 >
-                    {/* Brand Banner */}
-                    <LinearGradient
-                        colors={[colors.primary, '#004D40']}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                        style={Platform.OS === 'ios' ? { paddingBottom: 110, paddingTop: 40, alignItems: 'center' } : {}}
-                        className={`px-8 items-center ${Platform.OS === 'ios' ? '' : 'pt-10 pb-20'}`}
-                    >
+                    <View className="items-center mb-10 mt-4">
                         <TouchableOpacity
                             onPress={handlePickLogo}
-                            activeOpacity={0.9}
-                            className="w-24 h-24 bg-white rounded-[32px] items-center justify-center shadow-2xl mb-4 overflow-hidden relative"
+                            style={{ backgroundColor: colors.surface, borderColor: colors.border }}
+                            className="w-28 h-28 rounded-[32px] border-2 border-dashed items-center justify-center overflow-hidden"
                         >
                             {logoSource ? (
-                                <Image source={logoSource} className="w-full h-full" resizeMode="cover" />
+                                <Image
+                                    source={logoSource}
+                                    className="w-full h-full"
+                                    resizeMode="cover"
+                                />
                             ) : (
-                                <Store size={40} color={colors.primary} strokeWidth={2} />
+                                <View className="items-center">
+                                    <Store size={40} color={colors.textSecondary} style={{ opacity: 0.5 }} />
+                                </View>
                             )}
-                            <View className="absolute bottom-0 right-0 left-0 bg-black/30 py-1 items-center">
-                                <Camera size={14} color="white" strokeWidth={2.5} />
+                            <View style={{ backgroundColor: colors.primary }} className="absolute bottom-0 left-0 right-0 py-1.5 items-center">
+                                <Text className="text-[8px] font-black text-white tracking-widest uppercase">Change Logo</Text>
                             </View>
                         </TouchableOpacity>
-                        <Text className="text-white font-black text-2xl tracking-tighter text-center">Edit Brand Identity</Text>
-                        <Text className="text-white/60 text-[11px] font-black tracking-[3px] mt-1 text-center">Management Hub</Text>
-                    </LinearGradient>
-
-                    {/* Integrated Form Card */}
-                    <View
-                        style={[styles.formCard, Platform.OS === 'ios' ? { marginTop: -50 } : { marginTop: -40 }]}
-                        className="mx-6 bg-white rounded-[40px] p-8 border border-surface/50 shadow-xl"
-                    >
-                        <View className="space-y-8">
-                            <View>
-                                <View className="flex-row items-center mb-4 ml-1">
-                                    <View className="w-6 h-6 bg-primary/5 rounded-full items-center justify-center">
-                                        <CheckCircle2 size={12} color={colors.primary} strokeWidth={3} />
-                                    </View>
-                                    <Text className="text-[10px] font-black text-primary tracking-[2px] ml-3">Business Name</Text>
-                                </View>
-                                <FloatingInput
-                                    label="Legal Store Name"
-                                    value={formData.storeName}
-                                    onChangeText={(val) => setFormData({ ...formData, storeName: val })}
-                                />
-                            </View>
-
-                            <View className="mt-6">
-                                <View className="flex-row items-center mb-4 ml-1">
-                                    <View className="w-6 h-6 bg-secondary/5 rounded-full items-center justify-center">
-                                        <MapPin size={12} color={colors.secondary} strokeWidth={3} />
-                                    </View>
-                                    <Text className="text-[10px] font-black text-secondary tracking-[2px] ml-3">Physical Address</Text>
-                                </View>
-                                <AddressAutocomplete
-                                    label=""
-                                    placeholder="Verify your store location"
-                                    value={formData.storeAddress}
-                                    onChangeText={(val) => setFormData({ ...formData, storeAddress: val })}
-                                />
-                            </View>
-
-                            <TouchableOpacity
-                                activeOpacity={0.9}
-                                onPress={handleUpdate}
-                                disabled={loading}
-                                style={styles.shadowButton}
-                                className="mt-10"
-                            >
-                                <LinearGradient
-                                    colors={[colors.primary, '#004D40']}
-                                    start={{ x: 0, y: 0 }}
-                                    end={{ x: 1, y: 0 }}
-                                    style={styles.gradientButton}
-                                >
-                                    {loading ? (
-                                        <ActivityIndicator size="small" color="white" />
-                                    ) : (
-                                        <View className="flex-row items-center justify-center">
-                                            <Text className="text-white font-black text-sm tracking-[3px] mr-3">Publish Changes</Text>
-                                            <ChevronRight size={18} color="white" strokeWidth={3} />
-                                        </View>
-                                    )}
-                                </LinearGradient>
-                            </TouchableOpacity>
-                        </View>
+                        <Text style={{ color: colors.textSecondary }} className="mt-4 font-bold text-xs uppercase tracking-widest opacity-60">Update Store Identity</Text>
                     </View>
 
-                    <View className="mt-8 items-center px-10">
-                        <View className="flex-row items-center bg-success/5 px-4 py-2.5 rounded-2xl border border-success/10">
-                            <Sparkles size={14} color={colors.success} fill={colors.success + '20'} />
-                            <Text className="text-success font-black text-[9px] tracking-widest ml-2">Updates Reflected In Real-Time</Text>
+
+                    <View className="space-y-6">
+                        <FloatingInput
+                            label="Legal Store Name"
+                            value={formData.storeName}
+                            onChangeText={(val) => setFormData({ ...formData, storeName: val })}
+                        />
+
+                        <View className="mt-4">
+                            <AddressAutocomplete
+                                label="Physical Address"
+                                placeholder="Verify your store location"
+                                value={formData.storeAddress}
+                                onChangeText={(val) => setFormData({ ...formData, storeAddress: val })}
+                            />
+                        </View>
+
+                        <TouchableOpacity
+                            activeOpacity={0.9}
+                            onPress={handleUpdate}
+                            disabled={loading}
+                            className="mt-6"
+                        >
+                            <LinearGradient
+                                colors={[colors.primary, isDarkMode ? '#4bb2f9' : '#004D40']}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 0 }}
+                                style={styles.gradientButton}
+                            >
+                                {loading ? (
+                                    <ActivityIndicator size="small" color="white" />
+                                ) : (
+                                    <View className="flex-row items-center justify-center">
+                                        <Text style={{ color: '#FFFFFF' }} className="font-black text-sm tracking-[3px] mr-3">Publish Changes</Text>
+                                        <ChevronRight size={18} color="white" strokeWidth={3} />
+                                    </View>
+                                )}
+                            </LinearGradient>
+                        </TouchableOpacity>
+                    </View>
+
+                    <View className="mt-12 items-center">
+                        <View style={{ backgroundColor: isDarkMode ? `${colors.success}20` : `${colors.success}10`, borderColor: `${colors.success}33` }} className="flex-row items-center px-5 py-3 rounded-2xl border">
+                            <Sparkles size={16} color={colors.success} />
+                            <Text style={{ color: isDarkMode ? colors.text : colors.success }} className="font-black text-[10px] tracking-widest ml-3">Real-Time Sync Active</Text>
                         </View>
                     </View>
                 </ScrollView>
@@ -251,13 +230,6 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 30,
         elevation: 10,
-    },
-    shadowButton: {
-        shadowColor: colors.primary,
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.3,
-        shadowRadius: 15,
-        elevation: 8,
     },
     gradientButton: {
         paddingVertical: 18,

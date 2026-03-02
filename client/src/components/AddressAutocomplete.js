@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, Keyboard, ScrollView } from 'react-native';
+import Text from './CustomText';
+import { View, TextInput, TouchableOpacity, FlatList, ActivityIndicator, Keyboard, ScrollView } from 'react-native';
 import { MapPin, Search, X } from 'lucide-react-native';
-import { colors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
 
 const AddressAutocomplete = ({ value, onChangeText, placeholder, label }) => {
+    const { colors, isDarkMode } = useTheme();
     const [suggestions, setSuggestions] = useState([]);
     const [loading, setLoading] = useState(false);
     const [showSuggestions, setShowSuggestions] = useState(false);
@@ -75,11 +77,12 @@ const AddressAutocomplete = ({ value, onChangeText, placeholder, label }) => {
 
     return (
         <View className="mb-5 z-50">
-            {label && <Text className="text-xs font-bold text-textSecondary uppercase mb-2 ml-1">{label}</Text>}
-            <View className="flex-row items-center bg-surface rounded-xl px-4 py-3 border border-border">
+            {label && <Text style={{ color: colors.textSecondary }} className="text-xs font-bold uppercase mb-2 ml-1">{label}</Text>}
+            <View style={{ backgroundColor: colors.surface, borderColor: colors.border }} className="flex-row items-center rounded-xl px-4 py-3 border">
                 <MapPin size={18} color={colors.textSecondary} />
                 <TextInput
-                    className="flex-1 ml-3 text-primary font-medium"
+                    style={{ color: colors.text }}
+                    className="flex-1 ml-3 font-medium"
                     placeholder={placeholder || "Start typing address..."}
                     value={query}
                     onChangeText={handleTextChange}
@@ -95,20 +98,21 @@ const AddressAutocomplete = ({ value, onChangeText, placeholder, label }) => {
             </View>
 
             {showSuggestions && suggestions.length > 0 && (
-                <View className="absolute top-[85px] left-0 right-0 bg-white rounded-xl shadow-xl border border-border z-[100] max-h-[300px] overflow-hidden">
+                <View style={{ backgroundColor: colors.card, borderColor: colors.border }} className="absolute top-[85px] left-0 right-0 rounded-xl shadow-xl border z-[100] max-h-[300px] overflow-hidden">
                     <ScrollView keyboardShouldPersistTaps="always" nestedScrollEnabled={true}>
                         {suggestions.map((item, index) => (
                             <TouchableOpacity
                                 key={index.toString()}
-                                className="px-4 py-4 border-b border-surface flex-row items-start"
+                                style={{ borderBottomColor: colors.border }}
+                                className="px-4 py-4 border-b flex-row items-start"
                                 onPress={() => handleSelect(item)}
                             >
                                 <MapPin size={16} color={colors.secondary} className="mt-1" />
                                 <View className="ml-3 flex-1">
-                                    <Text className="text-primary font-bold text-sm" numberOfLines={2}>
+                                    <Text style={{ color: colors.text }} className="font-bold text-sm" numberOfLines={2}>
                                         {item.address.road || item.address.amenity || item.address.house_number || item.display_name.split(',')[0]}
                                     </Text>
-                                    <Text className="text-textSecondary text-[11px] mt-0.5" numberOfLines={1}>
+                                    <Text style={{ color: colors.textSecondary }} className="text-[11px] mt-0.5" numberOfLines={1}>
                                         {item.address.suburb || item.address.neighbourhood || item.address.residential || ''}
                                         {item.address.city || item.address.town || item.address.village || ''}, {item.address.state || ''}
                                     </Text>

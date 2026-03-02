@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
+import Text from '../components/CustomText';
 import {
     View,
-    Text,
     TouchableOpacity,
     ScrollView,
     KeyboardAvoidingView,
@@ -14,10 +14,11 @@ import { ChevronLeft, Camera, Check } from 'lucide-react-native';
 import FloatingInput from '../components/FloatingInput';
 import CustomButton from '../components/CustomButton';
 import * as ImagePicker from 'expo-image-picker';
-import { } from '@react-navigation/native';
+import { useTheme } from '../context/ThemeContext';
 import { API_BASE_URL } from '../config';
 
 const RegisterScreen = ({ navigation }) => {
+    const { colors, isDarkMode } = useTheme();
     const [name, setName] = useState('');
     const [mobile, setMobile] = useState('');
     const [password, setPassword] = useState('');
@@ -97,13 +98,17 @@ const RegisterScreen = ({ navigation }) => {
     };
 
     return (
-        <SafeAreaView className="flex-1 bg-white">
+        <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
             <View className="flex-row items-center justify-between px-4 py-3">
-                <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <ChevronLeft size={28} color="#002F34" />
+                <TouchableOpacity
+                    onPress={() => navigation.goBack()}
+                    style={{ backgroundColor: colors.surface }}
+                    className="w-10 h-10 items-center justify-center rounded-xl"
+                >
+                    <ChevronLeft size={24} color={colors.primary} />
                 </TouchableOpacity>
-                <Text className="text-lg font-bold text-primary">Create Account</Text>
-                <View className="w-7" />
+                <Text style={{ color: colors.text }} className="text-lg font-bold">Create Account</Text>
+                <View className="w-10" />
             </View>
 
             <KeyboardAvoidingView
@@ -111,24 +116,24 @@ const RegisterScreen = ({ navigation }) => {
                 className="flex-1"
             >
                 <ScrollView
-                    contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 20, paddingBottom: 30 }}
+                    contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 10, paddingBottom: 30 }}
                     showsVerticalScrollIndicator={false}
                 >
 
                     <View className="items-center mb-8">
-                        <TouchableOpacity className="w-[100px] h-[100px] rounded-full bg-surface justify-center items-center border border-gray-200" onPress={pickImage}>
+                        <TouchableOpacity style={{ backgroundColor: colors.surface, borderColor: colors.border }} className="w-[120px] h-[120px] rounded-full justify-center items-center border" onPress={pickImage}>
                             {image ? (
-                                <Image source={{ uri: image }} className="w-[100px] h-[100px] rounded-full" />
+                                <Image source={{ uri: image }} className="w-[120px] h-[120px] rounded-full" />
                             ) : (
                                 <View className="items-center">
-                                    <Camera size={32} color="#54757C" />
+                                    <Camera size={40} color={colors.textSecondary} />
                                 </View>
                             )}
-                            <View className="absolute bottom-0 right-0 bg-primary w-7 h-7 rounded-full justify-center items-center border-2 border-white">
-                                <Camera size={14} color="#FFFFFF" />
+                            <View style={{ backgroundColor: colors.primary, borderColor: colors.background }} className="absolute bottom-1 right-1 w-8 h-8 rounded-full justify-center items-center border-2">
+                                <Camera size={16} color="#FFFFFF" />
                             </View>
                         </TouchableOpacity>
-                        <Text className="mt-2.5 text-xs text-gray-500 font-medium">Upload Profile Picture</Text>
+                        <Text style={{ color: colors.textSecondary }} className="mt-2.5 text-xs font-medium">Upload Profile Picture</Text>
                     </View>
 
                     <FloatingInput
@@ -164,11 +169,11 @@ const RegisterScreen = ({ navigation }) => {
                         onPress={() => setAgreed(!agreed)}
                         activeOpacity={0.7}
                     >
-                        <View className={`w-[22px] h-[22px] rounded border-2 justify-center items-center mr-2.5 ${agreed ? 'bg-secondary border-secondary' : 'border-gray-200'}`}>
+                        <View style={{ borderColor: agreed ? colors.secondary : colors.border, backgroundColor: agreed ? colors.secondary : 'transparent' }} className={`w-[22px] h-[22px] rounded border-2 justify-center items-center mr-2.5`}>
                             {agreed && <Check size={14} color="#FFFFFF" strokeWidth={3} />}
                         </View>
-                        <Text className="text-sm text-gray-500">
-                            I agree to the <Text className="text-accent font-semibold">Terms & Conditions</Text>
+                        <Text style={{ color: colors.textSecondary }} className="text-sm">
+                            I agree to the <Text style={{ color: colors.accent }} className="font-semibold">Terms & Conditions</Text>
                         </Text>
                     </TouchableOpacity>
 
@@ -178,7 +183,7 @@ const RegisterScreen = ({ navigation }) => {
                         loading={loading}
                     />
 
-                    <View className="h-[1px] bg-gray-200 my-5" />
+                    <View style={{ backgroundColor: colors.border }} className="h-[1px] my-5" />
 
                     <CustomButton
                         title="Register as Vendor"
@@ -187,9 +192,9 @@ const RegisterScreen = ({ navigation }) => {
                     />
 
                     <View className="flex-row justify-center mt-8">
-                        <Text className="text-primary text-sm">Already have an account? </Text>
+                        <Text style={{ color: colors.text }} className="text-sm">Already have an account? </Text>
                         <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-                            <Text className="text-secondary font-bold text-sm">Login</Text>
+                            <Text style={{ color: colors.secondary }} className="font-bold text-sm">Login</Text>
                         </TouchableOpacity>
                     </View>
 

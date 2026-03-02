@@ -1,18 +1,21 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, FlatList, Image, TouchableOpacity, useWindowDimensions, ActivityIndicator } from 'react-native';
+import Text from '../components/CustomText';
+import { View, FlatList, Image, TouchableOpacity, useWindowDimensions, ActivityIndicator } from 'react-native';
 import { } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Heart, ShoppingBag, Sparkles } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { colors } from '../theme/colors';
+import { colors as staticColors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
 import CustomButton from '../components/CustomButton';
 import OfferCard from '../components/OfferCard';
 import { API_BASE_URL } from '../config';
 
 const WishlistScreen = ({ navigation }) => {
     const { width } = useWindowDimensions();
+    const { colors, isDarkMode } = useTheme();
     const [favorites, setFavorites] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -50,12 +53,12 @@ const WishlistScreen = ({ navigation }) => {
     }, [navigation]);
 
     return (
-        <SafeAreaView className="flex-1 bg-[#FAFAFA]" edges={['top']}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
             {/* Minimal Header */}
-            <View className="px-6 pt-4 pb-6 bg-white shadow-sm flex-row items-center justify-between">
+            <View style={{ backgroundColor: colors.card }} className="px-6 pt-4 pb-6 shadow-sm flex-row items-center justify-between">
                 <View>
-                    <Text className="text-[10px] font-black text-secondary tracking-[3px] mb-1">Collection</Text>
-                    <Text className="text-3xl font-black text-primary">Wishlist</Text>
+                    <Text style={{ color: staticColors.secondary }} className="text-[10px] font-black tracking-[3px] mb-1">Collection</Text>
+                    <Text style={{ color: colors.text }} className="text-3xl font-black">Wishlist</Text>
                 </View>
             </View>
 
@@ -70,19 +73,19 @@ const WishlistScreen = ({ navigation }) => {
                         onPress={() => navigation.navigate('Home')}
                         className="relative"
                     >
-                        <View className="w-48 h-48 bg-white rounded-[60px] items-center justify-center mb-10 shadow-2xl border border-surface">
+                        <View style={{ backgroundColor: colors.card, borderColor: colors.border }} className="w-48 h-48 rounded-[60px] items-center justify-center mb-10 shadow-2xl border">
                             <Heart size={80} color={colors.primary} opacity={0.1} strokeWidth={1.5} />
                             <View className="absolute">
-                                <Heart size={60} color={colors.secondary} strokeWidth={2} />
+                                <Heart size={60} color={staticColors.secondary} strokeWidth={2} />
                             </View>
                         </View>
-                        <View className="absolute -top-2 -right-2 w-12 h-12 bg-white rounded-2xl items-center justify-center shadow-lg transform rotate-12">
-                            <Sparkles size={24} color={colors.warning} />
+                        <View style={{ backgroundColor: colors.card }} className="absolute -top-2 -right-2 w-12 h-12 rounded-2xl items-center justify-center shadow-lg transform rotate-12">
+                            <Sparkles size={24} color={staticColors.warning} />
                         </View>
                     </TouchableOpacity>
 
-                    <Text className="text-3xl font-black text-primary mb-3 text-center tracking-tighter">Your Heart is Empty</Text>
-                    <Text className="text-textSecondary text-center mb-12 font-medium leading-6 opacity-70">
+                    <Text style={{ color: colors.text }} className="text-3xl font-black mb-3 text-center tracking-tighter">Your Heart is Empty</Text>
+                    <Text style={{ color: colors.textSecondary }} className="text-center mb-12 font-medium leading-6 opacity-70">
                         Don't let these exclusive offers slip away! Start tapping the heart to save your top picks.
                     </Text>
 

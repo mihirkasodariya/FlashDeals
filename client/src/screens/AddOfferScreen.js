@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TextInput, TouchableOpacity, Image, Alert, ActivityIndicator, Platform, Modal } from 'react-native';
+import Text from '../components/CustomText';
+import { View, ScrollView, TextInput, TouchableOpacity, Image, Alert, ActivityIndicator, Platform, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { ChevronLeft, Camera, Calendar, Tag, FileText, Type } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { colors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
+import { colors as staticColors } from '../theme/colors';
 import { API_BASE_URL } from '../config';
 
 const CATEGORIES = ['Food', 'Grocery', 'Fashion', 'Electronics', 'Health', 'Other'];
 
 const AddOfferScreen = ({ navigation }) => {
+    const { colors, isDarkMode } = useTheme();
     const [loading, setLoading] = useState(false);
     const [image, setImage] = useState(null);
     const [title, setTitle] = useState('');
@@ -44,14 +47,15 @@ const AddOfferScreen = ({ navigation }) => {
             return (
                 <Modal transparent animationType="fade">
                     <View className="flex-1 justify-end bg-black/40">
-                        <View className="bg-white rounded-t-[40px] p-8 pb-12 shadow-2xl">
+                        <View style={{ backgroundColor: colors.card }} className="rounded-t-[40px] p-8 pb-12 shadow-2xl">
                             <View className="flex-row justify-between items-center mb-6">
-                                <Text className="text-xl font-black text-primary">Select Date</Text>
+                                <Text style={{ color: colors.text }} className="text-xl font-black text-primary">Select Date</Text>
                                 <TouchableOpacity
                                     onPress={onClose}
-                                    className="bg-primary/5 px-6 py-2 rounded-xl"
+                                    style={{ backgroundColor: `${colors.primary}10` }}
+                                    className="px-6 py-2 rounded-xl"
                                 >
-                                    <Text className="text-primary font-black text-sm">Done</Text>
+                                    <Text style={{ color: colors.primary }} className="font-black text-sm">Done</Text>
                                 </TouchableOpacity>
                             </View>
                             <DateTimePicker
@@ -60,7 +64,7 @@ const AddOfferScreen = ({ navigation }) => {
                                 display="inline"
                                 onChange={onChange}
                                 minimumDate={minDate}
-                                themeVariant="light"
+                                themeVariant={isDarkMode ? 'dark' : 'light'}
                                 accentColor={colors.primary}
                             />
                         </View>
@@ -145,28 +149,39 @@ const AddOfferScreen = ({ navigation }) => {
     };
 
     return (
-        <SafeAreaView className="flex-1 bg-white" edges={['top']}>
-            <View className="flex-row items-center px-6 py-4 border-b border-surface">
-                <TouchableOpacity onPress={() => navigation.goBack()} className="w-10 h-10 items-center justify-center bg-surface rounded-xl">
+        <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
+            <View style={{ borderBottomColor: colors.border }} className="flex-row items-center px-6 py-4 border-b">
+                <TouchableOpacity
+                    onPress={() => navigation.goBack()}
+                    style={{ backgroundColor: colors.surface }}
+                    className="w-10 h-10 items-center justify-center rounded-xl"
+                >
                     <ChevronLeft size={24} color={colors.primary} />
                 </TouchableOpacity>
-                <Text className="ml-4 text-xl font-black text-primary">Add New Flash Offer</Text>
+                <Text style={{ color: colors.text }} className="ml-4 text-xl font-black">Add New Flash Offer</Text>
             </View>
 
             <ScrollView className="flex-1 px-6 pt-6" showsVerticalScrollIndicator={false}>
                 {/* Image Picker */}
                 <TouchableOpacity
                     onPress={pickImage}
-                    className="w-full h-48 bg-surface rounded-[32px] overflow-hidden items-center justify-center border-2 border-dashed border-primary/20"
+                    style={{ backgroundColor: colors.card, borderColor: isDarkMode ? `${colors.primary}33` : `${colors.primary}20` }}
+                    className="w-full h-56 rounded-[48px] overflow-hidden items-center justify-center border-2 border-dashed"
                 >
                     {image ? (
-                        <Image source={{ uri: image }} className="w-full h-full" resizeMode="cover" />
+                        <View className="w-full h-full">
+                            <Image source={{ uri: image }} className="w-full h-full" resizeMode="cover" />
+                            <View style={{ backgroundColor: colors.primary }} className="absolute bottom-4 right-4 w-10 h-10 rounded-2xl items-center justify-center shadow-lg">
+                                <Camera size={20} color="white" />
+                            </View>
+                        </View>
                     ) : (
                         <View className="items-center">
-                            <View className="w-16 h-16 bg-primary/10 rounded-full items-center justify-center mb-2">
-                                <Camera size={32} color={colors.primary} />
+                            <View style={{ backgroundColor: `${colors.primary}10` }} className="w-20 h-20 rounded-[32px] items-center justify-center mb-4">
+                                <Camera size={36} color={colors.primary} strokeWidth={1.5} />
                             </View>
-                            <Text className="text-primary/60 font-bold">Select Offer Image</Text>
+                            <Text style={{ color: colors.primary }} className="font-black text-xs tracking-widest uppercase opacity-60">Select Offer Banner</Text>
+                            <Text style={{ color: colors.textSecondary }} className="text-[10px] font-bold mt-1 opacity-40">Tap to upload 16:9 image</Text>
                         </View>
                     )}
                 </TouchableOpacity>
@@ -174,12 +189,14 @@ const AddOfferScreen = ({ navigation }) => {
                 {/* Form Fields */}
                 <View className="mt-8 space-y-6 pb-20">
                     <View>
-                        <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-2 ml-1">Offer Title</Text>
-                        <View className="flex-row items-center bg-surface px-4 py-3 rounded-2xl">
+                        <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-2 ml-1 uppercase">Offer Title</Text>
+                        <View style={{ backgroundColor: colors.surface }} className="flex-row items-center px-4 py-4 rounded-2xl">
                             <Type size={18} color={colors.primary} className="mr-3" />
                             <TextInput
-                                className="flex-1 font-bold text-primary"
+                                style={{ color: colors.text }}
+                                className="flex-1 font-bold"
                                 placeholder="E.g. 50% Off on All Pizzas"
+                                placeholderTextColor={isDarkMode ? '#666' : '#999'}
                                 value={title}
                                 onChangeText={setTitle}
                             />
@@ -187,12 +204,14 @@ const AddOfferScreen = ({ navigation }) => {
                     </View>
 
                     <View className="mt-6">
-                        <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-2 ml-1">Detail Description</Text>
-                        <View className="flex-row items-start bg-surface px-4 py-4 rounded-2xl min-h-[120px]">
+                        <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-2 ml-1 uppercase">Detail Description</Text>
+                        <View style={{ backgroundColor: colors.surface }} className="flex-row items-start px-4 py-4 rounded-2xl min-h-[120px]">
                             <FileText size={18} color={colors.primary} className="mr-3 mt-1" />
                             <TextInput
-                                className="flex-1 font-bold text-primary"
+                                style={{ color: colors.text }}
+                                className="flex-1 font-bold"
                                 placeholder="Tell users about the offer, terms, etc."
+                                placeholderTextColor={isDarkMode ? '#666' : '#999'}
                                 multiline
                                 numberOfLines={4}
                                 value={description}
@@ -203,15 +222,16 @@ const AddOfferScreen = ({ navigation }) => {
                     </View>
 
                     <View className="mt-6">
-                        <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-2 ml-1">Category</Text>
+                        <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-2 ml-1 uppercase">Category</Text>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row mt-2">
                             {CATEGORIES.map(cat => (
                                 <TouchableOpacity
                                     key={cat}
                                     onPress={() => setCategory(cat)}
-                                    className={`mr-3 px-6 py-3 rounded-2xl ${category === cat ? 'bg-primary' : 'bg-surface'}`}
+                                    style={{ backgroundColor: category === cat ? colors.primary : colors.surface }}
+                                    className="mr-3 px-6 py-3 rounded-2xl"
                                 >
-                                    <Text className={`font-black text-xs ${category === cat ? 'text-white' : 'text-primary'}`}>{cat}</Text>
+                                    <Text style={{ color: category === cat ? '#FFFFFF' : colors.textSecondary }} className="font-black text-xs">{cat}</Text>
                                 </TouchableOpacity>
                             ))}
                         </ScrollView>
@@ -219,13 +239,14 @@ const AddOfferScreen = ({ navigation }) => {
 
                     <View className="flex-row gap-4 mt-6">
                         <View className="flex-1">
-                            <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-2 ml-1">Start Date</Text>
+                            <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-2 ml-1 uppercase">Start Date</Text>
                             <TouchableOpacity
                                 onPress={() => setShowStartPicker(true)}
-                                className="flex-row items-center bg-surface px-4 py-4 rounded-2xl"
+                                style={{ backgroundColor: colors.surface }}
+                                className="flex-row items-center px-4 py-4 rounded-2xl"
                             >
                                 <Calendar size={18} color={colors.primary} className="mr-3" />
-                                <Text className="flex-1 font-bold text-primary text-xs">
+                                <Text style={{ color: colors.text }} className="flex-1 font-black text-sm">
                                     {startDate.toLocaleDateString()}
                                 </Text>
                             </TouchableOpacity>
@@ -233,13 +254,14 @@ const AddOfferScreen = ({ navigation }) => {
                         </View>
 
                         <View className="flex-1">
-                            <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-2 ml-1">End Date</Text>
+                            <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-2 ml-1 uppercase">End Date</Text>
                             <TouchableOpacity
                                 onPress={() => setShowEndPicker(true)}
-                                className="flex-row items-center bg-surface px-4 py-4 rounded-2xl"
+                                style={{ backgroundColor: colors.surface }}
+                                className="flex-row items-center px-4 py-4 rounded-2xl"
                             >
                                 <Calendar size={18} color={colors.primary} className="mr-3" />
-                                <Text className="flex-1 font-bold text-primary text-xs">
+                                <Text style={{ color: colors.text }} className="flex-1 font-black text-sm">
                                     {endDate.toLocaleDateString()}
                                 </Text>
                             </TouchableOpacity>
@@ -249,7 +271,7 @@ const AddOfferScreen = ({ navigation }) => {
                 </View>
             </ScrollView>
 
-            <View className="px-6 py-6 border-t border-surface bg-white">
+            <View style={{ borderTopColor: colors.border, backgroundColor: colors.background }} className="px-6 py-6 border-t">
                 <TouchableOpacity
                     onPress={handleAddOffer}
                     disabled={loading}
@@ -258,7 +280,7 @@ const AddOfferScreen = ({ navigation }) => {
                     {loading ? (
                         <ActivityIndicator color="white" />
                     ) : (
-                        <Text className="text-white font-black text-sm tracking-widest">Publish Flash Offer</Text>
+                        <Text style={{ color: '#FFFFFF' }} className="font-black text-sm tracking-widest">Publish Flash Offer</Text>
                     )}
                 </TouchableOpacity>
             </View>

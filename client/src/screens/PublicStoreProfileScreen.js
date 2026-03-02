@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, Image, TouchableOpacity, FlatList, ActivityIndicator, useWindowDimensions, Platform, StatusBar, Linking, Alert } from 'react-native';
+import Text from '../components/CustomText';
+import { View, ScrollView, Image, TouchableOpacity, FlatList, ActivityIndicator, useWindowDimensions, Platform, StatusBar, Linking, Alert } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronLeft, MapPin, Package as LucidePackage, Shield, User, Map as MapIcon, LayoutGrid, List } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import { colors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
 import { API_BASE_URL } from '../config';
 import OfferCard from '../components/OfferCard';
 import CustomButton from '../components/CustomButton';
 
 const PublicStoreProfileScreen = ({ route, navigation }) => {
+    const { colors, isDarkMode } = useTheme();
     const { vendorId } = route.params || {};
     const { width } = useWindowDimensions();
     const insets = useSafeAreaInsets();
@@ -73,7 +75,7 @@ const PublicStoreProfileScreen = ({ route, navigation }) => {
 
     if (loading) {
         return (
-            <SafeAreaView className="flex-1 bg-white items-center justify-center">
+            <SafeAreaView style={{ backgroundColor: colors.background }} className="flex-1 items-center justify-center">
                 <ActivityIndicator size="large" color={colors.primary} />
             </SafeAreaView>
         );
@@ -81,9 +83,9 @@ const PublicStoreProfileScreen = ({ route, navigation }) => {
 
     if (!vendor) {
         return (
-            <SafeAreaView className="flex-1 bg-white items-center justify-center px-6">
-                <Text className="text-primary font-black text-center">Store Profile Not Found</Text>
-                <TouchableOpacity onPress={() => navigation.goBack()} className="mt-4 bg-primary px-6 py-3 rounded-2xl">
+            <SafeAreaView style={{ backgroundColor: colors.background }} className="flex-1 items-center justify-center px-6">
+                <Text style={{ color: colors.text }} className="font-black text-center">Store Profile Not Found</Text>
+                <TouchableOpacity onPress={() => navigation.goBack()} style={{ backgroundColor: colors.primary }} className="mt-4 px-6 py-3 rounded-2xl">
                     <Text className="text-white font-bold">Go Back</Text>
                 </TouchableOpacity>
             </SafeAreaView>
@@ -96,19 +98,20 @@ const PublicStoreProfileScreen = ({ route, navigation }) => {
         : defaultLogo;
 
     return (
-        <View className="flex-1 bg-[#FAFAFA]">
-            <StatusBar barStyle="dark-content" backgroundColor="white" />
+        <View style={{ backgroundColor: colors.background }} className="flex-1">
+            <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={colors.background} />
 
-            {/* White Status Bar Line */}
-            <View style={{ height: Platform.OS === 'ios' ? insets.top - 12 : insets.top, backgroundColor: 'white' }} />
+            {/* Status Bar Spacer */}
+            <View style={{ height: Platform.OS === 'ios' ? insets.top - 12 : insets.top, backgroundColor: colors.background }} />
 
             <View
-                style={{ top: insets.top + 12 }}
+                style={{ top: insets.top + (Platform.OS === 'ios' ? 0 : 12) }}
                 className="absolute left-6 z-30"
             >
                 <TouchableOpacity
                     onPress={() => navigation.goBack()}
-                    className="w-12 h-12 bg-white rounded-2xl items-center justify-center shadow-lg"
+                    style={{ backgroundColor: colors.card }}
+                    className="w-12 h-12 rounded-2xl items-center justify-center shadow-lg"
                 >
                     <ChevronLeft size={24} color={colors.primary} strokeWidth={3} />
                 </TouchableOpacity>
@@ -117,18 +120,18 @@ const PublicStoreProfileScreen = ({ route, navigation }) => {
             <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
                 {/* Header Banner */}
                 <LinearGradient
-                    colors={[colors.primary, '#004D40']}
+                    colors={[colors.primary, isDarkMode ? '#1e40af' : '#004D40']}
                     style={{ paddingTop: 70 }}
                     className="px-8 pb-1"
                 >
                     <View className="flex-row items-end pb-12">
-                        <View className="w-24 h-24 bg-white rounded-[32px] ml-4 items-center justify-center shadow-2xl border-4 border-white/20 overflow-hidden">
+                        <View style={{ backgroundColor: colors.card, borderColor: isDarkMode ? '#ffffff20' : '#ffffff40' }} className="w-24 h-24 rounded-[32px] ml-4 items-center justify-center shadow-2xl border-4 overflow-hidden">
                             <Image source={storeLogoSource} className="w-full h-full" resizeMode="cover" />
                         </View>
                         <View className="ml-6 flex-1 pb-4">
-                            <View className="bg-success self-start px-2 py-0.5 rounded-full mb-2 flex-row items-center">
+                            <View style={{ backgroundColor: colors.success }} className="self-start px-2 py-0.5 rounded-full mb-2 flex-row items-center">
                                 <Shield size={10} color="white" />
-                                <Text className="text-[8px] font-black text-white ml-1 tracking-widest">Verified Store</Text>
+                                <Text className="text-[8px] font-black text-white ml-1 tracking-widest uppercase">Verified Store</Text>
                             </View>
                             <Text className="text-white font-black text-3xl tracking-tighter" numberOfLines={1}>
                                 {vendor.storeName}
@@ -138,14 +141,15 @@ const PublicStoreProfileScreen = ({ route, navigation }) => {
                 </LinearGradient>
 
                 <View className="px-6 -mt-8">
-                    <View className="bg-white rounded-[40px] p-8 shadow-sm border border-surface">
+                    <View style={{ backgroundColor: colors.card, borderColor: colors.border }} className="rounded-[40px] p-8 shadow-sm border">
+
 
                         <View className="mb-8">
                             <View className="flex-row items-center mb-2">
-                                <MapPin size={14} color={colors.textSecondary} />
-                                <Text className="text-[10px] font-black text-textSecondary tracking-widest ml-2">Location Identity</Text>
+                                <MapPin size={14} color={colors.primary} />
+                                <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest ml-2 uppercase opacity-60">Location Identity</Text>
                             </View>
-                            <Text className="text-primary font-bold text-sm leading-6">
+                            <Text style={{ color: colors.text }} className="font-bold text-sm leading-6">
                                 {vendor.storeAddress || 'Address details managed at store'}
                             </Text>
                         </View>
@@ -160,16 +164,17 @@ const PublicStoreProfileScreen = ({ route, navigation }) => {
                     <View className="mt-10 mb-20">
                         <View className="flex-row items-center justify-between mb-8 px-2">
                             <View>
-                                <Text className="text-[10px] font-black text-secondary tracking-widest mb-1">Store Inventory</Text>
-                                <Text className="text-3xl font-black text-primary tracking-tighter">Active Deals</Text>
+                                <Text style={{ color: colors.secondary }} className="text-[10px] font-black tracking-widest mb-1 uppercase">Store Inventory</Text>
+                                <Text style={{ color: colors.text }} className="text-3xl font-black tracking-tighter">Active Deals</Text>
                             </View>
                             <View className="flex-row items-center">
-                                <View className="bg-secondary/10 px-4 py-2 rounded-2xl border border-secondary/10 mr-3">
-                                    <Text className="text-secondary font-black text-[10px] tracking-widest">{offers.length} LIVE</Text>
+                                <View style={{ backgroundColor: `${colors.secondary}15`, borderColor: `${colors.secondary}30` }} className="px-4 py-2 rounded-2xl border mr-3">
+                                    <Text style={{ color: colors.secondary }} className="font-black text-[10px] tracking-widest">{offers.length} LIVE</Text>
                                 </View>
                                 <TouchableOpacity
                                     onPress={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
-                                    className="bg-white w-10 h-10 rounded-xl shadow-md border border-surface items-center justify-center"
+                                    style={{ backgroundColor: colors.card, borderColor: colors.border }}
+                                    className="w-10 h-10 rounded-xl shadow-md border items-center justify-center"
                                 >
                                     {viewMode === 'list' ? (
                                         <LayoutGrid size={18} color={colors.primary} strokeWidth={2.5} />
@@ -199,9 +204,9 @@ const PublicStoreProfileScreen = ({ route, navigation }) => {
                                 ))}
                             </View>
                         ) : (
-                            <View className="items-center py-20 bg-white rounded-[40px] border border-dashed border-surface">
-                                <LucidePackage size={48} color={colors.surface} />
-                                <Text className="text-textSecondary font-bold mt-4">No Active Deals Right Now</Text>
+                            <View style={{ backgroundColor: colors.card, borderColor: colors.border }} className="items-center py-20 rounded-[40px] border border-dashed">
+                                <LucidePackage size={48} color={colors.textSecondary} opacity={0.2} />
+                                <Text style={{ color: colors.textSecondary }} className="font-bold mt-4 opacity-60">No Active Deals Right Now</Text>
                             </View>
                         )}
                     </View>
