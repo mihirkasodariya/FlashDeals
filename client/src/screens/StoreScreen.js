@@ -208,7 +208,7 @@ const StoreScreen = ({ navigation }) => {
                             <View className="w-14 h-14 bg-secondary/10 rounded-2xl items-center justify-center mb-4">
                                 <LayoutGrid size={28} color={colors.secondary} strokeWidth={2} />
                             </View>
-                            <Text className="text-primary font-black text-center text-sm leading-5">Active{"\n"}Deals</Text>
+                            <Text className="text-primary font-black text-center text-sm leading-5">Manage Your{"\n"}Deals</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
@@ -219,7 +219,7 @@ const StoreScreen = ({ navigation }) => {
                             <View className="w-14 h-14 bg-primary/5 rounded-2xl items-center justify-center mb-4">
                                 <LucidePackage size={28} color={colors.primary} strokeWidth={2} />
                             </View>
-                            <Text className="text-primary font-black text-center text-sm leading-5">Launch{"\n"}Flash Deal</Text>
+                            <Text className="text-primary font-black text-center text-sm leading-5">Add New{"\n"}Offer</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
