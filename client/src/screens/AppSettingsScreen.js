@@ -7,10 +7,35 @@ import { colors as staticColors } from '../theme/colors';
 import { useTheme } from '../context/ThemeContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const LANGUAGES = [
-    { id: 'en', name: 'English', native: 'English' },
-    { id: 'hi', name: 'Hindi', native: 'हिन्दी' },
-    { id: 'gj', name: 'Gujarati', native: 'ગુજરાતી' }
+const RECOMMENDED_LANGUAGES = [
+    { id: 'en', name: 'English', native: 'English', flag: '🇬🇧' },
+    { id: 'hi', name: 'Hindi', native: 'हिन्दी', flag: '🇮🇳' },
+    { id: 'gj', name: 'Gujarati', native: 'ગુજરાતી', flag: '🇮🇳' }
+];
+
+const ALL_LANGUAGES = [
+    { id: 'ar', name: 'Arabic', native: 'العربية', flag: '🇸🇦' },
+    { id: 'as', name: 'Assamese', native: 'অসমীয়া', flag: '🇮🇳' },
+    { id: 'bn', name: 'Bengali', native: 'বাংলা', flag: '🇮🇳' },
+    { id: 'zh', name: 'Chinese', native: '中文', flag: '🇨🇳' },
+    { id: 'fr', name: 'French', native: 'Français', flag: '🇫🇷' },
+    { id: 'de', name: 'German', native: 'Deutsch', flag: '🇩🇪' },
+    { id: 'it', name: 'Italian', native: 'Italiano', flag: '🇮🇹' },
+    { id: 'ja', name: 'Japanese', native: '日本語', flag: '🇯🇵' },
+    { id: 'kn', name: 'Kannada', native: 'ಕನ್ನಡ', flag: '🇮🇳' },
+    { id: 'ko', name: 'Korean', native: '한국어', flag: '🇰🇷' },
+    { id: 'ma', name: 'Maithili', native: 'मैथिली', flag: '🇮🇳' },
+    { id: 'ml', name: 'Malayalam', native: 'മലയാളം', flag: '🇮🇳' },
+    { id: 'mr', name: 'Marathi', native: 'मराठी', flag: '🇮🇳' },
+    { id: 'or', name: 'Odia', native: 'ଓଡ଼ିଆ', flag: '🇮🇳' },
+    { id: 'pt', name: 'Portuguese', native: 'Português', flag: '🇵🇹' },
+    { id: 'pa', name: 'Punjabi', native: 'ਪੰਜਾਬੀ', flag: '🇮🇳' },
+    { id: 'ru', name: 'Russian', native: 'Русский', flag: '🇷🇺' },
+    { id: 'sa', name: 'Sanskrit', native: 'संस्कृतम्', flag: '🇮🇳' },
+    { id: 'es', name: 'Spanish', native: 'Español', flag: '🇪🇸' },
+    { id: 'ta', name: 'Tamil', native: 'தமிழ்', flag: '🇮🇳' },
+    { id: 'te', name: 'Telugu', native: 'తెలుగు', flag: '🇮🇳' },
+    { id: 'ur', name: 'Urdu', native: 'اردو', flag: '🇮🇳' }
 ];
 
 // Moving SettingRow outside to prevent re-creation on every render
@@ -52,7 +77,7 @@ const AppSettingsScreen = ({ navigation }) => {
     const insets = useSafeAreaInsets();
     const { isDarkMode, toggleTheme, colors } = useTheme();
     const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-    const [selectedLang, setSelectedLang] = useState(LANGUAGES[0]);
+    const [selectedLang, setSelectedLang] = useState(RECOMMENDED_LANGUAGES[0]);
     const [isLangModalVisible, setIsLangModalVisible] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -249,32 +274,63 @@ const AppSettingsScreen = ({ navigation }) => {
                         <Text style={{ color: colors.text }} className="text-3xl font-black mb-2">Language</Text>
                         <Text style={{ color: colors.textSecondary }} className="mb-8 font-medium opacity-60">Choose your primary app language.</Text>
 
-                        <View className="space-y-4">
-                            {LANGUAGES.map((lang) => (
-                                <TouchableOpacity
-                                    key={lang.id}
-                                    onPress={() => {
-                                        setSelectedLang(lang);
-                                        setIsLangModalVisible(false);
-                                    }}
-                                    style={{
-                                        backgroundColor: selectedLang.id === lang.id ? `${colors.primary}10` : colors.surface,
-                                        borderColor: selectedLang.id === lang.id ? colors.primary : colors.border
-                                    }}
-                                    className={`flex-row items-center p-6 rounded-[24px] border mb-4`}
-                                >
-                                    <View className="flex-1">
-                                        <Text style={{ color: colors.text }} className={`font-black text-lg ${selectedLang.id !== lang.id && 'opacity-60'}`}>{lang.name}</Text>
-                                        <Text style={{ color: colors.textSecondary }} className="text-[10px] mt-0.5 font-bold opacity-50">{lang.native}</Text>
-                                    </View>
-                                    {selectedLang.id === lang.id && (
-                                        <View style={{ backgroundColor: colors.primary }} className="w-8 h-8 rounded-full items-center justify-center">
-                                            <Check size={18} color="white" strokeWidth={4} />
+                        <ScrollView showsVerticalScrollIndicator={false} style={{ height: '60%' }}>
+                            <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-[2px] mb-4 opacity-40 uppercase">Recommended</Text>
+                            <View style={{ backgroundColor: colors.surface, borderColor: colors.border }} className="rounded-[32px] p-4 border mb-6">
+                                {RECOMMENDED_LANGUAGES.map((lang, index) => (
+                                    <TouchableOpacity
+                                        key={lang.id}
+                                        onPress={() => {
+                                            setSelectedLang(lang);
+                                            setIsLangModalVisible(false);
+                                        }}
+                                        style={{ borderBottomColor: index !== RECOMMENDED_LANGUAGES.length - 1 ? colors.border : 'transparent' }}
+                                        className={`flex-row items-center py-4 ${index !== RECOMMENDED_LANGUAGES.length - 1 ? 'border-b' : ''}`}
+                                    >
+                                        <View style={{ backgroundColor: selectedLang.id === lang.id ? `${colors.primary}15` : colors.background }} className="w-12 h-12 rounded-[18px] items-center justify-center mr-4">
+                                            <Text className="text-2xl">{lang.flag}</Text>
                                         </View>
-                                    )}
-                                </TouchableOpacity>
-                            ))}
-                        </View>
+                                        <View className="flex-1">
+                                            <Text style={{ color: colors.text }} className={`font-bold text-sm ${selectedLang.id !== lang.id ? 'opacity-70' : ''}`}>{lang.name}</Text>
+                                            <Text style={{ color: colors.textSecondary }} className="text-[10px] mt-0.5 font-bold opacity-50">{lang.native}</Text>
+                                        </View>
+                                        {selectedLang.id === lang.id && (
+                                            <View style={{ backgroundColor: colors.primary }} className="w-6 h-6 rounded-full items-center justify-center">
+                                                <Check size={14} color="white" strokeWidth={4} />
+                                            </View>
+                                        )}
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+
+                            <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-[2px] mb-4 opacity-40 uppercase">All Languages</Text>
+                            <View style={{ backgroundColor: colors.surface, borderColor: colors.border }} className="rounded-[32px] p-4 border mb-6">
+                                {ALL_LANGUAGES.map((lang, index) => (
+                                    <TouchableOpacity
+                                        key={lang.id}
+                                        onPress={() => {
+                                            setSelectedLang(lang);
+                                            setIsLangModalVisible(false);
+                                        }}
+                                        style={{ borderBottomColor: index !== ALL_LANGUAGES.length - 1 ? colors.border : 'transparent' }}
+                                        className={`flex-row items-center py-4 ${index !== ALL_LANGUAGES.length - 1 ? 'border-b' : ''}`}
+                                    >
+                                        <View style={{ backgroundColor: selectedLang.id === lang.id ? `${colors.primary}15` : colors.background }} className="w-12 h-12 rounded-[18px] items-center justify-center mr-4">
+                                            <Text className="text-2xl">{lang.flag}</Text>
+                                        </View>
+                                        <View className="flex-1">
+                                            <Text style={{ color: colors.text }} className={`font-bold text-sm ${selectedLang.id !== lang.id ? 'opacity-70' : ''}`}>{lang.name}</Text>
+                                            <Text style={{ color: colors.textSecondary }} className="text-[10px] mt-0.5 font-bold opacity-50">{lang.native}</Text>
+                                        </View>
+                                        {selectedLang.id === lang.id && (
+                                            <View style={{ backgroundColor: colors.primary }} className="w-6 h-6 rounded-full items-center justify-center">
+                                                <Check size={14} color="white" strokeWidth={4} />
+                                            </View>
+                                        )}
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                        </ScrollView>
 
                         <TouchableOpacity
                             onPress={() => setIsLangModalVisible(false)}

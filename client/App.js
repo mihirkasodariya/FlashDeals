@@ -37,6 +37,7 @@ import TicketDetailsScreen from './src/screens/TicketDetailsScreen';
 import NotificationScreen from './src/screens/NotificationScreen';
 import AppSettingsScreen from './src/screens/AppSettingsScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
+import LanguageSelectionScreen from './src/screens/LanguageSelectionScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -131,45 +132,16 @@ function MainTabs({ navigation }) {
 
 function RootStack() {
   const { colors } = useTheme();
-  const [isInitialLoading, setIsInitialLoading] = React.useState(true);
-  const [initialRoute, setInitialRoute] = React.useState('Onboarding');
-
-  React.useEffect(() => {
-    const checkOnboarding = async () => {
-      try {
-        const hasSeen = await AsyncStorage.getItem('hasSeenOnboarding');
-
-        if (hasSeen === 'true') {
-          setInitialRoute('Main');
-        } else {
-          setInitialRoute('Onboarding');
-        }
-      } catch (error) {
-        console.error("Check onboarding error:", error);
-      } finally {
-        setIsInitialLoading(false);
-      }
-    };
-
-    checkOnboarding();
-  }, []);
-
-  if (isInitialLoading) {
-    return (
-      <View style={{ flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
-    );
-  }
 
   return (
     <Stack.Navigator
-      initialRouteName={initialRoute}
+      initialRouteName="LanguageSelection"
       screenOptions={{
         headerShown: false,
         cardStyle: { backgroundColor: colors.background },
       }}
     >
+      <Stack.Screen name="LanguageSelection" component={LanguageSelectionScreen} />
       <Stack.Screen name="Onboarding" component={OnboardingScreen} />
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Register" component={RegisterScreen} />
