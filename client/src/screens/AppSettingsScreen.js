@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import Text from '../components/CustomText';
 import { View, ScrollView, TouchableOpacity, Switch, Modal, Alert, Share, Platform, Linking, Pressable } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ChevronLeft, Globe, Moon, Sun, Bell, Star, Share2, HelpCircle, ChevronRight, Check } from 'lucide-react-native';
+import { ChevronLeft, Globe, Moon, Sun, Bell, Star, Share2, HelpCircle, ChevronRight, Check, Lock, History } from 'lucide-react-native';
 import { colors as staticColors } from '../theme/colors';
 import { useTheme } from '../context/ThemeContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LANGUAGES = [
     { id: 'en', name: 'English', native: 'English' },
@@ -53,6 +54,15 @@ const AppSettingsScreen = ({ navigation }) => {
     const [notificationsEnabled, setNotificationsEnabled] = useState(true);
     const [selectedLang, setSelectedLang] = useState(LANGUAGES[0]);
     const [isLangModalVisible, setIsLangModalVisible] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+    React.useEffect(() => {
+        const checkToken = async () => {
+            const token = await AsyncStorage.getItem('userToken');
+            setIsLoggedIn(!!token);
+        };
+        checkToken();
+    }, []);
 
     const handleShareApp = async () => {
         try {
@@ -115,6 +125,35 @@ const AppSettingsScreen = ({ navigation }) => {
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} className="flex-1 px-6">
+                {/* Account Section */}
+                {isLoggedIn && (
+                    <View className="mt-8">
+                        <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-[2px] mb-6 opacity-40 uppercase">Account Security</Text>
+                        <View style={{ backgroundColor: colors.card, borderColor: colors.border }} className="rounded-[32px] p-4 shadow-sm border">
+                            <SettingRow
+                                icon={Lock}
+                                label="Change Password"
+                                subLabel="Update your account password"
+                                type="nav"
+                                onPress={() => navigation.navigate('ChangePassword')}
+                                color={colors.warning}
+                                colors={colors}
+                                isDarkMode={isDarkMode}
+                            />
+                            <SettingRow
+                                icon={History}
+                                label="Login History"
+                                subLabel="View recent login activity"
+                                type="nav"
+                                onPress={() => navigation.navigate('LoginHistory')}
+                                color={colors.secondary}
+                                colors={colors}
+                                isDarkMode={isDarkMode}
+                            />
+                        </View>
+                    </View>
+                )}
+
                 {/* Visual Section */}
                 <View className="mt-8">
                     <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-[2px] mb-6 opacity-40 uppercase">Appearance</Text>

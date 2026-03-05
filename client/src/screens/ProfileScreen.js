@@ -202,15 +202,9 @@ const ProfileScreen = ({ navigation }) => {
     };
 
     const menuItems = [
-        ...(user ? (isVendor ? [
+        ...(user && isVendor ? [
             { icon: LucidePackage, label: 'Add New Offer', color: colors.secondary, onPress: () => navigation.navigate('AddOffer') },
             { icon: Store, label: 'Manage Store', color: colors.primary, onPress: () => navigation.navigate('EditStore', { vendorData: user }) }
-        ] : [
-            { icon: LucidePackage, label: 'Redemption History', color: colors.secondary, onPress: () => { } }
-        ]) : []),
-        ...(user ? [
-            { icon: Lock, label: 'Change Password', color: colors.warning, onPress: () => navigation.navigate('ChangePassword') },
-            { icon: History, label: 'Login History', color: colors.secondary, onPress: () => navigation.navigate('LoginHistory') },
         ] : []),
         { icon: Bell, label: 'Notifications', color: colors.warning, onPress: () => navigation.navigate('Notifications') },
         { icon: Shield, label: 'Privacy Center', color: colors.primary, onPress: () => navigation.navigate('PrivacyCenter') },
