@@ -14,7 +14,7 @@ import {
     Modal
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, Monitor, Smartphone, Clock, ShieldCheck, Globe, LogOut, ChevronRight, Fingerprint, MapPin, Tablet, ShieldAlert, Zap } from 'lucide-react-native';
+import { ChevronLeft, Monitor, Smartphone, Clock, ShieldCheck, Globe, LogOut, ChevronRight, Fingerprint, MapPin, Tablet, ShieldAlert, RefreshCw } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE_URL } from '../config';
 import { useTheme } from '../context/ThemeContext';
@@ -95,7 +95,7 @@ const LoginHistoryScreen = ({ navigation }) => {
                 </TouchableOpacity>
                 <Text style={{ color: colors.text }} className="text-base font-black tracking-tight">{t('login_history.security_access')}</Text>
                 <TouchableOpacity onPress={onRefresh} className="w-10 h-10 items-center justify-center">
-                    <Zap size={18} color={colors.primary} />
+                    <RefreshCw size={18} color={colors.primary} />
                 </TouchableOpacity>
             </View>
 
