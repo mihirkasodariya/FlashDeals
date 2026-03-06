@@ -45,7 +45,7 @@ const getSlides = (t) => [
     }
 ];
 
-const OnboardingScreen = ({ navigation }) => {
+const OnboardingScreen = ({ navigation, route }) => {
     const { colors, isDarkMode } = useTheme();
     const { t } = useTranslation();
     const SLIDES = getSlides(t);
@@ -59,27 +59,31 @@ const OnboardingScreen = ({ navigation }) => {
 
     const viewConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
 
-    const scrollTo = async () => {
-        if (currentIndex < SLIDES.length - 1) {
-            slidesRef.current.scrollToIndex({ index: currentIndex + 1 });
-        } else {
-            try {
-                await AsyncStorage.setItem('hasSeenOnboarding', 'true');
-                navigation.replace('Main');
-            } catch (err) {
-                console.log('Error @setItem: ', err);
-            }
+    const finishOnboarding = async () => {
+        if (route?.params?.fromSettings) {
+            navigation.goBack();
+            return;
         }
-    };
-
-    const skip = async () => {
         try {
             await AsyncStorage.setItem('hasSeenOnboarding', 'true');
             navigation.replace('Main');
         } catch (err) {
-            console.log('Error @setItem skip: ', err);
+            console.log('Error @setItem: ', err);
         }
     };
+
+    const scrollTo = () => {
+        if (currentIndex < SLIDES.length - 1) {
+            slidesRef.current.scrollToIndex({ index: currentIndex + 1 });
+        } else {
+            finishOnboarding();
+        }
+    };
+
+    const skip = () => {
+        finishOnboarding();
+    };
+
 
     const renderItem = ({ item }) => {
         const Icon = item.icon;

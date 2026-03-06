@@ -154,24 +154,7 @@ const AppSettingsScreen = ({ navigation }) => {
     };
 
     const handleResetIntro = () => {
-        Alert.alert(
-            t('settings.reset_intro_title'),
-            t('settings.reset_intro_desc'),
-            [
-                { text: t('common.cancel'), style: "cancel" },
-                {
-                    text: t('common.yes'),
-                    onPress: async () => {
-                        try {
-                            await AsyncStorage.removeItem('hasSeenOnboarding');
-                            Alert.alert(t('common.success'), t('settings.reset_success'));
-                        } catch (e) {
-                            Alert.alert(t('common.error'), t('settings.reset_error'));
-                        }
-                    }
-                }
-            ]
-        );
+        navigation.navigate('Onboarding', { fromSettings: true });
     };
 
     return (
@@ -316,7 +299,7 @@ const AppSettingsScreen = ({ navigation }) => {
                                         onPress={async () => {
                                             setSelectedLang(lang);
                                             await i18n.changeLanguage(lang.id);
-                                            await AsyncStorage.setItem('userLanguage', lang.id);
+                                            await AsyncStorage.setItem('app_language', lang.id);
                                             setIsLangModalVisible(false);
                                         }}
                                         style={{ borderBottomColor: index !== RECOMMENDED_LANGUAGES.length - 1 ? colors.border : 'transparent' }}
@@ -346,7 +329,7 @@ const AppSettingsScreen = ({ navigation }) => {
                                         onPress={async () => {
                                             setSelectedLang(lang);
                                             await i18n.changeLanguage(lang.id);
-                                            await AsyncStorage.setItem('userLanguage', lang.id);
+                                            await AsyncStorage.setItem('app_language', lang.id);
                                             setIsLangModalVisible(false);
                                         }}
                                         style={{ borderBottomColor: index !== ALL_LANGUAGES.length - 1 ? colors.border : 'transparent' }}

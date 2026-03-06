@@ -137,10 +137,39 @@ function MainTabs({ navigation }) {
 
 function RootStack() {
   const { colors } = useTheme();
+  const [initialRoute, setInitialRoute] = React.useState(null);
+
+  React.useEffect(() => {
+    const checkInitialRoute = async () => {
+      try {
+        const savedLang = await AsyncStorage.getItem('app_language');
+        const hasSeenOnboarding = await AsyncStorage.getItem('hasSeenOnboarding');
+
+        if (!savedLang) {
+          setInitialRoute('LanguageSelection');
+        } else if (hasSeenOnboarding !== 'true') {
+          setInitialRoute('Onboarding');
+        } else {
+          setInitialRoute('Main');
+        }
+      } catch (e) {
+        setInitialRoute('LanguageSelection');
+      }
+    };
+    checkInitialRoute();
+  }, []);
+
+  if (!initialRoute) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
 
   return (
     <Stack.Navigator
-      initialRouteName="LanguageSelection"
+      initialRouteName={initialRoute}
       screenOptions={{
         headerShown: false,
         cardStyle: { backgroundColor: colors.background },
