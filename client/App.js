@@ -15,6 +15,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform, View, Text, DeviceEventEmitter, ActivityIndicator } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
+import { registerForPushNotificationsAsync } from './src/utils/notificationService';
 
 // Import Screens
 import LoginScreen from './src/screens/LoginScreen';
@@ -172,6 +173,18 @@ function RootStack() {
 
 function AppContent() {
   const { isDarkMode, colors } = useTheme();
+
+  React.useEffect(() => {
+    const initNotifications = async () => {
+      // Check if we should ask for permissions (e.g. if not asked yet)
+      const hasAsked = await AsyncStorage.getItem('notificationsPermissionAsked');
+      if (!hasAsked) {
+        await registerForPushNotificationsAsync();
+        await AsyncStorage.setItem('notificationsPermissionAsked', 'true');
+      }
+    };
+    initNotifications();
+  }, []);
 
   return (
     <NavigationContainer>

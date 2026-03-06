@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import Text from '../components/CustomText';
 import { View, ScrollView, TouchableOpacity, Switch, Modal, Alert, Share, Platform, Linking, Pressable } from 'react-native';
@@ -7,6 +7,7 @@ import { ChevronLeft, Globe, Moon, Sun, Bell, Star, Share2, HelpCircle, ChevronR
 import { colors as staticColors } from '../theme/colors';
 import { useTheme } from '../context/ThemeContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { registerForPushNotificationsAsync, checkNotificationPermissions } from '../utils/notificationService';
 
 const RECOMMENDED_LANGUAGES = [
     { id: 'en', name: 'English', native: 'English', flag: '🇬🇧' },
@@ -86,13 +87,46 @@ const AppSettingsScreen = ({ navigation }) => {
     const [isLangModalVisible, setIsLangModalVisible] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-    React.useEffect(() => {
-        const checkToken = async () => {
+    useEffect(() => {
+        const loadSettings = async () => {
             const token = await AsyncStorage.getItem('userToken');
             setIsLoggedIn(!!token);
+
+            const notifPref = await AsyncStorage.getItem('notificationsEnabled');
+            if (notifPref !== null) {
+                setNotificationsEnabled(notifPref === 'true');
+            } else {
+                // If no preference yet, check if we already have permissions
+                const hasPerms = await checkNotificationPermissions();
+                setNotificationsEnabled(hasPerms);
+            }
         };
-        checkToken();
+        loadSettings();
     }, []);
+
+    const handleNotificationToggle = async () => {
+        const newValue = !notificationsEnabled;
+
+        if (newValue) {
+            const token = await registerForPushNotificationsAsync();
+            if (token) {
+                setNotificationsEnabled(true);
+                await AsyncStorage.setItem('notificationsEnabled', 'true');
+                if (token !== 'demo-token-simulator') {
+                    // Here you would typically send the token to your backend
+                    console.log('Push Token:', token);
+                }
+            } else {
+                Alert.alert(
+                    t('common.error'),
+                    "Push notification permissions are required. Please enable them in your device settings."
+                );
+            }
+        } else {
+            setNotificationsEnabled(false);
+            await AsyncStorage.setItem('notificationsEnabled', 'false');
+        }
+    };
 
     const handleShareApp = async () => {
         try {
@@ -217,7 +251,7 @@ const AppSettingsScreen = ({ navigation }) => {
                             label={t('settings.push_notifications')}
                             subLabel={t('settings.push_notifications_desc')}
                             value={notificationsEnabled}
-                            onPress={() => setNotificationsEnabled(!notificationsEnabled)}
+                            onPress={handleNotificationToggle}
                             color="#10B981"
                             colors={colors}
                             isDarkMode={isDarkMode}
