@@ -38,6 +38,9 @@ const HomeScreen = ({ navigation }) => {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [userCoordinates, setUserCoordinates] = useState(null);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
 
     const getUserLocation = async () => {
         try {
@@ -75,9 +78,12 @@ const HomeScreen = ({ navigation }) => {
         }
     };
 
-    const fetchData = async (coordsOverride = null) => {
+    const fetchData = async (pageNum = 1, isRefresh = false, coordsOverride = null) => {
         try {
-            console.log("Fetching Home Data...");
+            if (pageNum === 1 && !isRefresh) setLoading(true);
+            if (pageNum > 1) setLoadingMore(true);
+
+            console.log("Fetching Home Data, Page:", pageNum);
             const token = await AsyncStorage.getItem('userToken');
 
             let coordsToUse = coordsOverride || userCoordinates;
@@ -85,19 +91,27 @@ const HomeScreen = ({ navigation }) => {
                 coordsToUse = await getUserLocation();
             }
 
-            let url = `${API_BASE_URL}/offers`;
+            const currentCategoryKey = CATEGORIES.find(c => c.id === selectedCategory)?.key || 'all';
+            let url = `${API_BASE_URL}/offers?page=${pageNum}&limit=10&category=${currentCategoryKey}&search=${searchQuery}`;
+
             if (coordsToUse) {
-                url += `?lat=${coordsToUse.lat}&lng=${coordsToUse.lng}&radius=${radius}`;
+                url += `&lat=${coordsToUse.lat}&lng=${coordsToUse.lng}&radius=${radius}`;
             }
 
             const [offersRes, wishlistRes] = await Promise.all([
                 fetch(url),
-                token ? fetch(`${API_BASE_URL}/wishlist/status`, { headers: { 'Authorization': `Bearer ${token}` } }) : Promise.resolve(null)
+                token && pageNum === 1 ? fetch(`${API_BASE_URL}/wishlist/status`, { headers: { 'Authorization': `Bearer ${token}` } }) : Promise.resolve(null)
             ]);
 
             const offersData = await offersRes.json();
             if (offersData.success) {
-                setOffers(offersData.offers || []);
+                if (pageNum === 1) {
+                    setOffers(offersData.offers || []);
+                } else {
+                    setOffers(prev => [...prev, ...offersData.offers]);
+                }
+                setHasMore(offersData.hasMore);
+                setPage(pageNum);
             }
 
             if (wishlistRes) {
@@ -111,6 +125,7 @@ const HomeScreen = ({ navigation }) => {
         } finally {
             setLoading(false);
             setRefreshing(false);
+            setLoadingMore(false);
         }
     };
 
@@ -123,63 +138,216 @@ const HomeScreen = ({ navigation }) => {
                 const coords = { lat: geocoded[0].latitude, lng: geocoded[0].longitude };
                 setUserCoordinates(coords);
                 await AsyncStorage.setItem('userLocation', JSON.stringify({ city: locString, coords }));
-                fetchData(coords);
+                setPage(1);
+                fetchData(1, true, coords);
             } else {
-                // If geocoding fails, fallback to normal search
-                fetchData();
+                onRefresh();
             }
         } catch (error) {
             console.error("Geocoding User Error:", error);
-            fetchData();
+            onRefresh();
         }
     };
 
     useEffect(() => {
-        // Initial fetch
         fetchData();
-
-        // Refetch when screen comes into focus
         if (navigation && navigation.addListener) {
             const unsubscribe = navigation.addListener('focus', () => {
-                fetchData();
+                fetchData(1, true);
             });
             return unsubscribe;
         }
     }, [navigation]);
 
+    useEffect(() => {
+        const delayDebounceFn = setTimeout(() => {
+            onRefresh();
+        }, 500);
+        return () => clearTimeout(delayDebounceFn);
+    }, [selectedCategory, searchQuery, radius]);
+
     const onRefresh = () => {
         setRefreshing(true);
-        fetchData();
+        setPage(1);
+        setHasMore(true);
+        fetchData(1, true);
+    };
+
+    const handleLoadMore = () => {
+        if (!loadingMore && hasMore && !loading && !refreshing) {
+            fetchData(page + 1);
+        }
     };
 
     const now = new Date();
-    const allOffers = (offers || []).filter(offer => {
-        if (!offer) return false;
-        const matchesCategory = selectedCategory === '1' ||
-            (offer.category && offer.category.toLowerCase() === CATEGORIES.find(c => c.id === selectedCategory)?.key.toLowerCase());
-        const matchesSearch = (offer.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-            (offer.vendorId?.storeName || '').toLowerCase().includes(searchQuery.toLowerCase());
-        return matchesCategory && matchesSearch;
-    });
+    // In server-side pagination, activeOffers are what we get from the server
+    const activeOffers = offers || [];
 
-    // Currently Live Offers
-    const activeOffers = allOffers.filter(offer => {
-        const start = new Date(offer.startDate);
-        const end = new Date(offer.endDate);
-        return now >= start && now <= end;
-    });
-
-    // Top 4 Hot Offers based on visits (must be active)
+    // Filter discovery sections from the current pool of data
     const hotOffers = [...activeOffers]
+        .filter(o => now >= new Date(o.startDate) && now <= new Date(o.endDate))
         .sort((a, b) => (b.visits || 0) - (a.visits || 0))
         .slice(0, 4);
 
-    // Upcoming Offers (not yet started)
-    const upcomingOffers = allOffers.filter(offer => {
-        const start = new Date(offer.startDate);
-        return start > now;
-    });
+    const upcomingOffers = activeOffers.filter(o => new Date(o.startDate) > now);
+
     const isTablet = width > 768;
+
+    const renderHeader = () => (
+        <View>
+            {/* Categories */}
+            <View style={{ backgroundColor: colors.background }} className="py-6">
+                <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={{ paddingHorizontal: 16 }}
+                >
+                    {CATEGORIES.map((item) => (
+                        <TouchableOpacity
+                            key={item.id}
+                            onPress={() => setSelectedCategory(item.id)}
+                            style={{
+                                marginRight: 16,
+                                paddingHorizontal: 24,
+                                paddingVertical: 12,
+                                borderRadius: 16,
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                borderWidth: 1,
+                                borderColor: selectedCategory === item.id ? colors.primary : colors.border,
+                                backgroundColor: selectedCategory === item.id ? colors.primary : colors.card
+                            }}
+                        >
+                            <Text style={{ fontSize: 18, marginRight: 8 }}>{item.icon}</Text>
+                            <Text style={{
+                                fontWeight: 'bold',
+                                color: selectedCategory === item.id ? '#FFFFFF' : colors.primary
+                            }}>
+                                {item.name}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
+                </ScrollView>
+            </View>
+
+            {/* Discovery Sections (only if not searching) */}
+            {searchQuery === '' && (
+                <>
+                    {/* Hot Offers Section */}
+                    {hotOffers.length > 0 && (
+                        <View className="mt-4">
+                            <View className="px-6 flex-row items-end justify-between mb-6">
+                                <View>
+                                    <View className="flex-row items-center mb-1">
+                                        <View className="w-2 h-2 bg-error rounded-full mr-2" />
+                                        <Text style={{ color: colors.secondary }} className="text-[10px] font-black tracking-[2px]">{t('home.most_visited')}</Text>
+                                    </View>
+                                    <Text style={{ color: colors.text }} className="text-3xl font-black tracking-tighter">{t('home.hot_offers')}</Text>
+                                </View>
+                            </View>
+                            <FlatList
+                                horizontal
+                                showsHorizontalScrollIndicator={false}
+                                data={hotOffers}
+                                keyExtractor={(item, index) => item?._id || index.toString()}
+                                contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 16 }}
+                                renderItem={({ item }) => (
+                                    <View style={{ width: width > 600 ? 350 : width * 0.85 }} className="mr-6">
+                                        <OfferCard
+                                            offer={item}
+                                            isFavorite={wishlistIds.includes(item?._id)}
+                                            onPress={() => navigation.navigate('OfferDetails', { offer: item })}
+                                        />
+                                    </View>
+                                )}
+                            />
+                        </View>
+                    )}
+
+                    {/* Upcoming Offers Section */}
+                    {upcomingOffers.length > 0 && (
+                        <View className="mt-8">
+                            <View className="px-6 flex-row items-end justify-between mb-6">
+                                <View>
+                                    <View className="flex-row items-center mb-1">
+                                        <View className="w-2.5 h-2.5 bg-warning rounded-full mr-2" />
+                                        <Text style={{ color: colors.secondary }} className="text-[10px] font-black tracking-[2px]">{t('home.coming_soon')}</Text>
+                                    </View>
+                                    <Text style={{ color: colors.text }} className="text-3xl font-black tracking-tighter">{t('home.upcoming_offers')}</Text>
+                                </View>
+                            </View>
+                            <FlatList
+                                horizontal
+                                showsHorizontalScrollIndicator={false}
+                                data={upcomingOffers}
+                                keyExtractor={(item, index) => item?._id || index.toString()}
+                                contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 16 }}
+                                renderItem={({ item }) => (
+                                    <View style={{ width: width > 600 ? 350 : width * 0.85 }} className="mr-6">
+                                        <OfferCard
+                                            offer={item}
+                                            isFavorite={wishlistIds.includes(item?._id)}
+                                            onPress={() => navigation.navigate('OfferDetails', { offer: item })}
+                                        />
+                                    </View>
+                                )}
+                            />
+                        </View>
+                    )}
+                </>
+            )}
+
+            {/* Main List Title & Filters */}
+            <View className="px-6 mt-8 flex-row items-center justify-between mb-4">
+                <View>
+                    <Text style={{ color: colors.secondary }} className="text-[10px] font-black tracking-[2px] mb-1">{t('home.flash_sales')}</Text>
+                    <Text style={{ color: colors.text }} className="text-2xl font-black">{t('home.near_your_place')}</Text>
+                </View>
+                <View className="flex-row">
+                    <TouchableOpacity
+                        onPress={() => setRadius(radius === 10 ? 1 : radius === 5 ? 10 : 5)}
+                        style={{ backgroundColor: colors.card, borderColor: colors.border }}
+                        className="px-4 py-2 rounded-xl shadow-md border flex-row items-center"
+                    >
+                        <Filter size={14} color={colors.primary} strokeWidth={3} />
+                        <Text style={{ color: colors.primary }} className="text-xs font-black ml-2">{radius}{t('common.km')}</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        onPress={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
+                        style={{ backgroundColor: colors.card, borderColor: colors.border }}
+                        className="ml-2 w-10 h-10 rounded-xl shadow-md border items-center justify-center"
+                    >
+                        {viewMode === 'list' ? (
+                            <LayoutGrid size={18} color={colors.primary} strokeWidth={2.5} />
+                        ) : (
+                            <List size={18} color={colors.primary} strokeWidth={2.5} />
+                        )}
+                    </TouchableOpacity>
+                </View>
+            </View>
+        </View>
+    );
+
+    const renderOfferItem = ({ item, index }) => {
+        const isGrid = (width > 768) || viewMode === 'grid';
+        return (
+            <View
+                style={{
+                    width: isGrid ? '48.5%' : '100%',
+                    marginBottom: 8, // Changed from 16 to 8 to match mb-2
+                }}
+            >
+                <OfferCard
+                    offer={item}
+                    grid={isGrid}
+                    isFavorite={wishlistIds.includes(item?._id)}
+                    onRefresh={onRefresh}
+                    onPress={() => navigation.navigate('OfferDetails', { offer: item })}
+                />
+            </View>
+        );
+    };
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
@@ -208,7 +376,7 @@ const HomeScreen = ({ navigation }) => {
                 </View>
 
                 {/* Search Bar */}
-                <View className="flex-row items-center mb-4">
+                <View className="flex-row items-center mb-3">
                     <View style={{ backgroundColor: colors.surface }} className="flex-1 h-14 rounded-2xl flex-row items-center px-5 border border-surface">
                         <Search size={20} color={colors.textSecondary} strokeWidth={2.5} />
                         <TextInput
@@ -226,179 +394,46 @@ const HomeScreen = ({ navigation }) => {
                 </View>
             </View>
 
-            <ScrollView
-                showsVerticalScrollIndicator={false}
-                className="flex-1"
-                refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[colors.primary]} />
-                }
-            >
-                {/* Categories */}
-                <View style={{ backgroundColor: colors.background }} className="py-6">
-                    <ScrollView
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={{ paddingHorizontal: 16 }}
-                    >
-                        {CATEGORIES.map((item) => (
-                            <TouchableOpacity
-                                key={item.id}
-                                onPress={() => setSelectedCategory(item.id)}
-                                style={{
-                                    marginRight: 16,
-                                    paddingHorizontal: 24,
-                                    paddingVertical: 12,
-                                    borderRadius: 16,
-                                    flexDirection: 'row',
-                                    alignItems: 'center',
-                                    borderWidth: 1,
-                                    borderColor: selectedCategory === item.id ? colors.primary : colors.border,
-                                    backgroundColor: selectedCategory === item.id ? colors.primary : colors.card
-                                }}
-                            >
-                                <Text style={{ fontSize: 18, marginRight: 8 }}>{item.icon}</Text>
-                                <Text style={{
-                                    fontWeight: 'bold',
-                                    color: selectedCategory === item.id ? '#FFFFFF' : colors.primary
-                                }}>
-                                    {item.name}
-                                </Text>
-                            </TouchableOpacity>
-                        ))}
-                    </ScrollView>
+            {loading ? (
+                <View className="flex-1 items-center justify-center">
+                    <ActivityIndicator size="large" color={colors.primary} />
                 </View>
-
-                {loading ? (
-                    <View className="py-20 items-center">
-                        <ActivityIndicator size="large" color={colors.primary} />
-                    </View>
-                ) : (
-                    <>
-                        {/* Hot Offers Section */}
-                        {hotOffers.length > 0 && searchQuery === '' && (
-                            <View className="mt-8">
-                                <View className="px-6 flex-row items-end justify-between mb-6">
-                                    <View>
-                                        <View className="flex-row items-center mb-1">
-                                            <View className="w-2 h-2 bg-error rounded-full mr-2" />
-                                            <Text style={{ color: colors.secondary }} className="text-[10px] font-black tracking-[2px]">{t('home.most_visited')}</Text>
-                                        </View>
-                                        <Text style={{ color: colors.text }} className="text-3xl font-black tracking-tighter">{t('home.hot_offers')}</Text>
-                                    </View>
-                                </View>
-                                <FlatList
-                                    horizontal
-                                    showsHorizontalScrollIndicator={false}
-                                    data={hotOffers}
-                                    keyExtractor={(item, index) => item?._id || index.toString()}
-                                    contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 16 }}
-                                    renderItem={({ item }) => (
-                                        <View style={{ width: width > 600 ? 350 : width * 0.85 }} className="mr-6">
-                                            <OfferCard
-                                                offer={item}
-                                                isFavorite={wishlistIds.includes(item?._id)}
-                                                onPress={() => navigation.navigate('OfferDetails', { offer: item })}
-                                            />
-                                        </View>
-                                    )}
-                                />
+            ) : (
+                <FlatList className="mt-1"
+                    key={viewMode} // Force re-render when switching modes
+                    data={activeOffers}
+                    renderItem={renderOfferItem}
+                    keyExtractor={(item) => item?._id || Math.random().toString()}
+                    numColumns={((width > 768) || viewMode === 'grid') ? 2 : 1}
+                    columnWrapperStyle={((width > 768) || viewMode === 'grid') ? { justifyContent: 'space-between', paddingHorizontal: 16 } : null}
+                    contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 100 }}
+                    ListHeaderComponent={renderHeader}
+                    ListFooterComponent={() => (
+                        loadingMore ? (
+                            <View className="py-6 items-center">
+                                <ActivityIndicator size="small" color={colors.primary} />
                             </View>
-                        )}
-
-                        {/* Upcoming Offers Section */}
-                        {upcomingOffers.length > 0 && searchQuery === '' && (
-                            <View className="mt-8">
-                                <View className="px-6 flex-row items-end justify-between mb-6">
-                                    <View>
-                                        <View className="flex-row items-center mb-1">
-                                            <View className="w-2.5 h-2.5 bg-warning rounded-full mr-2" />
-                                            <Text style={{ color: colors.secondary }} className="text-[10px] font-black tracking-[2px]">{t('home.coming_soon')}</Text>
-                                        </View>
-                                        <Text style={{ color: colors.text }} className="text-3xl font-black tracking-tighter">{t('home.upcoming_offers')}</Text>
-                                    </View>
-                                </View>
-                                <FlatList
-                                    horizontal
-                                    showsHorizontalScrollIndicator={false}
-                                    data={upcomingOffers}
-                                    keyExtractor={(item, index) => item?._id || index.toString()}
-                                    contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 16 }}
-                                    renderItem={({ item }) => (
-                                        <View style={{ width: width > 600 ? 350 : width * 0.85 }} className="mr-6">
-                                            <OfferCard
-                                                offer={item}
-                                                isFavorite={wishlistIds.includes(item?._id)}
-                                                onPress={() => navigation.navigate('OfferDetails', { offer: item })}
-                                            />
-                                        </View>
-                                    )}
-                                />
+                        ) : <View className="h-20" />
+                    )}
+                    onEndReached={handleLoadMore}
+                    onEndReachedThreshold={0.5}
+                    showsVerticalScrollIndicator={false}
+                    refreshControl={
+                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[colors.primary]} />
+                    }
+                    ListEmptyComponent={() => (
+                        <View className="py-24 items-center w-full px-6">
+                            <View style={{ backgroundColor: colors.surface }} className="w-40 h-40 rounded-full items-center justify-center mb-6">
+                                <Search size={64} color={colors.border} />
                             </View>
-                        )}
-
-                        {/* Main List */}
-                        <View className="px-6 mt-8 flex-row items-center justify-between mb-4">
-                            <View>
-                                <Text style={{ color: colors.secondary }} className="text-[10px] font-black tracking-[2px] mb-1">{t('home.flash_sales')}</Text>
-                                <Text style={{ color: colors.text }} className="text-2xl font-black">{t('home.near_your_place')}</Text>
-                            </View>
-                            <TouchableOpacity
-                                onPress={() => setRadius(radius === 10 ? 1 : radius === 5 ? 10 : 5)}
-                                style={{ backgroundColor: colors.card, borderColor: colors.border }}
-                                className="px-4 py-2 rounded-xl shadow-md border flex-row items-center"
-                            >
-                                <Filter size={14} color={colors.primary} strokeWidth={3} />
-                                <Text style={{ color: colors.primary }} className="text-xs font-black ml-2">{radius}{t('common.km')}</Text>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity
-                                onPress={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
-                                style={{ backgroundColor: colors.card, borderColor: colors.border }}
-                                className="ml-2 w-10 h-10 rounded-xl shadow-md border items-center justify-center"
-                            >
-                                {viewMode === 'list' ? (
-                                    <LayoutGrid size={18} color={colors.primary} strokeWidth={2.5} />
-                                ) : (
-                                    <List size={18} color={colors.primary} strokeWidth={2.5} />
-                                )}
-                            </TouchableOpacity>
+                            <Text style={{ color: colors.text }} className="text-2xl font-black text-center">{t('home.no_offers_found')}</Text>
+                            <Text style={{ color: colors.textSecondary }} className="text-center mt-2 font-medium opacity-60">
+                                {t('home.no_offers_desc')}
+                            </Text>
                         </View>
-
-                        <View className={`px-4 py-2 flex-row flex-wrap justify-between`}>
-                            {activeOffers.map((offer, index) => (
-                                <View
-                                    key={offer?._id || `offer-${index}`}
-                                    style={{
-                                        width: (width > 768) || viewMode === 'grid' ? '48.5%' : '100%'
-                                    }}
-                                    className="mb-2"
-                                >
-                                    <OfferCard
-                                        offer={offer}
-                                        grid={(width > 768) || viewMode === 'grid'}
-                                        isFavorite={wishlistIds.includes(offer?._id)}
-                                        onRefresh={fetchData}
-                                        onPress={() => navigation.navigate('OfferDetails', { offer })}
-                                    />
-                                </View>
-                            ))}
-                            {activeOffers.length === 0 && (
-                                <View className="py-24 items-center w-full">
-                                    <View style={{ backgroundColor: colors.surface }} className="w-40 h-40 rounded-full items-center justify-center mb-6">
-                                        <Search size={64} color={colors.border} />
-                                    </View>
-                                    <Text style={{ color: colors.text }} className="text-2xl font-black text-center">{t('home.no_offers_found')}</Text>
-                                    <Text style={{ color: colors.textSecondary }} className="text-center px-10 mt-2 font-medium opacity-60">
-                                        {t('home.no_offers_desc')}
-                                    </Text>
-                                </View>
-                            )}
-                        </View>
-                    </>
-                )}
-
-                <View className="h-32" />
-            </ScrollView>
+                    )}
+                />
+            )}
 
             <LocationSelectorModal
                 visible={isLocationModalVisible}

@@ -13,17 +13,23 @@ const VendorOffersScreen = ({ navigation }) => {
     const { colors, isDarkMode } = useTheme();
     const { width } = useWindowDimensions();
     const { t } = useTranslation();
-    const [offers, setOffers] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [refreshing, setRefreshing] = useState(false);
-
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [selectedOfferId, setSelectedOfferId] = useState(null);
     const [isDeleting, setIsDeleting] = useState(false);
 
-    const fetchMyOffers = async () => {
+    const [offers, setOffers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
+
+    const fetchMyOffers = async (pageNum = 1, isRefresh = false) => {
         try {
+            if (pageNum === 1 && !isRefresh) setLoading(true);
+            if (pageNum > 1) setLoadingMore(true);
+
             const token = await AsyncStorage.getItem('userToken');
             const profileRes = await fetch(`${API_BASE_URL}/auth/me`, {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -31,10 +37,16 @@ const VendorOffersScreen = ({ navigation }) => {
             const profileData = await profileRes.json();
 
             if (profileData.success) {
-                const response = await fetch(`${API_BASE_URL}/offers/vendor/${profileData.user._id}`);
+                const response = await fetch(`${API_BASE_URL}/offers/vendor/${profileData.user._id}?page=${pageNum}&limit=5`);
                 const data = await response.json();
                 if (data.success) {
-                    setOffers(data.offers);
+                    if (pageNum === 1) {
+                        setOffers(data.offers);
+                    } else {
+                        setOffers(prev => [...prev, ...data.offers]);
+                    }
+                    setHasMore(data.hasMore);
+                    setPage(pageNum);
                 }
             }
         } catch (error) {
@@ -42,19 +54,29 @@ const VendorOffersScreen = ({ navigation }) => {
         } finally {
             setLoading(false);
             setRefreshing(false);
+            setLoadingMore(false);
         }
     };
 
     useEffect(() => {
         const unsubscribe = navigation.addListener('focus', () => {
-            fetchMyOffers();
+            setPage(1);
+            fetchMyOffers(1, true);
         });
         return unsubscribe;
     }, [navigation]);
 
     const onRefresh = () => {
         setRefreshing(true);
-        fetchMyOffers();
+        setPage(1);
+        setHasMore(true);
+        fetchMyOffers(1, true);
+    };
+
+    const handleLoadMore = () => {
+        if (!loadingMore && hasMore && !loading && !refreshing) {
+            fetchMyOffers(page + 1);
+        }
     };
 
     const confirmDelete = async () => {
@@ -180,9 +202,20 @@ const VendorOffersScreen = ({ navigation }) => {
             ) : (
                 <FlatList
                     data={offers}
-                    keyExtractor={(item) => item._id}
                     renderItem={renderOfferItem}
-                    contentContainerStyle={{ padding: 24, paddingBottom: 100 }}
+                    keyExtractor={(item) => item._id}
+                    contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 100, paddingTop: 10 }}
+                    showsVerticalScrollIndicator={false}
+                    onEndReached={handleLoadMore}
+                    onEndReachedThreshold={0.5}
+                    ListFooterComponent={() => (
+                        loadingMore ? (
+                            <View className="py-6 items-center">
+                                <ActivityIndicator size="small" color={colors.primary} />
+                                <Text style={{ color: colors.textSecondary }} className="text-[10px] font-bold mt-2 opacity-50 uppercase tracking-widest">{t('common.loading_more') || 'Loading More'}</Text>
+                            </View>
+                        ) : null
+                    )}
                     refreshControl={
                         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
                     }

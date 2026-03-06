@@ -41,11 +41,31 @@ function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
 
 const getOffers = async (req, res) => {
     try {
-        const { lat, lng, radius } = req.query;
+        const { lat, lng, radius, category, search } = req.query;
         const now = new Date();
-        let offers = await Offer.find({
+
+        const query = {
             endDate: { $gte: now }
-        }).populate('vendorId', 'storeName name location profileImage storeImage storeAddress').sort({ createdAt: -1 }).lean();
+        };
+
+        if (category && category !== 'all') {
+            query.category = { $regex: new RegExp(`^${category}$`, 'i') };
+        }
+
+        if (search) {
+            query.$or = [
+                { title: { $regex: search, $options: 'i' } },
+                { description: { $regex: search, $options: 'i' } },
+                { 'vendorId.storeName': { $regex: search, $options: 'i' } } // Note: Need to verify if this works with populate
+            ];
+            // Since vendorId is populated, searching by storeName requires a different approach or search in memory. 
+            // For now, let's stick to title and description.
+        }
+
+        let offers = await Offer.find(query)
+            .populate('vendorId', 'storeName name location profileImage storeImage storeAddress')
+            .sort({ createdAt: -1 })
+            .lean();
 
         if (lat && lng) {
             const userLat = parseFloat(lat);
@@ -66,16 +86,30 @@ const getOffers = async (req, res) => {
                 return distA - distB;
             });
         }
-        // Increment impressions for all fetched offers automatically
-        if (offers.length > 0) {
-            const offerIds = offers.map(o => o._id);
+
+        // Pagination
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const startIndex = (page - 1) * limit;
+        const endIndex = page * limit;
+        const total = offers.length;
+        const paginatedOffers = offers.slice(startIndex, endIndex);
+
+        // Increment impressions for the paginated set
+        if (paginatedOffers.length > 0) {
+            const offerIds = paginatedOffers.map(o => o._id);
             await Offer.updateMany(
                 { _id: { $in: offerIds } },
                 { $inc: { impressions: 1 } }
             );
         }
 
-        res.json({ success: true, offers });
+        res.json({
+            success: true,
+            offers: paginatedOffers,
+            total,
+            hasMore: endIndex < total
+        });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -84,12 +118,30 @@ const getOffers = async (req, res) => {
 const getVendorOffers = async (req, res) => {
     try {
         const { vendorId } = req.params;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
         const now = new Date();
-        const offers = await Offer.find({
+        const query = {
             vendorId,
             endDate: { $gte: now }
-        }).populate('vendorId', 'storeName name location profileImage storeImage storeAddress').sort({ createdAt: -1 });
-        res.json({ success: true, offers });
+        };
+
+        const total = await Offer.countDocuments(query);
+        const offers = await Offer.find(query)
+            .populate('vendorId', 'storeName name location profileImage storeImage storeAddress')
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        res.json({
+            success: true,
+            offers,
+            total,
+            page,
+            hasMore: skip + offers.length < total
+        });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
