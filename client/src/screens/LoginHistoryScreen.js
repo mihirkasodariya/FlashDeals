@@ -51,50 +51,6 @@ const LoginHistoryScreen = ({ navigation }) => {
         }
     };
 
-    const handleRemoteLogout = async () => {
-        if (!selectedDeviceId) return;
-
-        setActionLoading(selectedDeviceId);
-        try {
-            const token = await AsyncStorage.getItem('userToken');
-            const response = await fetch(`${API_BASE_URL}/auth/logout-device`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ deviceId: selectedDeviceId })
-            });
-
-            const data = await response.json();
-            if (data.success) {
-                const deviceIndex = devices.findIndex(d => d._id === selectedDeviceId);
-                if (deviceIndex === 0) {
-                    await AsyncStorage.multiRemove(['userToken', 'userData', 'isVendor']);
-                    navigation.reset({
-                        index: 0,
-                        routes: [{ name: 'Login' }],
-                    });
-                } else {
-                    setDevices(devices.filter(d => d._id !== selectedDeviceId));
-                    setShowLogoutModal(false);
-                }
-            } else {
-                Alert.alert(t('common.error'), data.message || t('login_history.failed'));
-            }
-        } catch (error) {
-            Alert.alert(t('common.error'), t('register.server_error'));
-        } finally {
-            setActionLoading(null);
-            setSelectedDeviceId(null);
-        }
-    };
-
-    const confirmLogout = (deviceId) => {
-        setSelectedDeviceId(deviceId);
-        setShowLogoutModal(true);
-    };
-
     useEffect(() => {
         fetchHistory();
     }, []);
@@ -165,8 +121,8 @@ const LoginHistoryScreen = ({ navigation }) => {
                             <ShieldCheck size={24} color="white" />
                         </View>
                         <View className="ml-5 flex-1">
-                            <Text className="text-white font-black text-sm">{t('login_history.everything_safe')}</Text>
-                            <Text className="text-white/70 text-[10px] font-bold mt-1">{t('login_history.monitoring_active', { count: devices.length })}</Text>
+                            <Text style={{ color: 'white' }} className="font-black text-sm">{t('login_history.everything_safe')}</Text>
+                            <Text style={{ color: 'rgba(255,255,255,0.7)' }} className="text-[10px] font-bold mt-1">{t('login_history.monitoring_active', { count: devices.length })}</Text>
                         </View>
                     </View>
                 </View>
@@ -198,19 +154,6 @@ const LoginHistoryScreen = ({ navigation }) => {
                                             </Text>
                                         </View>
                                     </View>
-
-                                    <TouchableOpacity
-                                        onPress={() => confirmLogout(device._id)}
-                                        disabled={actionLoading === device._id}
-                                        style={{ backgroundColor: `${colors.error}10`, borderColor: `${colors.error}20` }}
-                                        className="px-4 py-2 rounded-xl border"
-                                    >
-                                        {actionLoading === device._id ? (
-                                            <ActivityIndicator size="small" color="#EF4444" />
-                                        ) : (
-                                            <Text className="text-red-500 font-black text-[10px]">{t('login_history.logout_upper')}</Text>
-                                        )}
-                                    </TouchableOpacity>
                                 </View>
 
                                 <View className="ml-[76px] mt-2 flex-row items-center">
@@ -237,55 +180,6 @@ const LoginHistoryScreen = ({ navigation }) => {
                     </Text>
                 </View>
             </ScrollView>
-
-            {/* Custom Logout Modal */}
-            <Modal
-                transparent={true}
-                visible={showLogoutModal}
-                animationType="fade"
-                onRequestClose={() => setShowLogoutModal(false)}
-            >
-                <View className="flex-1 bg-black/60 items-center justify-center px-6">
-                    <View style={{ backgroundColor: isDarkMode ? '#1A1A1A' : '#FFFFFF' }} className="w-full rounded-[40px] p-8 overflow-hidden">
-                        <View className="items-center">
-                            <View style={{ backgroundColor: `${colors.error}15` }} className="w-20 h-20 rounded-full items-center justify-center mb-6">
-                                <ShieldAlert size={40} color="#EF4444" strokeWidth={1.5} />
-                            </View>
-
-                            <Text style={{ color: colors.text }} className="text-2xl font-black text-center">{t('login_history.terminate_session')}</Text>
-                            <Text style={{ color: colors.textSecondary }} className="font-bold text-center mt-3 leading-relaxed opacity-70 px-2">
-                                {t('login_history.terminate_desc')}
-                            </Text>
-                        </View>
-
-                        <View className="mt-8 space-y-3">
-                            <TouchableOpacity
-                                onPress={handleRemoteLogout}
-                                disabled={actionLoading !== null}
-                                style={{ backgroundColor: '#EF4444' }}
-                                className="py-5 rounded-[24px] items-center flex-row justify-center shadow-lg shadow-red-500/20"
-                            >
-                                {actionLoading !== null ? (
-                                    <ActivityIndicator color="white" />
-                                ) : (
-                                    <>
-                                        <LogOut size={18} color="white" />
-                                        <Text className="text-white font-black text-sm ml-3">{t('login_history.yes_terminate')}</Text>
-                                    </>
-                                )}
-                            </TouchableOpacity>
-
-                            <TouchableOpacity
-                                onPress={() => setShowLogoutModal(false)}
-                                style={{ backgroundColor: isDarkMode ? '#2D3748' : '#F1F5F9' }}
-                                className="py-5 rounded-[24px] items-center mt-3"
-                            >
-                                <Text style={{ color: colors.text }} className="font-black text-sm">{t('common.no')}</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </View>
-            </Modal>
         </SafeAreaView>
     );
 };

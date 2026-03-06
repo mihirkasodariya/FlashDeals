@@ -36,12 +36,15 @@ export async function registerForPushNotificationsAsync() {
         }
 
         // Get the token
-        const tokenData = await Notifications.getExpoPushTokenAsync({
-            // Ensure you have correct project ID if using EAS, 
-            // but for basic setup this works.
-            // projectId: 'your-project-id' 
-        });
-        token = tokenData.data;
+        try {
+            const tokenData = await Notifications.getExpoPushTokenAsync({
+                projectId: 'dummy-project-id'
+            });
+            token = tokenData.data;
+        } catch (e) {
+            console.log('Error getting push token: ', e);
+            token = 'demo-token-simulator';
+        }
     } else {
         console.log('Must use physical device for Push Notifications');
         return 'demo-token-simulator';
