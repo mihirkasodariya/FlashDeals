@@ -241,7 +241,9 @@ const OfferDetailsScreen = ({ route, navigation }) => {
                                 <Text style={{ color: colors.text }} className="font-black text-lg">{storeName}</Text>
                                 <View className="flex-row items-center mt-1">
                                     <MapPin size={14} color={colors.textSecondary} />
-                                    <Text style={{ color: colors.textSecondary }} className="text-xs font-bold ml-1">{t('offer_details.km_away', { distance: offer.distance || t('common.near') })} {t('common.km')}</Text>
+                                    <Text style={{ color: colors.textSecondary }} className="text-xs font-bold ml-1">
+                                        {offer.distance != null ? t('offer_details.km_away', { distance: offer.distance.toFixed(1) }) : t('common.near')}
+                                    </Text>
                                 </View>
                             </View>
                             <ChevronRight size={20} color={colors.primary} style={{ opacity: 0.3 }} />

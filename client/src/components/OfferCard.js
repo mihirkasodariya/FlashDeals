@@ -160,7 +160,7 @@ const OfferCard = ({ offer, onPress, grid, isFavorite = false, onRefresh }) => {
                     <View style={{ backgroundColor: colors.surface }} className={`flex-row items-center ${grid ? 'px-1.5 py-1' : 'px-3 py-2'} rounded-lg`}>
                         <MapPin size={grid ? 8 : 10} color={staticColors.secondary} strokeWidth={3} />
                         <Text style={{ color: colors.text }} className={`font-bold ${grid ? 'text-[7px]' : 'text-[10px]'} ml-1 tracking-tight`}>
-                            {offer.distance || t('common.near')} {t('common.km')}
+                            {offer.distance != null ? `${offer.distance.toFixed(1)} km` : t('common.near')}
                         </Text>
                     </View>
 

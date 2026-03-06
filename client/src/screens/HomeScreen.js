@@ -10,6 +10,7 @@ import OfferCard from '../components/OfferCard';
 import LocationSelectorModal from '../components/LocationSelectorModal';
 import { API_BASE_URL } from '../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Location from 'expo-location';
 
 const getCategories = (t) => [
     { id: '1', key: 'all', name: t('categories.all'), icon: '🛍️' },
@@ -36,14 +37,61 @@ const HomeScreen = ({ navigation }) => {
     const [wishlistIds, setWishlistIds] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [userCoordinates, setUserCoordinates] = useState(null);
 
-    const fetchData = async () => {
+    const getUserLocation = async () => {
+        try {
+            const savedLoc = await AsyncStorage.getItem('userLocation');
+            if (savedLoc) {
+                const parsed = JSON.parse(savedLoc);
+                setLocation(parsed.city);
+                setUserCoordinates(parsed.coords);
+                return parsed.coords;
+            }
+
+            const { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') return null;
+
+            const loc = await Location.getCurrentPositionAsync({});
+            const coords = { lat: loc.coords.latitude, lng: loc.coords.longitude };
+
+            const [geocode] = await Location.reverseGeocodeAsync({
+                latitude: loc.coords.latitude,
+                longitude: loc.coords.longitude
+            });
+
+            let city = 'Ahmedabad, Gujarat';
+            if (geocode) {
+                city = `${geocode.city || geocode.subregion || 'Unknown City'}, ${geocode.region || ''}`;
+            }
+
+            await AsyncStorage.setItem('userLocation', JSON.stringify({ city, coords }));
+            setLocation(city);
+            setUserCoordinates(coords);
+            return coords;
+        } catch (error) {
+            console.error("Location Error:", error);
+            return null;
+        }
+    };
+
+    const fetchData = async (coordsOverride = null) => {
         try {
             console.log("Fetching Home Data...");
             const token = await AsyncStorage.getItem('userToken');
 
+            let coordsToUse = coordsOverride || userCoordinates;
+            if (!coordsToUse) {
+                coordsToUse = await getUserLocation();
+            }
+
+            let url = `${API_BASE_URL}/offers`;
+            if (coordsToUse) {
+                url += `?lat=${coordsToUse.lat}&lng=${coordsToUse.lng}&radius=${radius}`;
+            }
+
             const [offersRes, wishlistRes] = await Promise.all([
-                fetch(`${API_BASE_URL}/offers`),
+                fetch(url),
                 token ? fetch(`${API_BASE_URL}/wishlist/status`, { headers: { 'Authorization': `Bearer ${token}` } }) : Promise.resolve(null)
             ]);
 
@@ -63,6 +111,26 @@ const HomeScreen = ({ navigation }) => {
         } finally {
             setLoading(false);
             setRefreshing(false);
+        }
+    };
+
+    const handleLocationSelect = async (locString) => {
+        setIsLocationModalVisible(false);
+        setLocation(locString);
+        try {
+            const geocoded = await Location.geocodeAsync(locString);
+            if (geocoded && geocoded.length > 0) {
+                const coords = { lat: geocoded[0].latitude, lng: geocoded[0].longitude };
+                setUserCoordinates(coords);
+                await AsyncStorage.setItem('userLocation', JSON.stringify({ city: locString, coords }));
+                fetchData(coords);
+            } else {
+                // If geocoding fails, fallback to normal search
+                fetchData();
+            }
+        } catch (error) {
+            console.error("Geocoding User Error:", error);
+            fetchData();
         }
     };
 
@@ -335,7 +403,7 @@ const HomeScreen = ({ navigation }) => {
             <LocationSelectorModal
                 visible={isLocationModalVisible}
                 onClose={() => setIsLocationModalVisible(false)}
-                onSelectLocation={(loc) => setLocation(loc)}
+                onSelectLocation={handleLocationSelect}
             />
         </SafeAreaView>
     );
