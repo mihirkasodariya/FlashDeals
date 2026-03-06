@@ -10,6 +10,7 @@ const offerSchema = new mongoose.Schema({
     endDate: { type: Date, required: true },
     status: { type: String, enum: ['active', 'expired', 'scheduled'], default: 'active' },
     visits: { type: Number, default: 0 },
+    impressions: { type: Number, default: 0 },
     // You might want to add more fields like discount, stock, etc. later
 }, { timestamps: true });
 

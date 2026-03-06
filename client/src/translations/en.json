@@ -45,7 +45,9 @@
         "wishlist": "Wishlist",
         "store": "Store",
         "account": "Account",
-        "version": "Version"
+        "version": "Version",
+        "offer_deleted_success": "The offer has been permanently deleted from your store.",
+        "cool": "COOL"
     },
     "language_selection": {
         "title": "Language",
@@ -478,7 +480,14 @@
         "physical_address": "Physical Address",
         "verify_location": "Verify your store location",
         "publish_changes": "Publish Changes",
-        "sync_active": "Real-Time Sync Active"
+        "sync_active": "Real-Time Sync Active",
+        "impressions": "Impressions",
+        "visits": "Visits",
+        "edit_offer": "Edit Flash Offer",
+        "update_offer": "Update Flash Offer",
+        "delete_confirm_msg": "Are you sure you want to permanently delete this offer?",
+        "offer_updated": "Offer updated successfully!",
+        "failed_publish_offer": "Failed to publish offer"
     },
     "public_store": {
         "title": "Store Details",

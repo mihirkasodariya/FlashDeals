@@ -66,7 +66,14 @@ const getOffers = async (req, res) => {
                 return distA - distB;
             });
         }
-        console.log(offers);
+        // Increment impressions for all fetched offers automatically
+        if (offers.length > 0) {
+            const offerIds = offers.map(o => o._id);
+            await Offer.updateMany(
+                { _id: { $in: offerIds } },
+                { $inc: { impressions: 1 } }
+            );
+        }
 
         res.json({ success: true, offers });
     } catch (error) {
@@ -98,9 +105,59 @@ const incrementOfferVisits = async (req, res) => {
     }
 };
 
+const editOffer = async (req, res) => {
+    try {
+        if (req.user.role !== 'vendor') {
+            return res.status(403).json({ success: false, message: 'Only vendors can edit offers' });
+        }
+
+        const { offerId } = req.params;
+        const updates = req.body;
+
+        if (req.file) {
+            updates.image = `/public/offers/${req.file.filename}`;
+        }
+
+        const offer = await Offer.findOneAndUpdate(
+            { _id: offerId, vendorId: req.user.userId },
+            updates,
+            { new: true }
+        );
+
+        if (!offer) {
+            return res.status(404).json({ success: false, message: 'Offer not found or unauthorized' });
+        }
+
+        res.json({ success: true, message: 'Offer updated successfully', offer });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+const deleteOffer = async (req, res) => {
+    try {
+        if (req.user.role !== 'vendor') {
+            return res.status(403).json({ success: false, message: 'Only vendors can delete offers' });
+        }
+
+        const { offerId } = req.params;
+        const offer = await Offer.findOneAndDelete({ _id: offerId, vendorId: req.user.userId });
+
+        if (!offer) {
+            return res.status(404).json({ success: false, message: 'Offer not found or unauthorized' });
+        }
+
+        res.json({ success: true, message: 'Offer deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 module.exports = {
     addOffer,
     getOffers,
     getVendorOffers,
-    incrementOfferVisits
+    incrementOfferVisits,
+    editOffer,
+    deleteOffer
 };

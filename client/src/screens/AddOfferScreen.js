@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { ChevronLeft, Camera, Calendar, Tag, FileText, Type } from 'lucide-react-native';
+import { ChevronLeft, Camera, Calendar, Tag, FileText, Type, Package as LucidePackage, CheckCircle2 } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../context/ThemeContext';
 import { colors as staticColors } from '../theme/colors';
@@ -14,17 +14,20 @@ import { API_BASE_URL } from '../config';
 
 const CATEGORY_KEYS = ['food', 'grocery', 'fashion', 'electronics', 'health', 'other'];
 
-const AddOfferScreen = ({ navigation }) => {
+const AddOfferScreen = ({ route, navigation }) => {
     const { colors, isDarkMode } = useTheme();
     const { t } = useTranslation();
-    const [loading, setLoading] = useState(false);
-    const [image, setImage] = useState(null);
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [categoryKey, setCategoryKey] = useState(CATEGORY_KEYS[0]);
+    const { offerToEdit } = route.params || {};
+    const isEditing = !!offerToEdit;
 
-    const [startDate, setStartDate] = useState(new Date());
-    const [endDate, setEndDate] = useState(new Date(Date.now() + 86400000));
+    const [loading, setLoading] = useState(false);
+    const [image, setImage] = useState(offerToEdit?.image ? `${API_BASE_URL.replace('/api', '')}${offerToEdit.image}` : null);
+    const [title, setTitle] = useState(offerToEdit?.title || '');
+    const [description, setDescription] = useState(offerToEdit?.description || '');
+    const [categoryKey, setCategoryKey] = useState(offerToEdit?.category || CATEGORY_KEYS[0]);
+
+    const [startDate, setStartDate] = useState(offerToEdit ? new Date(offerToEdit.startDate) : new Date());
+    const [endDate, setEndDate] = useState(offerToEdit ? new Date(offerToEdit.endDate) : new Date(Date.now() + 86400000));
     const [showStartPicker, setShowStartPicker] = useState(false);
     const [showEndPicker, setShowEndPicker] = useState(false);
 
@@ -32,7 +35,12 @@ const AddOfferScreen = ({ navigation }) => {
         if (Platform.OS === 'android') {
             setShowStartPicker(false);
         }
-        if (selectedDate) setStartDate(selectedDate);
+        if (selectedDate) {
+            setStartDate(selectedDate);
+            if (selectedDate > endDate) {
+                setEndDate(new Date(selectedDate.getTime() + 86400000));
+            }
+        }
     };
 
     const onEndDateChange = (event, selectedDate) => {
@@ -99,7 +107,10 @@ const AddOfferScreen = ({ navigation }) => {
         }
     };
 
-    const handleAddOffer = async () => {
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [successMsg, setSuccessMsg] = useState('');
+
+    const handlePublishOffer = async () => {
         if (!title || !description || !image || !startDate || !endDate) {
             Alert.alert(t('common.error'), t('store.fill_all_fields'));
             return;
@@ -116,18 +127,27 @@ const AddOfferScreen = ({ navigation }) => {
             formData.append('startDate', startDate.toISOString());
             formData.append('endDate', endDate.toISOString());
 
-            const filename = image.split('/').pop();
-            const match = /\.(\w+)$/.exec(filename);
-            const type = match ? `image/${match[1]}` : `image`;
+            // Only append image if it's a new one (starts with file:// or /Data/)
+            if (image.startsWith('file://') || image.startsWith('content://') || !offerToEdit) {
+                const filename = image.split('/').pop();
+                const match = /\.(\w+)$/.exec(filename);
+                const type = match ? `image/${match[1]}` : `image`;
 
-            formData.append('image', {
-                uri: Platform.OS === 'ios' ? image.replace('file://', '') : image,
-                name: filename,
-                type
-            });
+                formData.append('image', {
+                    uri: Platform.OS === 'ios' ? image.replace('file://', '') : image,
+                    name: filename,
+                    type
+                });
+            }
 
-            const response = await fetch(`${API_BASE_URL}/offers/add`, {
-                method: 'POST',
+            const url = isEditing
+                ? `${API_BASE_URL}/offers/edit/${offerToEdit._id}`
+                : `${API_BASE_URL}/offers/add`;
+
+            const method = isEditing ? 'PUT' : 'POST';
+
+            const response = await fetch(url, {
+                method: method,
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data',
@@ -137,17 +157,22 @@ const AddOfferScreen = ({ navigation }) => {
 
             const data = await response.json();
             if (data.success) {
-                Alert.alert(t('common.success'), t('store.offer_added'));
-                navigation.goBack();
+                setSuccessMsg(isEditing ? t('store.offer_updated') : t('store.offer_added'));
+                setShowSuccessModal(true);
             } else {
-                Alert.alert(t('common.error'), data.message || t('store.failed_add_offer'));
+                Alert.alert(t('common.error'), data.message || t('store.failed_publish_offer'));
             }
         } catch (error) {
-            console.error('Add offer error:', error);
+            console.error('Publish offer error:', error);
             Alert.alert(t('common.error'), t('common.server_error'));
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleModalClose = () => {
+        setShowSuccessModal(false);
+        navigation.goBack();
     };
 
     return (
@@ -160,7 +185,7 @@ const AddOfferScreen = ({ navigation }) => {
                 >
                     <ChevronLeft size={24} color={colors.primary} />
                 </TouchableOpacity>
-                <Text style={{ color: colors.text }} className="ml-4 text-xl font-black">{t('store.add_new_offer')}</Text>
+                <Text style={{ color: colors.text }} className="ml-4 text-xl font-black">{isEditing ? t('store.edit_offer') : t('store.add_new_offer')}</Text>
             </View>
 
             <ScrollView className="flex-1 px-6 pt-6" showsVerticalScrollIndicator={false}>
@@ -275,17 +300,37 @@ const AddOfferScreen = ({ navigation }) => {
 
             <View style={{ borderTopColor: colors.border, backgroundColor: colors.background }} className="px-6 py-6 border-t">
                 <TouchableOpacity
-                    onPress={handleAddOffer}
+                    onPress={handlePublishOffer}
                     disabled={loading}
                     className="w-full bg-primary py-5 rounded-[24px] items-center shadow-lg shadow-primary/30"
                 >
                     {loading ? (
                         <ActivityIndicator color="white" />
                     ) : (
-                        <Text style={{ color: '#FFFFFF' }} className="font-black text-sm tracking-widest">{t('store.publish_offer')}</Text>
+                        <Text style={{ color: '#FFFFFF' }} className="font-black text-sm tracking-widest">{isEditing ? t('store.update_offer') : t('store.publish_offer')}</Text>
                     )}
                 </TouchableOpacity>
             </View>
+            <Modal transparent visible={showSuccessModal} animationType="fade">
+                <View className="flex-1 justify-center items-center bg-black/80 px-8">
+                    <View style={{ backgroundColor: isDarkMode ? '#1A1A1A' : '#FFFFFF' }} className="w-full rounded-[40px] p-8 items-center shadow-2xl">
+                        <View style={{ backgroundColor: `${colors.success}15` }} className="w-20 h-20 rounded-[30px] items-center justify-center mb-6">
+                            <CheckCircle2 size={40} color={colors.success} strokeWidth={1.5} />
+                        </View>
+                        <Text style={{ color: colors.text }} className="text-2xl font-black text-center mb-2 tracking-tight">{t('common.success')}</Text>
+                        <Text style={{ color: colors.textSecondary }} className="text-center font-bold mb-8 leading-6 opacity-70">{successMsg}</Text>
+
+                        <TouchableOpacity
+                            onPress={handleModalClose}
+                            style={{ backgroundColor: isDarkMode ? '#2D3748' : '#F7FAFC' }}
+                            className="w-full py-5 rounded-[24px] flex-row items-center justify-center"
+                        >
+                            <CheckCircle2 size={16} color={colors.primary} className="mr-2" />
+                            <Text style={{ color: colors.primary }} className="font-black text-sm tracking-tight">{t('common.cool') || 'Done'}</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
         </SafeAreaView>
     );
 };

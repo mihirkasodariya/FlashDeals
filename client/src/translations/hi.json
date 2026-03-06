@@ -45,7 +45,9 @@
         "wishlist": "पसंदीदा",
         "store": "स्टोर",
         "account": "खाता",
-        "version": "वर्जन"
+        "version": "वर्जन",
+        "offer_deleted_success": "ऑफर आपके स्टोर से स्थायी रूप से हटा दिया गया है।",
+        "cool": "ठीक है"
     },
     "language_selection": {
         "title": "भाषा",
@@ -478,7 +480,14 @@
         "physical_address": "भौतिक पता",
         "verify_location": "अपना स्टोर स्थान सत्यापित करें",
         "publish_changes": "बदलाव प्रकाशित करें",
-        "sync_active": "वास्तविक समय सिंक सक्रिय"
+        "sync_active": "वास्तविक समय सिंक सक्रिय",
+        "impressions": "इंप्रेशन",
+        "visits": "विज़िट",
+        "edit_offer": "ऑफर संपादित करें",
+        "update_offer": "ऑफर अपडेट करें",
+        "delete_confirm_msg": "क्या आप निश्चित रूप से इस ऑफर को हटाना चाहते हैं?",
+        "offer_updated": "ऑफर सफलतापूर्वक अपडेट किया गया!",
+        "failed_publish_offer": "ऑफर प्रकाशित करने में विफल"
     },
     "public_store": {
         "title": "स्टोर विवरण",
