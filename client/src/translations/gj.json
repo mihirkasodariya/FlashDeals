@@ -66,7 +66,11 @@
         "search": "શોધો",
         "back": "પાછા",
         "next": "આગળ",
-        "finish": "પૂર્ણ"
+        "finish": "પૂર્ણ",
+        "home": "હોમ",
+        "wishlist": "વિશલિસ્ટ",
+        "store": "સ્ટોર",
+        "account": "એકાઉન્ટ"
     },
     "language_selection": {
         "title": "ભાષા",
@@ -355,7 +359,10 @@
         "failed_submit_docs": "દસ્તાવેજો સબમિટ કરવામાં નિષ્ફળ",
         "identify": "ઓળખ",
         "profile_image_label": "વ્યક્તિગત પ્રોફાઇલ છબી",
-        "id_reference": "{{type}} સંદર્ભ"
+        "id_reference": "{{type}} સંદર્ભ",
+        "start_typing_address": "સરનામું ટાઇપ કરવાનું શરૂ કરો...",
+        "pin": "પિન",
+        "india": "ભારત"
     },
     "change_password": {
         "title": "પાસવર્ડ બદલો",

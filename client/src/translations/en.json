@@ -40,7 +40,12 @@
         "days": "Days",
         "mins": "Mins",
         "hours": "Hours",
-        "offer": "Offer"
+        "offer": "Offer",
+        "home": "Home",
+        "wishlist": "Wishlist",
+        "store": "Store",
+        "account": "Account",
+        "version": "Version"
     },
     "language_selection": {
         "title": "Language",
@@ -329,7 +334,10 @@
         "failed_submit_docs": "Failed to submit documents",
         "identify": "Identify",
         "profile_image_label": "Personal Profile Image",
-        "id_reference": "{{type}} Reference"
+        "id_reference": "{{type}} Reference",
+        "start_typing_address": "Start typing address...",
+        "pin": "PIN",
+        "india": "India"
     },
     "change_password": {
         "title": "Change Password",

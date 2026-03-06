@@ -40,7 +40,11 @@
         "search": "खोजें",
         "back": "पीछे",
         "next": "अगला",
-        "finish": "समाप्त करें"
+        "finish": "समाप्त करें",
+        "home": "होम",
+        "wishlist": "पसंदीदा",
+        "store": "स्टोर",
+        "account": "खाता"
     },
     "language_selection": {
         "title": "भाषा",
@@ -329,7 +333,10 @@
         "failed_submit_docs": "दस्तावेज़ सबमिट करने में विफल",
         "identify": "पहचान",
         "profile_image_label": "व्यक्तिगत प्रोफ़ाइल छवि",
-        "id_reference": "{{type}} संदर्भ"
+        "id_reference": "{{type}} संदर्भ",
+        "start_typing_address": "पता टाइप करना शुरू करें...",
+        "pin": "पिन",
+        "india": "भारत"
     },
     "change_password": {
         "title": "पासवर्ड बदलें",

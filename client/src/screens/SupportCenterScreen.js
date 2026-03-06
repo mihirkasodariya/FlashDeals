@@ -58,14 +58,12 @@ const SupportCenterScreen = ({ navigation }) => {
     const [form, setForm] = useState({
         subject: '',
         description: '',
-        category: t('support.cat_general')
+        category: 'General'
     });
     const [image, setImage] = useState(null);
 
     useEffect(() => {
         fetchTickets();
-        // Update category if language changes
-        setForm(prev => ({ ...prev, category: t('support.cat_general') }));
     }, [i18n.language]);
 
     const pickImage = async () => {
@@ -144,7 +142,7 @@ const SupportCenterScreen = ({ navigation }) => {
             if (data.success) {
                 Alert.alert(t('common.success'), t('support.ticket_success'));
                 setIsModalVisible(false);
-                setForm({ subject: '', description: '', category: t('support.cat_general') });
+                setForm({ subject: '', description: '', category: 'General' });
                 setImage(null);
                 fetchTickets();
             } else {
@@ -369,11 +367,11 @@ const SupportCenterScreen = ({ navigation }) => {
                                         return (
                                             <TouchableOpacity
                                                 key={cat}
-                                                onPress={() => setForm(prev => ({ ...prev, category: t(catKey) }))}
-                                                style={{ backgroundColor: form.category === t(catKey) ? colors.primary : colors.surface }}
-                                                className={`px-6 py-4 rounded-2xl mr-3 border-2 ${form.category === t(catKey) ? 'border-primary' : 'border-transparent'}`}
+                                                onPress={() => setForm(prev => ({ ...prev, category: cat }))}
+                                                style={{ backgroundColor: form.category === cat ? colors.primary : colors.surface }}
+                                                className={`px-6 py-4 rounded-2xl mr-3 border-2 ${form.category === cat ? 'border-primary' : 'border-transparent'}`}
                                             >
-                                                <Text style={{ color: form.category === t(catKey) ? 'white' : colors.textSecondary }} className="text-xs font-black">{t(catKey)}</Text>
+                                                <Text style={{ color: form.category === cat ? 'white' : colors.textSecondary }} className="text-xs font-black">{t(catKey)}</Text>
                                             </TouchableOpacity>
                                         );
                                     })}

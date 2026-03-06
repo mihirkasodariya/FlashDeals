@@ -18,6 +18,7 @@ const getCategories = (t) => [
     { id: '4', key: 'fashion', name: t('categories.fashion'), icon: '👕' },
     { id: '5', key: 'electronics', name: t('categories.electronics'), icon: '📱' },
     { id: '6', key: 'health', name: t('categories.health'), icon: '💊' },
+    { id: '7', key: 'other', name: t('categories.other'), icon: '📦' },
 ];
 
 const HomeScreen = ({ navigation }) => {

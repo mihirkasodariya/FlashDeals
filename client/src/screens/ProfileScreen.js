@@ -337,7 +337,7 @@ const ProfileScreen = ({ navigation }) => {
 
                     {/* Version & Credits */}
                     <View className="items-center mt-12 mb-10">
-                        <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-[3px] opacity-40">FLASHDEALS V.1.0.4</Text>
+                        <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-[3px] opacity-40">{t('common.version')} 1.0.4</Text>
                     </View>
                 </View>
             </ScrollView>

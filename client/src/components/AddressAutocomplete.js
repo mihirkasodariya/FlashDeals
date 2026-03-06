@@ -3,9 +3,11 @@ import Text from './CustomText';
 import { View, TextInput, TouchableOpacity, FlatList, ActivityIndicator, Keyboard, ScrollView } from 'react-native';
 import { MapPin, Search, X } from 'lucide-react-native';
 import { useTheme } from '../context/ThemeContext';
+import { useTranslation } from 'react-i18next';
 
 const AddressAutocomplete = ({ value, onChangeText, placeholder, label }) => {
     const { colors, isDarkMode } = useTheme();
+    const { t } = useTranslation();
     const [suggestions, setSuggestions] = useState([]);
     const [loading, setLoading] = useState(false);
     const [showSuggestions, setShowSuggestions] = useState(false);
@@ -83,7 +85,7 @@ const AddressAutocomplete = ({ value, onChangeText, placeholder, label }) => {
                 <TextInput
                     style={{ color: colors.text }}
                     className="flex-1 ml-3 font-medium"
-                    placeholder={placeholder || "Start typing address..."}
+                    placeholder={placeholder || t('vendor_register.start_typing_address')}
                     value={query}
                     onChangeText={handleTextChange}
                     multiline={true}
@@ -117,7 +119,7 @@ const AddressAutocomplete = ({ value, onChangeText, placeholder, label }) => {
                                         {item.address.city || item.address.town || item.address.village || ''}, {item.address.state || ''}
                                     </Text>
                                     <Text className="text-blue-500 text-[10px] font-bold mt-0.5">
-                                        {item.address.postcode ? `PIN: ${item.address.postcode}` : 'India'}
+                                        {item.address.postcode ? `${t('vendor_register.pin')}: ${item.address.postcode}` : t('vendor_register.india')}
                                     </Text>
                                 </View>
                             </TouchableOpacity>

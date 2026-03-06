@@ -104,7 +104,7 @@ const OfferDetailsScreen = ({ route, navigation }) => {
         : 'https://via.placeholder.com/400x400';
 
     const storeName = offer.vendorId?.storeName || t('offer_details.nearby');
-    const storeAddress = offer.vendorId?.storeAddress || t('public_store.address') + ' details managed at store';
+    const storeAddress = offer.vendorId?.storeAddress || t('public_store.address_managed');
 
     const defaultLogo = require('../../assets/logos/storeLogo.png');
     const storeLogoSource = offer.vendorId?.storeImage

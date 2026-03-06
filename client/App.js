@@ -1,7 +1,7 @@
 import './src/theme/global.css';
 import './src/i18n'; // Force initial logic
 import React from 'react';
-import { I18nextProvider } from 'react-i18next';
+import { I18nextProvider, useTranslation } from 'react-i18next';
 import i18n from './src/i18n';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
@@ -46,6 +46,7 @@ const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
 function MainTabs({ navigation }) {
+  const { t } = useTranslation();
   const [role, setRole] = React.useState(null);
   const { colors, isDarkMode } = useTheme();
 
@@ -118,17 +119,17 @@ function MainTabs({ navigation }) {
         },
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: 'Home' }} />
-      <Tab.Screen name="Wishlist" component={WishlistScreen} options={{ tabBarLabel: 'WishList' }} />
+      <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: t('common.home') }} />
+      <Tab.Screen name="Wishlist" component={WishlistScreen} options={{ tabBarLabel: t('common.wishlist') }} />
       <Tab.Screen
         name="Store"
         component={StoreScreen}
         options={{
-          tabBarLabel: 'Store',
+          tabBarLabel: t('common.store'),
           tabBarItemStyle: { display: role === 'vendor' ? 'flex' : 'none' }
         }}
       />
-      <Tab.Screen name="Profile" component={ProfileScreen} options={{ tabBarLabel: 'Account' }} />
+      <Tab.Screen name="Profile" component={ProfileScreen} options={{ tabBarLabel: t('common.account') }} />
     </Tab.Navigator>
   );
 }
