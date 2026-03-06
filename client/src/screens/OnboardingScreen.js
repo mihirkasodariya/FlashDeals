@@ -14,30 +14,31 @@ import { ChevronRight, Zap, MapPin, Store, Bell, CheckCircle2 } from 'lucide-rea
 import Text from '../components/CustomText';
 import { useTheme } from '../context/ThemeContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTranslation } from 'react-i18next';
 
 const { width, height } = Dimensions.get('window');
 
-const SLIDES = [
+const getSlides = (t) => [
     {
         id: '1',
-        title: 'Instant Flash\nDeals Nearby',
-        description: 'Discover massive savings from local stores happening right now in your neighborhood.',
+        title: t('onboarding.slide1_title'),
+        description: t('onboarding.slide1_desc'),
         icon: Zap,
         color: '#FACC15', // Yellow/Gold
         bg: '#FFFBEB'
     },
     {
         id: '2',
-        title: 'Real-Time Store\nTracking',
-        description: 'Never miss an offer again. Get directions and real-time alerts for live deals near you.',
+        title: t('onboarding.slide2_title'),
+        description: t('onboarding.slide2_desc'),
         icon: MapPin,
         color: '#00A49F', // Secondary Teal
         bg: '#F0FDFA'
     },
     {
         id: '3',
-        title: 'Support Local\nBusinesses',
-        description: 'Join thousands of shoppers saving money while boosting local storefront growth.',
+        title: t('onboarding.slide3_title'),
+        description: t('onboarding.slide3_desc'),
         icon: Store,
         color: '#002F34', // Primary Dark
         bg: '#F0F4F4'
@@ -46,6 +47,8 @@ const SLIDES = [
 
 const OnboardingScreen = ({ navigation }) => {
     const { colors, isDarkMode } = useTheme();
+    const { t } = useTranslation();
+    const SLIDES = getSlides(t);
     const [currentIndex, setCurrentIndex] = useState(0);
     const scrollX = useRef(new Animated.Value(0)).current;
     const slidesRef = useRef(null);
@@ -120,7 +123,7 @@ const OnboardingScreen = ({ navigation }) => {
             {/* Skip Button */}
             <View className="px-6 py-4 items-end">
                 <TouchableOpacity onPress={skip} className="px-4 py-2">
-                    <Text style={{ color: colors.textSecondary }} className="font-black text-xs tracking-widest uppercase opacity-50">Skip</Text>
+                    <Text style={{ color: colors.textSecondary }} className="font-black text-xs tracking-widest uppercase opacity-50">{t('onboarding.skip')}</Text>
                 </TouchableOpacity>
             </View>
 

@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronRight, Check } from 'lucide-react-native';
 import { useTheme } from '../context/ThemeContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTranslation } from 'react-i18next';
 
 const RECOMMENDED_LANGUAGES = [
     { id: 'en', name: 'English', native: 'English', flag: '🇬🇧' },
@@ -39,11 +40,28 @@ const ALL_LANGUAGES = [
 
 const LanguageSelectionScreen = ({ navigation }) => {
     const { colors, isDarkMode } = useTheme();
+    const { t, i18n } = useTranslation();
     const [selectedLang, setSelectedLang] = useState(RECOMMENDED_LANGUAGES[0]);
 
+    // Check for saved language on mount
+    React.useEffect(() => {
+        const checkLanguage = async () => {
+            const savedLang = await AsyncStorage.getItem('app_language');
+            if (savedLang) {
+                const found = [...RECOMMENDED_LANGUAGES, ...ALL_LANGUAGES].find(l => l.id === savedLang);
+                if (found) setSelectedLang(found);
+            }
+        };
+        checkLanguage();
+    }, []);
+
     const handleContinue = async () => {
-        // Will save to AsyncStorage in the future
         try {
+            // Save language preference
+            await AsyncStorage.setItem('app_language', selectedLang.id);
+            // Change language in i18n
+            await i18n.changeLanguage(selectedLang.id);
+
             const hasSeen = await AsyncStorage.getItem('hasSeenOnboarding');
             if (hasSeen === 'true') {
                 navigation.replace('Main');
@@ -58,12 +76,12 @@ const LanguageSelectionScreen = ({ navigation }) => {
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
             <View className="px-6 pt-10 pb-6 shadow-sm z-10" style={{ backgroundColor: colors.background }}>
-                <Text style={{ color: colors.text }} className="text-3xl font-black mb-2">Language</Text>
-                <Text style={{ color: colors.textSecondary }} className="mb-2 font-medium opacity-60">Choose your primary app language.</Text>
+                <Text style={{ color: colors.text }} className="text-3xl font-black mb-2">{t('language_selection.title')}</Text>
+                <Text style={{ color: colors.textSecondary }} className="mb-2 font-medium opacity-60">{t('language_selection.subtitle')}</Text>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} className="flex-1 px-6">
-                <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-[2px] mt-4 mb-4 opacity-40 uppercase">Recommended</Text>
+                <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-[2px] mt-4 mb-4 opacity-40 uppercase">{t('language_selection.recommended')}</Text>
                 <View style={{ backgroundColor: colors.surface, borderColor: colors.border }} className="rounded-[32px] p-4 border mb-6">
                     {RECOMMENDED_LANGUAGES.map((lang, index) => (
                         <TouchableOpacity
@@ -88,7 +106,7 @@ const LanguageSelectionScreen = ({ navigation }) => {
                     ))}
                 </View>
 
-                <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-[2px] mb-4 opacity-40 uppercase">All Languages</Text>
+                <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-[2px] mb-4 opacity-40 uppercase">{t('language_selection.all_languages')}</Text>
                 <View style={{ backgroundColor: colors.surface, borderColor: colors.border }} className="rounded-[32px] p-4 border mb-24">
                     {ALL_LANGUAGES.map((lang, index) => (
                         <TouchableOpacity
@@ -120,7 +138,9 @@ const LanguageSelectionScreen = ({ navigation }) => {
                     style={{ backgroundColor: colors.primary }}
                     className="w-full h-16 rounded-[24px] flex-row items-center justify-center shadow-lg shadow-primary/30"
                 >
-                    <Text style={{ color: '#FFFFFF' }} className="text-white font-black tracking-widest mr-2">Continue in {selectedLang.name}</Text>
+                    <Text style={{ color: '#FFFFFF' }} className="text-white font-black tracking-widest mr-2">
+                        {t('language_selection.continue', { lang: selectedLang.native })}
+                    </Text>
                     <ChevronRight size={20} color="white" strokeWidth={3} />
                 </TouchableOpacity>
             </View>

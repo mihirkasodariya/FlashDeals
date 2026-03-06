@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Text from '../components/CustomText';
 import {
     View,
@@ -19,6 +20,7 @@ import { API_BASE_URL } from '../config';
 
 const RegisterScreen = ({ navigation }) => {
     const { colors, isDarkMode } = useTheme();
+    const { t } = useTranslation();
     const [name, setName] = useState('');
     const [mobile, setMobile] = useState('');
     const [password, setPassword] = useState('');
@@ -42,15 +44,15 @@ const RegisterScreen = ({ navigation }) => {
 
     const handleRegister = async () => {
         if (!name || !mobile || !password || !confirmPassword) {
-            Alert.alert("Error", "Please fill all fields");
+            Alert.alert(t('common.error'), t('register.fill_all_fields'));
             return;
         }
         if (password !== confirmPassword) {
-            Alert.alert("Error", "Passwords do not match");
+            Alert.alert(t('common.error'), t('register.passwords_mismatch'));
             return;
         }
         if (!agreed) {
-            Alert.alert("Error", "Please agree to Terms & Conditions");
+            Alert.alert(t('common.error'), t('register.agree_to_terms'));
             return;
         }
 
@@ -88,11 +90,11 @@ const RegisterScreen = ({ navigation }) => {
                     userId: data.userId
                 });
             } else {
-                Alert.alert("Registration Failed", data.message || "Something went wrong");
+                Alert.alert(t('register.failed'), data.message || t('common.error'));
             }
         } catch (error) {
             setLoading(false);
-            Alert.alert("Error", "Cannot connect to server. Please check if server is running.");
+            Alert.alert(t('common.error'), t('register.server_error'));
             console.error(error);
         }
     };
@@ -107,7 +109,7 @@ const RegisterScreen = ({ navigation }) => {
                 >
                     <ChevronLeft size={24} color={colors.primary} />
                 </TouchableOpacity>
-                <Text style={{ color: colors.text }} className="text-lg font-bold">Create Account</Text>
+                <Text style={{ color: colors.text }} className="text-lg font-bold">{t('register.create_account')}</Text>
                 <View className="w-10" />
             </View>
 
@@ -133,17 +135,17 @@ const RegisterScreen = ({ navigation }) => {
                                 <Camera size={16} color="#FFFFFF" />
                             </View>
                         </TouchableOpacity>
-                        <Text style={{ color: colors.textSecondary }} className="mt-2.5 text-xs font-medium">Upload Profile Picture</Text>
+                        <Text style={{ color: colors.textSecondary }} className="mt-2.5 text-xs font-medium">{t('register.upload_profile')}</Text>
                     </View>
 
                     <FloatingInput
-                        label="Full Name"
+                        label={t('register.full_name')}
                         value={name}
                         onChangeText={setName}
                     />
 
                     <FloatingInput
-                        label="Mobile Number"
+                        label={t('register.mobile_number')}
                         value={mobile}
                         onChangeText={setMobile}
                         keyboardType="phone-pad"
@@ -151,14 +153,14 @@ const RegisterScreen = ({ navigation }) => {
                     />
 
                     <FloatingInput
-                        label="Password"
+                        label={t('common.password')}
                         value={password}
                         onChangeText={setPassword}
                         secureTextEntry
                     />
 
                     <FloatingInput
-                        label="Confirm Password"
+                        label={t('register.confirm_password')}
                         value={confirmPassword}
                         onChangeText={setConfirmPassword}
                         secureTextEntry
@@ -173,12 +175,13 @@ const RegisterScreen = ({ navigation }) => {
                             {agreed && <Check size={14} color="#FFFFFF" strokeWidth={3} />}
                         </View>
                         <Text style={{ color: colors.textSecondary }} className="text-sm">
-                            I agree to the <Text style={{ color: colors.accent }} className="font-semibold">Terms & Conditions</Text>
+                            {t('register.agree_terms', { terms: '' })}
+                            <Text style={{ color: colors.accent }} className="font-semibold">{t('register.terms_conditions')}</Text>
                         </Text>
                     </TouchableOpacity>
 
                     <CustomButton
-                        title="Register"
+                        title={t('common.register')}
                         onPress={handleRegister}
                         loading={loading}
                     />
@@ -186,15 +189,15 @@ const RegisterScreen = ({ navigation }) => {
                     <View style={{ backgroundColor: colors.border }} className="h-[1px] my-5" />
 
                     <CustomButton
-                        title="Register as Vendor"
+                        title={t('register.register_vendor')}
                         variant="outline"
                         onPress={() => navigation.navigate('VendorRegister')}
                     />
 
                     <View className="flex-row justify-center mt-8">
-                        <Text style={{ color: colors.text }} className="text-sm">Already have an account? </Text>
+                        <Text style={{ color: colors.text }} className="text-sm">{t('common.already_have_account')} </Text>
                         <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-                            <Text style={{ color: colors.secondary }} className="font-bold text-sm">Login</Text>
+                            <Text style={{ color: colors.secondary }} className="font-bold text-sm">{t('common.login')}</Text>
                         </TouchableOpacity>
                     </View>
 

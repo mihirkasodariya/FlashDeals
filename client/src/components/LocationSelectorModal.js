@@ -4,9 +4,11 @@ import { View, Modal, TouchableOpacity, ScrollView, TextInput, FlatList } from '
 import { X, ChevronRight, MapPin, Search, ChevronLeft, Navigation2 } from 'lucide-react-native';
 
 import { useTheme } from '../context/ThemeContext';
+import { useTranslation } from 'react-i18next';
 
 const LocationSelectorModal = ({ visible, onClose, onSelectLocation }) => {
     const { colors, isDarkMode } = useTheme();
+    const { t } = useTranslation();
     const [step, setStep] = useState('state'); // state, district, city, village
     const [selectedState, setSelectedState] = useState(null);
     const [selectedDistrict, setSelectedDistrict] = useState(null);
@@ -87,11 +89,11 @@ const LocationSelectorModal = ({ visible, onClose, onSelectLocation }) => {
                                 </TouchableOpacity>
                             )}
                             <View>
-                                <Text style={{ color: colors.secondary }} className="text-[10px] font-black uppercase tracking-widest mb-0.5">Location Hub</Text>
+                                <Text style={{ color: colors.secondary }} className="text-[10px] font-black uppercase tracking-widest mb-0.5">{t('location_selector.hub')}</Text>
                                 <Text style={{ color: colors.text }} className="text-2xl font-black">
-                                    {step === 'state' ? 'Choose State' :
-                                        step === 'district' ? 'Select District' :
-                                            step === 'city' ? 'Select City' : 'Select Village'}
+                                    {step === 'state' ? t('location_selector.choose_state') :
+                                        step === 'district' ? t('location_selector.select_district') :
+                                            step === 'city' ? t('location_selector.select_city') : t('location_selector.select_village')}
                                 </Text>
                             </View>
                         </View>
@@ -107,7 +109,7 @@ const LocationSelectorModal = ({ visible, onClose, onSelectLocation }) => {
                             <TextInput
                                 style={{ color: colors.text }}
                                 className="flex-1 ml-3 font-bold text-sm"
-                                placeholder={`Find your ${step}...`}
+                                placeholder={t('location_selector.find_placeholder', { step: t('location_selector.select_' + step).replace(t('location_selector.choose_state').split(' ')[0], '').trim().split(' ')[1] || step })}
                                 placeholderTextColor={colors.textSecondary + '80'}
                                 value={searchQuery}
                                 onChangeText={setSearchQuery}
@@ -149,8 +151,8 @@ const LocationSelectorModal = ({ visible, onClose, onSelectLocation }) => {
                                     <Navigation2 size={22} color={colors.secondary} strokeWidth={3} />
                                 </View>
                                 <View className="ml-4">
-                                    <Text style={{ color: colors.text }} className="font-black text-base">Detect Current</Text>
-                                    <Text style={{ color: colors.secondary }} className="font-bold text-xs uppercase tracking-tighter">Using GPS Precision</Text>
+                                    <Text style={{ color: colors.text }} className="font-black text-base">{t('location_selector.detect_current')}</Text>
+                                    <Text style={{ color: colors.secondary }} className="font-bold text-xs uppercase tracking-tighter">{t('location_selector.using_gps')}</Text>
                                 </View>
                             </TouchableOpacity>
                         )}
@@ -172,7 +174,7 @@ const LocationSelectorModal = ({ visible, onClose, onSelectLocation }) => {
                         ListEmptyComponent={
                             <View className="items-center justify-center py-20">
                                 <Search size={48} color={colors.border} />
-                                <Text style={{ color: colors.textSecondary }} className="font-bold mt-4">We couldn't find that place</Text>
+                                <Text style={{ color: colors.textSecondary }} className="font-bold mt-4">{t('location_selector.not_found')}</Text>
                             </View>
                         }
                     />

@@ -2,6 +2,7 @@ import React from 'react';
 import Text from '../components/CustomText';
 import { View, ScrollView, TouchableOpacity, ActivityIndicator, Alert, StyleSheet, Platform, useWindowDimensions, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import { } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
@@ -14,6 +15,7 @@ import { API_BASE_URL } from '../config';
 const StoreScreen = ({ navigation }) => {
     const { width } = useWindowDimensions();
     const { colors, isDarkMode } = useTheme();
+    const { t } = useTranslation();
     const [user, setUser] = React.useState(null);
     const [loading, setLoading] = React.useState(true);
     const [locationLoading, setLocationLoading] = React.useState(false);
@@ -61,7 +63,7 @@ const StoreScreen = ({ navigation }) => {
         try {
             let { status } = await Location.requestForegroundPermissionsAsync();
             if (status !== 'granted') {
-                Alert.alert('Permission Denied', 'Please allow location access.');
+                Alert.alert(t('common.error'), t('store.allow_location'));
                 setLocationLoading(false);
                 return;
             }
@@ -82,10 +84,10 @@ const StoreScreen = ({ navigation }) => {
             });
             const data = await response.json();
             if (data.success) {
-                Alert.alert('Success', 'GPS precise location updated!');
+                Alert.alert(t('common.success'), t('store.gps_updated'));
             }
         } catch (error) {
-            Alert.alert('Error', 'Failed to sync GPS');
+            Alert.alert(t('common.error'), t('store.failed_gps'));
         } finally {
             setLocationLoading(false);
         }
@@ -113,8 +115,8 @@ const StoreScreen = ({ navigation }) => {
             <ScrollView showsVerticalScrollIndicator={false}>
                 {/* Visual Header */}
                 <View className="px-6 pt-8 pb-4">
-                    <Text style={{ color: staticColors.secondary }} className="text-[10px] font-black tracking-[4px] mb-1">Commercial Hub</Text>
-                    <Text style={{ color: colors.text }} className="text-3xl font-black tracking-tighter">Store Command</Text>
+                    <Text style={{ color: staticColors.secondary }} className="text-[10px] font-black tracking-[4px] mb-1">{t('store.commercial_hub')}</Text>
+                    <Text style={{ color: colors.text }} className="text-3xl font-black tracking-tighter">{t('store.store_command')}</Text>
                 </View>
                 {/* Integrated Store Card */}
                 <View className="px-6 py-2">
@@ -148,7 +150,7 @@ const StoreScreen = ({ navigation }) => {
                                     </Text>
                                     <View className="bg-success self-start px-2 py-0.5 rounded-full mt-1.5 flex-row items-center">
                                         <Shield size={10} color="white" />
-                                        <Text style={{ color: '#FFFFFF' }} className="text-[8px] font-black ml-1 tracking-widest">Verified Store</Text>
+                                        <Text style={{ color: '#FFFFFF' }} className="text-[8px] font-black ml-1 tracking-widest">{t('store.verified_store')}</Text>
                                     </View>
                                 </View>
                             </View>
@@ -167,9 +169,9 @@ const StoreScreen = ({ navigation }) => {
                                     <MapPin size={18} color={staticColors.secondary} />
                                 </View>
                                 <View className="ml-4 flex-1">
-                                    <Text style={{ color: colors.textSecondary }} className="text-[9px] font-black tracking-widest mb-1.5 opacity-50">Operational Base</Text>
+                                    <Text style={{ color: colors.textSecondary }} className="text-[9px] font-black tracking-widest mb-1.5 opacity-50">{t('store.operational_base')}</Text>
                                     <Text style={{ color: colors.text }} className="text-sm font-bold leading-6">
-                                        {user.storeAddress || 'Setup Details In Edit'}
+                                        {user.storeAddress || t('store.setup_details')}
                                     </Text>
                                 </View>
                             </View>
@@ -190,8 +192,8 @@ const StoreScreen = ({ navigation }) => {
                                             <Navigation2 size={20} color="white" className="mr-4" fill="white" />
                                         )}
                                         <View>
-                                            <Text style={{ color: '#FFFFFF' }} className="font-black text-sm tracking-tight">Sync Satellite GPS</Text>
-                                            <Text style={{ color: 'rgba(255, 255, 255, 0.4)' }} className="text-[8px] font-black tracking-[2px] mt-0.5">High-Precision Link</Text>
+                                            <Text style={{ color: '#FFFFFF' }} className="font-black text-sm tracking-tight">{t('store.sync_gps')}</Text>
+                                            <Text style={{ color: 'rgba(255, 255, 255, 0.4)' }} className="text-[8px] font-black tracking-[2px] mt-0.5">{t('store.gps_link')}</Text>
                                         </View>
                                     </View>
                                     <View className="w-1.5 h-1.5 rounded-full bg-success shadow-lg shadow-success/50" />
@@ -203,7 +205,7 @@ const StoreScreen = ({ navigation }) => {
 
                 {/* Manage Section */}
                 <View className="px-6 py-6">
-                    <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-[4px] mb-6 opacity-40">Business Tools</Text>
+                    <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-[4px] mb-6 opacity-40">{t('store.business_tools')}</Text>
 
                     <View className="flex-row justify-between">
                         <TouchableOpacity
@@ -215,7 +217,7 @@ const StoreScreen = ({ navigation }) => {
                             <View style={{ backgroundColor: `${staticColors.secondary}1A` }} className="w-14 h-14 rounded-2xl items-center justify-center mb-4">
                                 <LayoutGrid size={28} color={staticColors.secondary} strokeWidth={2} />
                             </View>
-                            <Text style={{ color: colors.text }} className="font-black text-center text-sm leading-5">Manage Your{"\n"}Offers</Text>
+                            <Text style={{ color: colors.text }} className="font-black text-center text-sm leading-5">{t('store.manage_offers')}</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
@@ -227,7 +229,7 @@ const StoreScreen = ({ navigation }) => {
                             <View style={{ backgroundColor: `${colors.primary}0D` }} className="w-14 h-14 rounded-2xl items-center justify-center mb-4">
                                 <LucidePackage size={28} color={colors.primary} strokeWidth={2} />
                             </View>
-                            <Text style={{ color: colors.text }} className="font-black text-center text-sm leading-5">Add New{"\n"}Offer</Text>
+                            <Text style={{ color: colors.text }} className="font-black text-center text-sm leading-5">{t('store.add_offer_btn')}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>

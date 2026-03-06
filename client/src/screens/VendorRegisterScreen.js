@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Text from '../components/CustomText';
 import {
     View,
@@ -32,6 +33,7 @@ import { API_BASE_URL } from '../config';
 
 const VendorRegisterScreen = ({ navigation, route }) => {
     const { colors, isDarkMode } = useTheme();
+    const { t } = useTranslation();
     const [step, setStep] = useState(0); // 0 or 1
     const [activeIdType, setActiveIdType] = useState('GSTIN');
     const [formData, setFormData] = useState({
@@ -108,7 +110,7 @@ const VendorRegisterScreen = ({ navigation, route }) => {
     const getCurrentLocation = async () => {
         let { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
-            Alert.alert('Permission denied', 'Allow location access to pin your store');
+            Alert.alert(t('common.error'), t('vendor_register.sync_gps_req'));
             return;
         }
 
@@ -120,7 +122,7 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                 longitude: loc.coords.longitude
             }
         });
-        Alert.alert('Success', 'GPS precise location synced!');
+        Alert.alert(t('common.success'), t('vendor_register.gps_synced'));
     };
 
     const simulateAIValidation = () => {
@@ -139,11 +141,11 @@ const VendorRegisterScreen = ({ navigation, route }) => {
     const handleNext = async () => {
         if (step === 0) {
             if (!formData.name || !formData.mobile || !formData.password || !formData.confirmPassword) {
-                alert("Please fill all business details");
+                Alert.alert(t('common.error'), t('vendor_register.fill_business_details'));
                 return;
             }
             if (formData.password !== formData.confirmPassword) {
-                alert("Passwords do not match");
+                Alert.alert(t('common.error'), t('vendor_register.passwords_mismatch'));
                 return;
             }
 
@@ -182,29 +184,29 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                         formData: formData
                     });
                 } else {
-                    alert(data.message || "Registration failed");
+                    Alert.alert(t('register.failed'), data.message || t('common.error'));
                 }
             } catch (error) {
                 setLoading(false);
-                alert("Server connection failed");
+                Alert.alert(t('common.error'), t('register.server_error'));
             }
         } else {
             if (!formData.storeName) {
-                alert("Store Name is required");
+                Alert.alert(t('common.error'), t('vendor_register.store_name_req'));
                 return;
             }
             if (!formData.storeAddress) {
-                alert("Store Address is required");
+                Alert.alert(t('common.error'), t('vendor_register.store_addr_req'));
                 return;
             }
             if (!formData.location) {
-                alert("Please sync your GPS Location to continue");
+                Alert.alert(t('common.error'), t('vendor_register.sync_gps_req'));
                 return;
             }
 
             const userId = route.params?.userId || formData.userId;
             if (!userId) {
-                alert("Critical Error: User ID is missing. Please restart registration.");
+                Alert.alert(t('common.error'), t('vendor_register.critical_error_userid'));
                 return;
             }
 
@@ -246,11 +248,11 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                     DeviceEventEmitter.emit('roleChanged');
                     navigation.navigate('ActivationStatus');
                 } else {
-                    alert(data.message || "Failed to submit documents");
+                    Alert.alert(t('common.error'), data.message || t('vendor_register.failed_submit_docs'));
                 }
             } catch (error) {
                 setLoading(false);
-                alert("Server connection failed during upload");
+                Alert.alert(t('common.error'), t('register.server_error'));
             }
         }
     };
@@ -267,8 +269,8 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                     <ChevronLeft size={24} color={colors.text} strokeWidth={3} />
                 </TouchableOpacity>
                 <View className="ml-4">
-                    <Text style={{ color: staticColors.secondary }} className="text-[10px] font-black tracking-[3px] mb-0.5">Commercial</Text>
-                    <Text style={{ color: colors.text }} className="text-xl font-black">Merchant Portal</Text>
+                    <Text style={{ color: staticColors.secondary }} className="text-[10px] font-black tracking-[3px] mb-0.5">{t('vendor_register.commercial')}</Text>
+                    <Text style={{ color: colors.text }} className="text-xl font-black">{t('vendor_register.merchant_portal')}</Text>
                 </View>
             </View>
 
@@ -291,29 +293,29 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                                         ) : (
                                             <View className="items-center">
                                                 <Shield size={32} color={colors.textSecondary} strokeWidth={1} />
-                                                <Text style={{ color: colors.textSecondary }} className="text-[8px] font-black mt-1 tracking-widest opacity-40">Identify</Text>
+                                                <Text style={{ color: colors.textSecondary }} className="text-[8px] font-black mt-1 tracking-widest opacity-40">{t('vendor_register.identify')}</Text>
                                             </View>
                                         )}
                                         <View style={{ backgroundColor: `${colors.primary}33` }} className="absolute bottom-0 right-0 left-0 items-center py-1">
                                             <Camera size={12} color={colors.primary} />
                                         </View>
                                     </TouchableOpacity>
-                                    <Text style={{ color: colors.textSecondary }} className="mt-3 text-[10px] font-black tracking-widest opacity-40">Personal Profile Image</Text>
+                                    <Text style={{ color: colors.textSecondary }} className="mt-3 text-[10px] font-black tracking-widest opacity-40">{t('vendor_register.profile_image_label')}</Text>
                                 </View>
 
                                 <View>
-                                    <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-3 ml-1 opacity-50">Business Lead</Text>
+                                    <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-3 ml-1 opacity-50">{t('vendor_register.business_lead')}</Text>
                                     <FloatingInput
-                                        label="Full Name"
+                                        label={t('vendor_register.full_name')}
                                         value={formData.name}
                                         onChangeText={(val) => setFormData({ ...formData, name: val })}
                                     />
                                 </View>
 
                                 <View className="mt-6">
-                                    <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-3 ml-1 opacity-50">Communication Hub</Text>
+                                    <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-3 ml-1 opacity-50">{t('vendor_register.communication_hub')}</Text>
                                     <FloatingInput
-                                        label="Mobile No"
+                                        label={t('vendor_register.mobile_no')}
                                         value={formData.mobile}
                                         onChangeText={(val) => setFormData({ ...formData, mobile: val })}
                                         keyboardType="phone-pad"
@@ -322,9 +324,9 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                                 </View>
 
                                 <View className="mt-6">
-                                    <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-3 ml-1 opacity-50">Secure Access</Text>
+                                    <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-3 ml-1 opacity-50">{t('vendor_register.secure_access')}</Text>
                                     <FloatingInput
-                                        label="Creation Password"
+                                        label={t('vendor_register.creation_password')}
                                         value={formData.password}
                                         onChangeText={(val) => setFormData({ ...formData, password: val })}
                                         secureTextEntry
@@ -333,7 +335,7 @@ const VendorRegisterScreen = ({ navigation, route }) => {
 
                                 <View className="mt-6">
                                     <FloatingInput
-                                        label="Confirm Credentials"
+                                        label={t('vendor_register.confirm_credentials')}
                                         value={formData.confirmPassword}
                                         onChangeText={(val) => setFormData({ ...formData, confirmPassword: val })}
                                         secureTextEntry
@@ -346,7 +348,7 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                                     <View style={{ backgroundColor: `${colors.primary}0D`, borderColor: `${colors.primary}1A` }} className="w-16 h-16 rounded-[24px] items-center justify-center border">
                                         <Shield size={32} color={colors.primary} strokeWidth={1.5} />
                                     </View>
-                                    <Text style={{ color: colors.text }} className="mt-4 font-black text-xl tracking-tight">Enterprise Verification</Text>
+                                    <Text style={{ color: colors.text }} className="mt-4 font-black text-xl tracking-tight">{t('vendor_register.enterprise_verification')}</Text>
                                 </View>
 
                                 <View style={{ backgroundColor: isDarkMode ? `${colors.primary}33` : 'rgba(245, 247, 248, 0.5)', borderColor: colors.border }} className="flex-row mb-10 p-1.5 rounded-2xl border">
@@ -375,27 +377,27 @@ const VendorRegisterScreen = ({ navigation, route }) => {
 
                                 <View className="space-y-6">
                                     <View>
-                                        <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-3 ml-1 opacity-50">Public Branding</Text>
+                                        <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-3 ml-1 opacity-50">{t('vendor_register.public_branding')}</Text>
                                         <FloatingInput
-                                            label="Trade / Store Name"
+                                            label={t('vendor_register.trade_store_name')}
                                             value={formData.storeName}
                                             onChangeText={(val) => setFormData({ ...formData, storeName: val })}
                                         />
                                     </View>
 
                                     <View className="mt-6">
-                                        <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-3 ml-1 opacity-50">Tax Identity (Optional)</Text>
+                                        <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-3 ml-1 opacity-50">{t('vendor_register.tax_identity')}</Text>
                                         <FloatingInput
-                                            label={`${activeIdType} Reference`}
+                                            label={t('vendor_register.id_reference', { type: activeIdType })}
                                             value={formData.idNumber}
                                             onChangeText={(val) => setFormData(prev => ({ ...prev, idNumber: val }))}
                                         />
                                     </View>
 
-                                     <View className="mt-6">
-                                        <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-3 ml-1 opacity-50">Physical Nexus</Text>
+                                    <View className="mt-6">
+                                        <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-3 ml-1 opacity-50">{t('vendor_register.physical_nexus')}</Text>
                                         <AddressAutocomplete
-                                            label="Registered Store Address"
+                                            label={t('vendor_register.registered_store_address')}
                                             value={formData.storeAddress}
                                             onChangeText={(val) => setFormData({ ...formData, storeAddress: val })}
                                         />
@@ -408,14 +410,14 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                                         >
                                             <View className={`w-3.5 h-3.5 rounded-full mr-4 shadow-sm ${formData.location ? 'bg-green-500' : 'bg-gray-300'}`} />
                                             <Text style={{ color: staticColors.secondary }} className="font-black text-xs tracking-widest">
-                                                {formData.location ? 'GPS Precision Synced' : 'Detect Live GPS Location'}
+                                                {formData.location ? t('vendor_register.gps_synced') : t('vendor_register.detect_gps')}
                                             </Text>
                                         </TouchableOpacity>
                                     </View>
 
                                     {/* Document Upload Zone */}
                                     <View className="mt-10">
-                                        <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-4 ml-1 opacity-50">Proof of Existence (Optional)</Text>
+                                        <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-4 ml-1 opacity-50">{t('vendor_register.proof_existence')}</Text>
                                         <TouchableOpacity style={{ borderColor: colors.border, backgroundColor: colors.surface }} className="h-[220px] border-2 border-dashed rounded-[32px] justify-center items-center overflow-hidden" onPress={pickDocument}>
                                             {docImage ? (
                                                 <View className="w-full h-full">
@@ -424,7 +426,7 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                                                         <View className="bg-white/20 w-12 h-12 rounded-full items-center justify-center backdrop-blur-md">
                                                             <RefreshCw size={20} color="#FFFFFF" strokeWidth={3} />
                                                         </View>
-                                                        <Text className="text-white mt-3 font-black text-[10px] tracking-widest">Update Image</Text>
+                                                        <Text className="text-white mt-3 font-black text-[10px] tracking-widest">{t('vendor_register.update_image')}</Text>
                                                     </View>
                                                 </View>
                                             ) : (
@@ -432,8 +434,8 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                                                     <View style={{ backgroundColor: colors.card }} className="w-16 h-16 rounded-3xl items-center justify-center shadow-sm mb-6">
                                                         <Upload size={28} color={staticColors.secondary} strokeWidth={2.5} />
                                                     </View>
-                                                    <Text style={{ color: colors.text }} className="font-black text-sm tracking-widest">Upload ID Card</Text>
-                                                    <Text style={{ color: colors.textSecondary }} className="text-[10px] mt-2 font-medium tracking-[2px]">PNG, JPG • Max 5MB</Text>
+                                                    <Text style={{ color: colors.text }} className="font-black text-sm tracking-widest">{t('vendor_register.upload_id')}</Text>
+                                                    <Text style={{ color: colors.textSecondary }} className="text-[10px] mt-2 font-medium tracking-[2px]">{t('vendor_register.png_jpg_max')}</Text>
                                                 </View>
                                             )}
                                         </TouchableOpacity>
@@ -447,12 +449,12 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                                             {validationStatus === 'valid' && <CheckCircle2 size={24} color="#10B981" strokeWidth={3} className="mr-4" />}
 
                                             <View className="flex-1">
-                                                <Text style={{ color: colors.text }} className="text-[10px] font-black tracking-widest mb-0.5 opacity-50">AI Core Status</Text>
+                                                <Text style={{ color: colors.text }} className="text-[10px] font-black tracking-widest mb-0.5 opacity-50">{t('vendor_register.ai_core_status')}</Text>
                                                 <Text className={`text-sm font-black ${validationStatus === 'valid' ? 'text-green-600' :
                                                     validationStatus === 'invalid' ? 'text-red-500' : `text-[${staticColors.secondary}]`
                                                     }`}>
-                                                    {validationStatus === 'checking' ? `Verifying Authenticity... ${uploadProgress}%` :
-                                                        validationStatus === 'valid' ? 'Document Authorized' : 'Authorization Failed'}
+                                                    {validationStatus === 'checking' ? t('vendor_register.verifying_authenticity', { progress: uploadProgress }) :
+                                                        validationStatus === 'valid' ? t('vendor_register.document_authorized') : t('vendor_register.authorization_failed')}
                                                 </Text>
                                             </View>
                                         </View>
@@ -463,7 +465,7 @@ const VendorRegisterScreen = ({ navigation, route }) => {
 
                         <View className="mt-12">
                             <CustomButton
-                                title={step === 0 ? "Verify Via OTP" : "Finalize Portal"}
+                                title={step === 0 ? t('vendor_register.verify_otp_btn') : t('vendor_register.finalize_portal')}
                                 onPress={handleNext}
                                 loading={loading}
                             />
@@ -471,7 +473,7 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                     </View>
 
                     <View className="mt-8 items-center">
-                        <Text className="text-[9px] font-black text-textSecondary tracking-[5px] opacity-30">Secure Merchant Onboarding v2</Text>
+                        <Text className="text-[9px] font-black text-textSecondary tracking-[5px] opacity-30">{t('vendor_register.secure_onboarding')}</Text>
                     </View>
                 </ScrollView>
             </KeyboardAvoidingView>
@@ -487,9 +489,9 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                             <AlertCircle size={48} color={staticColors.error} strokeWidth={1.5} className="-rotate-12" />
                         </View>
 
-                        <Text style={{ color: colors.text }} className="text-3xl font-black mb-3 text-center tracking-tighter">Exit Setup?</Text>
+                        <Text style={{ color: colors.text }} className="text-3xl font-black mb-3 text-center tracking-tighter">{t('vendor_register.exit_setup_title')}</Text>
                         <Text style={{ color: colors.textSecondary }} className="text-center mb-12 font-medium leading-6 opacity-70">
-                            Your store details aren't saved yet. Quitting now will revert your account to a regular user.
+                            {t('vendor_register.exit_setup_desc')}
                         </Text>
 
                         <View className="w-full space-y-4">
@@ -497,7 +499,7 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                                 onPress={() => setIsExitModalVisible(false)}
                                 className="w-full bg-primary py-5 rounded-[30px] items-center shadow-lg shadow-primary/30"
                             >
-                                <Text className="text-white font-black text-sm tracking-widest">Continue Setup</Text>
+                                <Text className="text-white font-black text-sm tracking-widest">{t('vendor_register.continue_setup')}</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 onPress={() => {
@@ -506,7 +508,7 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                                 }}
                                 className="w-full py-5 items-center mt-2"
                             >
-                                <Text style={{ color: staticColors.error }} className="font-black text-xs tracking-[3px] uppercase">Quit & Revert</Text>
+                                <Text style={{ color: staticColors.error }} className="font-black text-xs tracking-[3px] uppercase">{t('vendor_register.quit_revert')}</Text>
                             </TouchableOpacity>
                         </View>
                     </View>

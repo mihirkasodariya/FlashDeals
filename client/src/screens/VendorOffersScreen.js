@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Text from '../components/CustomText';
 import { View, FlatList, TouchableOpacity, Image, ActivityIndicator, Alert, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import { ChevronLeft, Package as LucidePackage, Trash2, Calendar, Tag } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../context/ThemeContext';
@@ -11,6 +12,7 @@ import { API_BASE_URL } from '../config';
 const VendorOffersScreen = ({ navigation }) => {
     const { colors, isDarkMode } = useTheme();
     const { width } = useWindowDimensions();
+    const { t } = useTranslation();
     const [offers, setOffers] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -53,7 +55,7 @@ const VendorOffersScreen = ({ navigation }) => {
                     />
                     <View className="ml-4 flex-1">
                         <View style={{ backgroundColor: `${colors.primary}15` }} className="self-start px-2 py-1 rounded-lg mb-1">
-                            <Text style={{ color: colors.primary }} className="text-[10px] font-black">{item.category}</Text>
+                            <Text style={{ color: colors.primary }} className="text-[10px] font-black">{t(`categories.${item.category.toLowerCase()}`)}</Text>
                         </View>
                         <Text style={{ color: colors.text }} className="text-lg font-black leading-6" numberOfLines={2}>{item.title}</Text>
 
@@ -79,7 +81,7 @@ const VendorOffersScreen = ({ navigation }) => {
                 >
                     <ChevronLeft size={24} color={colors.primary} />
                 </TouchableOpacity>
-                <Text style={{ color: colors.text }} className="ml-4 text-2xl font-black">My Flash Offers</Text>
+                <Text style={{ color: colors.text }} className="ml-4 text-2xl font-black">{t('store.my_flash_offers')}</Text>
             </View>
 
             {loading ? (
@@ -97,13 +99,13 @@ const VendorOffersScreen = ({ navigation }) => {
                             <View style={{ backgroundColor: colors.surface }} className="w-20 h-20 rounded-full items-center justify-center mb-4">
                                 <LucidePackage size={40} color={colors.border} strokeWidth={1.5} />
                             </View>
-                            <Text style={{ color: colors.text }} className="text-xl font-black">No Active Offers</Text>
-                            <Text style={{ color: colors.textSecondary }} className="text-center mt-2">You haven't launched any flash offers yet.</Text>
+                            <Text style={{ color: colors.text }} className="text-xl font-black">{t('store.no_active_offers')}</Text>
+                            <Text style={{ color: colors.textSecondary }} className="text-center mt-2">{t('store.no_offers_desc')}</Text>
                             <TouchableOpacity
                                 onPress={() => navigation.navigate('AddOffer')}
                                 className="mt-8 bg-primary px-8 py-4 rounded-2xl"
                             >
-                                <Text className="text-white font-black text-xs tracking-widest">Create First Offer</Text>
+                                <Text className="text-white font-black text-xs tracking-widest">{t('store.create_first_offer')}</Text>
                             </TouchableOpacity>
                         </View>
                     }

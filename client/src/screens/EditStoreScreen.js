@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import { ChevronLeft, Save, MapPin, Store, Sparkles, CheckCircle2, ChevronRight, Camera } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
@@ -24,6 +25,7 @@ import { colors as staticColors } from '../theme/colors';
 
 const EditStoreScreen = ({ navigation, route }) => {
     const { colors, isDarkMode } = useTheme();
+    const { t } = useTranslation();
     const { vendorData } = route.params || {};
 
     const [formData, setFormData] = useState({
@@ -39,7 +41,7 @@ const EditStoreScreen = ({ navigation, route }) => {
     const handlePickLogo = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== 'granted') {
-            Alert.alert("Permission Denied", "We need your permission to access photos.");
+            Alert.alert(t('common.error'), t('store.need_photo_permission'));
             return;
         }
 
@@ -57,7 +59,7 @@ const EditStoreScreen = ({ navigation, route }) => {
 
     const handleUpdate = async () => {
         if (!formData.storeName || !formData.storeAddress) {
-            Alert.alert("Error", "Please fill all store details");
+            Alert.alert(t('common.error'), t('store.fill_all_fields'));
             return;
         }
 
@@ -65,14 +67,14 @@ const EditStoreScreen = ({ navigation, route }) => {
         try {
             const token = await AsyncStorage.getItem('userToken');
             if (!token) {
-                Alert.alert("Error", "Session expired. Please login again.");
+                Alert.alert(t('common.error'), t('store.session_expired'));
                 navigation.replace('Login');
                 return;
             }
 
             const userId = vendorData?._id;
             if (!userId) {
-                Alert.alert("Error", "User data not found");
+                Alert.alert(t('common.error'), t('store.user_not_found'));
                 return;
             }
 
@@ -103,15 +105,15 @@ const EditStoreScreen = ({ navigation, route }) => {
             setLoading(false);
 
             if (data.success) {
-                Alert.alert("Updated!", "Your store profile has been refreshed.", [
-                    { text: "Perfect", onPress: () => navigation.goBack() }
+                Alert.alert(t('store.updated'), t('store.store_refreshed'), [
+                    { text: t('store.perfect'), onPress: () => navigation.goBack() }
                 ]);
             } else {
-                Alert.alert("Update Failed", data.message || "Something went wrong");
+                Alert.alert(t('store.update_failed'), data.message || t('common.server_error'));
             }
         } catch (error) {
             setLoading(false);
-            Alert.alert("Error", "Server connection failed");
+            Alert.alert(t('common.error'), t('store.server_failed'));
             console.error(error);
         }
     };
@@ -124,8 +126,6 @@ const EditStoreScreen = ({ navigation, route }) => {
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
-            {/* Header */}
-            {/* Header like Register */}
             <View className="flex-row items-center justify-between px-4 py-3 border-b" style={{ borderBottomColor: colors.border }}>
                 <TouchableOpacity
                     onPress={() => navigation.goBack()}
@@ -134,7 +134,7 @@ const EditStoreScreen = ({ navigation, route }) => {
                 >
                     <ChevronLeft size={24} color={colors.primary} />
                 </TouchableOpacity>
-                <Text style={{ color: colors.text }} className="text-lg font-bold">Store Profile</Text>
+                <Text style={{ color: colors.text }} className="text-lg font-bold">{t('store.store_profile')}</Text>
                 <View className="w-10" />
             </View>
 
@@ -164,24 +164,24 @@ const EditStoreScreen = ({ navigation, route }) => {
                                 </View>
                             )}
                             <View style={{ backgroundColor: colors.primary }} className="absolute bottom-0 left-0 right-0 py-1.5 items-center">
-                                <Text className="text-[8px] font-black text-white tracking-widest uppercase">Change Logo</Text>
+                                <Text className="text-[8px] font-black text-white tracking-widest uppercase">{t('store.change_logo')}</Text>
                             </View>
                         </TouchableOpacity>
-                        <Text style={{ color: colors.textSecondary }} className="mt-4 font-bold text-xs uppercase tracking-widest opacity-60">Update Store Identity</Text>
+                        <Text style={{ color: colors.textSecondary }} className="mt-4 font-bold text-xs uppercase tracking-widest opacity-60">{t('store.update_identity')}</Text>
                     </View>
 
 
                     <View className="space-y-6">
                         <FloatingInput
-                            label="Legal Store Name"
+                            label={t('store.legal_name')}
                             value={formData.storeName}
                             onChangeText={(val) => setFormData({ ...formData, storeName: val })}
                         />
 
                         <View className="mt-4">
                             <AddressAutocomplete
-                                label="Physical Address"
-                                placeholder="Verify your store location"
+                                label={t('store.physical_address')}
+                                placeholder={t('store.verify_location')}
                                 value={formData.storeAddress}
                                 onChangeText={(val) => setFormData({ ...formData, storeAddress: val })}
                             />
@@ -203,7 +203,7 @@ const EditStoreScreen = ({ navigation, route }) => {
                                     <ActivityIndicator size="small" color="white" />
                                 ) : (
                                     <View className="flex-row items-center justify-center">
-                                        <Text style={{ color: '#FFFFFF' }} className="font-black text-sm tracking-[3px] mr-3">Publish Changes</Text>
+                                        <Text style={{ color: '#FFFFFF' }} className="font-black text-sm tracking-[3px] mr-3">{t('store.publish_changes')}</Text>
                                         <ChevronRight size={18} color="white" strokeWidth={3} />
                                     </View>
                                 )}
@@ -214,7 +214,7 @@ const EditStoreScreen = ({ navigation, route }) => {
                     <View className="mt-12 items-center">
                         <View style={{ backgroundColor: isDarkMode ? `${colors.success}20` : `${colors.success}10`, borderColor: `${colors.success}33` }} className="flex-row items-center px-5 py-3 rounded-2xl border">
                             <Sparkles size={16} color={colors.success} />
-                            <Text style={{ color: isDarkMode ? colors.text : colors.success }} className="font-black text-[10px] tracking-widest ml-3">Real-Time Sync Active</Text>
+                            <Text style={{ color: isDarkMode ? colors.text : colors.success }} className="font-black text-[10px] tracking-widest ml-3">{t('store.sync_active')}</Text>
                         </View>
                     </View>
                 </ScrollView>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Text from '../components/CustomText';
 import {
     View,
@@ -27,25 +28,25 @@ import { API_BASE_URL } from '../config';
 const NOTIFICATIONS = [
     {
         id: '1',
-        title: 'Massive Deal Alert! 🔥',
-        description: '50% OFF at Burger King for the next 2 hours only. Grab your meal now!',
-        time: '5 mins ago',
+        title: 'notifications.notif_deal_title',
+        description: 'notifications.notif_deal_desc',
+        time: 'notifications.notif_deal_time',
         type: 'deal',
         read: false
     },
     {
         id: '2',
-        title: 'New Store Nearby 🏪',
-        description: 'Tech Hub just joined FlashDeals. Check out their opening discounts.',
-        time: '2 hours ago',
+        title: 'notifications.notif_store_title',
+        description: 'notifications.notif_store_desc',
+        time: 'notifications.notif_store_time',
         type: 'store',
         read: true
     },
     {
         id: '3',
-        title: 'Your Order is Confirmed ✅',
-        description: 'Your coupon for Fashion Street has been generated successfully.',
-        time: 'Yesterday',
+        title: 'notifications.notif_system_title',
+        description: 'notifications.notif_system_desc',
+        time: 'notifications.notif_system_time',
         type: 'system',
         read: true
     }
@@ -53,6 +54,7 @@ const NOTIFICATIONS = [
 
 const NotificationScreen = ({ navigation }) => {
     const { colors, isDarkMode } = useTheme();
+    const { t } = useTranslation();
     const [notifications, setNotifications] = useState(NOTIFICATIONS);
 
     const markAllRead = () => {
@@ -82,8 +84,8 @@ const NotificationScreen = ({ navigation }) => {
                     <ChevronLeft size={24} color={colors.primary} />
                 </TouchableOpacity>
                 <View className="items-center">
-                    <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-[3px] uppercase opacity-60">Updates</Text>
-                    <Text style={{ color: colors.text }} className="text-sm font-black mt-0.5">Notifications</Text>
+                    <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-[3px] uppercase opacity-60">{t('notifications.updates')}</Text>
+                    <Text style={{ color: colors.text }} className="text-sm font-black mt-0.5">{t('notifications.title')}</Text>
                 </View>
                 <TouchableOpacity
                     onPress={markAllRead}
@@ -109,16 +111,16 @@ const NotificationScreen = ({ navigation }) => {
                     </View>
 
                     <Text style={{ color: colors.text }} className="text-3xl font-black text-center tracking-tight leading-8 mb-3">
-                        Stay In{"\n"}The Loop
+                        {t('notifications.hero_title')}
                     </Text>
                     <Text style={{ color: colors.textSecondary }} className="text-sm font-bold text-center px-4 opacity-70">
-                        Don't miss out on hot deals, new stores, and important updates.
+                        {t('notifications.hero_desc')}
                     </Text>
                 </View>
 
                 {/* Notification List */}
                 <View className="px-6 mt-12">
-                    <Text style={{ color: colors.textSecondary }} className="text-[11px] font-black tracking-[4px] mb-6 ml-2 uppercase opacity-40">Recent Alerts</Text>
+                    <Text style={{ color: colors.textSecondary }} className="text-[11px] font-black tracking-[4px] mb-6 ml-2 uppercase opacity-40">{t('notifications.recent')}</Text>
 
                     {notifications.map((notification) => {
                         const { icon: Icon, color, bg } = getIconInfo(notification.type);
@@ -146,7 +148,7 @@ const NotificationScreen = ({ navigation }) => {
                                                 style={{ color: notification.read ? colors.text + '70' : colors.text }}
                                                 className="flex-1 text-base font-black tracking-tight leading-tight"
                                             >
-                                                {notification.title}
+                                                {t(notification.title)}
                                             </Text>
                                             {!notification.read && (
                                                 <View className="w-2.5 h-2.5 bg-error rounded-full ml-2 mt-1" />
@@ -157,13 +159,13 @@ const NotificationScreen = ({ navigation }) => {
                                             className={`text-xs font-bold leading-relaxed mb-3 ${notification.read ? 'opacity-50' : 'opacity-80'}`}
                                             numberOfLines={2}
                                         >
-                                            {notification.description}
+                                            {t(notification.description)}
                                         </Text>
 
                                         <View className="flex-row items-center">
                                             <Clock size={12} color={colors.textSecondary} opacity={0.5} strokeWidth={2.5} />
                                             <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest ml-1.5 uppercase opacity-50">
-                                                {notification.time}
+                                                {t(notification.time)}
                                             </Text>
                                         </View>
                                     </View>
@@ -174,7 +176,7 @@ const NotificationScreen = ({ navigation }) => {
 
                     {notifications.length === 0 && (
                         <View className="py-12 items-center">
-                            <Text style={{ color: colors.textSecondary }} className="font-bold text-center opacity-50">You have no new notifications.</Text>
+                            <Text style={{ color: colors.textSecondary }} className="font-bold text-center opacity-50">{t('notifications.empty')}</Text>
                         </View>
                     )}
                 </View>

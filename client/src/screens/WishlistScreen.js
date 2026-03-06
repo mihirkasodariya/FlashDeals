@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import Text from '../components/CustomText';
 import { View, FlatList, Image, TouchableOpacity, useWindowDimensions, ActivityIndicator } from 'react-native';
 import { } from '@react-navigation/native';
@@ -16,6 +17,7 @@ import { API_BASE_URL } from '../config';
 const WishlistScreen = ({ navigation }) => {
     const { width } = useWindowDimensions();
     const { colors, isDarkMode } = useTheme();
+    const { t } = useTranslation();
     const [favorites, setFavorites] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -57,8 +59,8 @@ const WishlistScreen = ({ navigation }) => {
             {/* Minimal Header */}
             <View style={{ backgroundColor: colors.card }} className="px-6 pt-4 pb-6 shadow-sm flex-row items-center justify-between">
                 <View>
-                    <Text style={{ color: staticColors.secondary }} className="text-[10px] font-black tracking-[3px] mb-1">Collection</Text>
-                    <Text style={{ color: colors.text }} className="text-3xl font-black">Wishlist</Text>
+                    <Text style={{ color: staticColors.secondary }} className="text-[10px] font-black tracking-[3px] mb-1">{t('wishlist.collection')}</Text>
+                    <Text style={{ color: colors.text }} className="text-3xl font-black">{t('wishlist.title')}</Text>
                 </View>
             </View>
 
@@ -84,13 +86,13 @@ const WishlistScreen = ({ navigation }) => {
                         </View>
                     </TouchableOpacity>
 
-                    <Text style={{ color: colors.text }} className="text-3xl font-black mb-3 text-center tracking-tighter">Your Heart is Empty</Text>
+                    <Text style={{ color: colors.text }} className="text-3xl font-black mb-3 text-center tracking-tighter">{t('wishlist.empty_title')}</Text>
                     <Text style={{ color: colors.textSecondary }} className="text-center mb-12 font-medium leading-6 opacity-70">
-                        Don't let these exclusive offers slip away! Start tapping the heart to save your top picks.
+                        {t('wishlist.empty_desc')}
                     </Text>
 
                     <CustomButton
-                        title="Start Discovering"
+                        title={t('wishlist.start_discovering')}
                         onPress={() => navigation.navigate('Home')}
                     />
                 </View>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import Text from '../components/CustomText';
 import {
     View,
@@ -16,6 +17,7 @@ import { API_BASE_URL } from '../config';
 
 const OTPScreen = ({ navigation, route }) => {
     const { colors } = useTheme();
+    const { t } = useTranslation();
     const { mobile } = route.params || {};
     const [timer, setTimer] = useState(30);
     const [otp, setOtp] = useState('');
@@ -33,7 +35,7 @@ const OTPScreen = ({ navigation, route }) => {
 
     const handleVerify = async () => {
         if (!otp || otp.length < 6) {
-            Alert.alert("Error", "Please enter 6-digit OTP");
+            Alert.alert(t('common.error'), t('otp.enter_6_digit'));
             return;
         }
 
@@ -55,8 +57,8 @@ const OTPScreen = ({ navigation, route }) => {
 
             if (data.success) {
                 if (purpose === 'reset') {
-                    Alert.alert("Success", "Password reset successful! Please login with your new password.", [
-                        { text: "OK", onPress: () => navigation.navigate('Login') }
+                    Alert.alert(t('common.success'), t('otp.reset_success'), [
+                        { text: t('common.yes'), onPress: () => navigation.navigate('Login') }
                     ]);
                 } else if (userType === 'user') {
                     navigation.navigate('Main');
@@ -66,11 +68,11 @@ const OTPScreen = ({ navigation, route }) => {
                     navigation.navigate('ActivationStatus');
                 }
             } else {
-                Alert.alert("Verification Failed", data.message || "Invalid OTP");
+                Alert.alert(t('otp.verification_failed'), data.message || t('otp.invalid_otp'));
             }
         } catch (error) {
             setLoading(false);
-            Alert.alert("Error", "Server connection failed");
+            Alert.alert(t('common.error'), t('register.server_error'));
             console.error(error);
         }
     };
@@ -95,9 +97,9 @@ const OTPScreen = ({ navigation, route }) => {
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 className="flex-1 px-6 pt-5"
             >
-                <Text style={{ color: colors.text }} className="text-[28px] font-bold mb-2.5">Verify OTP</Text>
+                <Text style={{ color: colors.text }} className="text-[28px] font-bold mb-2.5">{t('otp.title')}</Text>
                 <Text style={{ color: colors.textSecondary }} className="text-[15px] leading-tight mb-5">
-                    We've sent a 6-digit verification code to
+                    {t('otp.subtitle')}
                     <Text style={{ color: colors.text }} className="font-bold"> +91 {mobile}</Text>
                 </Text>
 
@@ -105,22 +107,22 @@ const OTPScreen = ({ navigation, route }) => {
 
                 <View className="items-center mb-8">
                     {timer > 0 ? (
-                        <Text style={{ color: colors.textSecondary }} className="text-sm">Resend code in <Text style={{ color: colors.secondary }} className="font-bold">{timer}s</Text></Text>
+                        <Text style={{ color: colors.textSecondary }} className="text-sm">{t('otp.resend_in', { seconds: timer })}</Text>
                     ) : (
                         <TouchableOpacity onPress={handleResend}>
-                            <Text style={{ color: colors.secondary }} className="font-bold text-sm underline">Resend OTP</Text>
+                            <Text style={{ color: colors.secondary }} className="font-bold text-sm underline">{t('otp.resend_otp')}</Text>
                         </TouchableOpacity>
                     )}
                 </View>
 
                 <CustomButton
-                    title="Verify & Proceed"
+                    title={t('otp.verify_proceed')}
                     onPress={handleVerify}
                     loading={loading}
                     className="mt-2.5"
                 />
 
-                <Text className="text-center mt-5 text-gray-400 text-xs italic">Demo OTP: 123456</Text>
+                <Text className="text-center mt-5 text-gray-400 text-xs italic">{t('otp.demo_otp')}</Text>
             </KeyboardAvoidingView>
         </SafeAreaView>
     );

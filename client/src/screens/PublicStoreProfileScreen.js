@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import Text from '../components/CustomText';
 import { View, ScrollView, Image, TouchableOpacity, FlatList, ActivityIndicator, useWindowDimensions, Platform, StatusBar, Linking, Alert } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -12,6 +13,7 @@ import CustomButton from '../components/CustomButton';
 
 const PublicStoreProfileScreen = ({ route, navigation }) => {
     const { colors, isDarkMode } = useTheme();
+    const { t } = useTranslation();
     const { vendorId } = route.params || {};
     const { width } = useWindowDimensions();
     const insets = useSafeAreaInsets();
@@ -24,8 +26,6 @@ const PublicStoreProfileScreen = ({ route, navigation }) => {
 
     const fetchStoreData = async () => {
         try {
-            // First get vendor info (could use an existing endpoint or new one)
-            // Using offers list to get vendor info for now as they are populated
             const offResponse = await fetch(`${API_BASE_URL}/offers/vendor/${vendorId}`);
             const offData = await offResponse.json();
 
@@ -45,7 +45,7 @@ const PublicStoreProfileScreen = ({ route, navigation }) => {
     const handlePinOnMap = () => {
         const location = vendor.location;
         if (!location || !location.latitude || !location.longitude) {
-            Alert.alert("Location Not Found", "The store location is not available.");
+            Alert.alert(t('common.error'), t('public_store.profile_not_found'));
             return;
         }
 
@@ -65,7 +65,7 @@ const PublicStoreProfileScreen = ({ route, navigation }) => {
                 Linking.openURL(browserUrl);
             }
         }).catch(() => {
-            Alert.alert("Error", "Could not open map application.");
+            Alert.alert(t('common.error'), t('register.server_error'));
         });
     };
 
@@ -84,9 +84,9 @@ const PublicStoreProfileScreen = ({ route, navigation }) => {
     if (!vendor) {
         return (
             <SafeAreaView style={{ backgroundColor: colors.background }} className="flex-1 items-center justify-center px-6">
-                <Text style={{ color: colors.text }} className="font-black text-center">Store Profile Not Found</Text>
+                <Text style={{ color: colors.text }} className="font-black text-center">{t('public_store.profile_not_found')}</Text>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={{ backgroundColor: colors.primary }} className="mt-4 px-6 py-3 rounded-2xl">
-                    <Text className="text-white font-bold">Go Back</Text>
+                    <Text className="text-white font-bold">{t('public_store.go_back')}</Text>
                 </TouchableOpacity>
             </SafeAreaView>
         );
@@ -101,7 +101,6 @@ const PublicStoreProfileScreen = ({ route, navigation }) => {
         <View style={{ backgroundColor: colors.background }} className="flex-1">
             <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={colors.background} />
 
-            {/* Status Bar Spacer */}
             <View style={{ height: Platform.OS === 'ios' ? insets.top - 12 : insets.top, backgroundColor: colors.background }} />
 
             <View
@@ -118,7 +117,6 @@ const PublicStoreProfileScreen = ({ route, navigation }) => {
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
-                {/* Header Banner */}
                 <LinearGradient
                     colors={[colors.primary, isDarkMode ? '#1e40af' : '#004D40']}
                     style={{ paddingTop: 70 }}
@@ -131,7 +129,7 @@ const PublicStoreProfileScreen = ({ route, navigation }) => {
                         <View className="ml-6 flex-1 pb-4">
                             <View style={{ backgroundColor: colors.success }} className="self-start px-2 py-0.5 rounded-full mb-2 flex-row items-center">
                                 <Shield size={10} color="white" />
-                                <Text className="text-[8px] font-black text-white ml-1 tracking-widest uppercase">Verified Store</Text>
+                                <Text className="text-[8px] font-black text-white ml-1 tracking-widest uppercase">{t('public_store.verified_store')}</Text>
                             </View>
                             <Text className="text-white font-black text-3xl tracking-tighter" numberOfLines={1}>
                                 {vendor.storeName}
@@ -142,34 +140,31 @@ const PublicStoreProfileScreen = ({ route, navigation }) => {
 
                 <View className="px-6 -mt-8">
                     <View style={{ backgroundColor: colors.card, borderColor: colors.border }} className="rounded-[40px] p-8 shadow-sm border">
-
-
                         <View className="mb-8">
                             <View className="flex-row items-center mb-2">
                                 <MapPin size={14} color={colors.primary} />
-                                <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest ml-2 uppercase opacity-60">Location Identity</Text>
+                                <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest ml-2 uppercase opacity-60">{t('public_store.location_identity')}</Text>
                             </View>
                             <Text style={{ color: colors.text }} className="font-bold text-sm leading-6">
-                                {vendor.storeAddress || 'Address details managed at store'}
+                                {vendor.storeAddress || t('public_store.address_managed')}
                             </Text>
                         </View>
 
                         <CustomButton
-                            title="Open Map"
+                            title={t('public_store.open_map')}
                             onPress={handlePinOnMap}
                         />
                     </View>
 
-                    {/* Active Offers Section */}
                     <View className="mt-10 mb-20">
                         <View className="flex-row items-center justify-between mb-8 px-2">
                             <View>
-                                <Text style={{ color: colors.secondary }} className="text-[10px] font-black tracking-widest mb-1 uppercase">Store Inventory</Text>
-                                <Text style={{ color: colors.text }} className="text-3xl font-black tracking-tighter">Active Deals</Text>
+                                <Text style={{ color: colors.secondary }} className="text-[10px] font-black tracking-widest mb-1 uppercase">{t('public_store.store_inventory')}</Text>
+                                <Text style={{ color: colors.text }} className="text-3xl font-black tracking-tighter">{t('public_store.active_deals')}</Text>
                             </View>
                             <View className="flex-row items-center">
                                 <View style={{ backgroundColor: `${colors.secondary}15`, borderColor: `${colors.secondary}30` }} className="px-4 py-2 rounded-2xl border mr-3">
-                                    <Text style={{ color: colors.secondary }} className="font-black text-[10px] tracking-widest">{offers.length} LIVE</Text>
+                                    <Text style={{ color: colors.secondary }} className="font-black text-[10px] tracking-widest">{t('public_store.live_deals', { count: offers.length })}</Text>
                                 </View>
                                 <TouchableOpacity
                                     onPress={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
@@ -206,7 +201,7 @@ const PublicStoreProfileScreen = ({ route, navigation }) => {
                         ) : (
                             <View style={{ backgroundColor: colors.card, borderColor: colors.border }} className="items-center py-20 rounded-[40px] border border-dashed">
                                 <LucidePackage size={48} color={colors.textSecondary} opacity={0.2} />
-                                <Text style={{ color: colors.textSecondary }} className="font-bold mt-4 opacity-60">No Active Deals Right Now</Text>
+                                <Text style={{ color: colors.textSecondary }} className="font-bold mt-4 opacity-60">{t('public_store.no_active_deals')}</Text>
                             </View>
                         )}
                     </View>

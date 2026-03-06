@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Text from '../components/CustomText';
 import {
     View,
@@ -30,6 +31,7 @@ const { width } = Dimensions.get('window');
 
 const PrivacyCenterScreen = ({ navigation, route }) => {
     const { colors, isDarkMode } = useTheme();
+    const { t } = useTranslation();
     const scrollViewRef = React.useRef(null);
     const [expandedPolicy, setExpandedPolicy] = useState(null);
     const [itemPositions, setItemPositions] = useState({});
@@ -60,45 +62,45 @@ const PrivacyCenterScreen = ({ navigation, route }) => {
     const policies = [
         {
             id: 'privacy',
-            title: 'Privacy Policy',
+            title: t('privacy.policy_privacy_title'),
             icon: Shield,
             color: '#3B82F6',
-            content: 'We collect minimal data necessary for deal synchronization. This includes your storefront location, business hours, and offer history. We do not track your personal activities outside the app.'
+            content: t('privacy.policy_privacy_content')
         },
         {
             id: 'terms',
-            title: 'Terms of Service',
+            title: t('privacy.policy_terms_title'),
             icon: FileText,
             color: '#8B5CF6',
-            content: 'By using FlashDeals, you agree to provide accurate business information. Offers must be genuine and active during the specified timeframes.'
+            content: t('privacy.policy_terms_content')
         },
         {
             id: 'data',
-            title: 'Data Protection & Usage',
+            title: t('privacy.policy_data_title'),
             icon: Lock,
             color: '#10B981',
-            content: 'Your business data is stored on secure cloud servers with restricted access. We use this data only to connect local customers with your deals.'
+            content: t('privacy.policy_data_content')
         },
         {
             id: 'cookies',
-            title: 'Cookie & Tracking Policy',
+            title: t('privacy.policy_cookies_title'),
             icon: Zap,
             color: '#F59E0B',
-            content: 'We use local identifiers to keep you logged in and remember your preferences. No third-party tracking scripts are used for advertising.'
+            content: t('privacy.policy_cookies_content')
         },
         {
             id: 'deletion',
-            title: 'Data Deletion Policy',
+            title: t('privacy.policy_deletion_title'),
             icon: EyeOff,
             color: '#EF4444',
-            content: 'You have the right to request permanent deletion of your account. Once requested, all your merchant data is purged from our systems within 48 hours.'
+            content: t('privacy.policy_deletion_content')
         },
         {
             id: 'support',
-            title: 'Support Policy',
+            title: t('privacy.policy_support_title'),
             icon: Headphones,
             color: '#6366F1',
-            content: 'Our dedicated support team is available to assist with technical integration and merchant disputes. We guarantee a response to critical tickets within 60 minutes.'
+            content: t('privacy.policy_support_content')
         }
     ];
 
@@ -115,7 +117,7 @@ const PrivacyCenterScreen = ({ navigation, route }) => {
                 >
                     <ChevronLeft size={22} color={colors.primary} />
                 </TouchableOpacity>
-                <Text style={{ color: colors.text }} className="text-lg font-black tracking-tight">Privacy Center</Text>
+                <Text style={{ color: colors.text }} className="text-lg font-black tracking-tight">{t('privacy.title')}</Text>
                 <View className="w-11" />
             </View>
 
@@ -135,24 +137,24 @@ const PrivacyCenterScreen = ({ navigation, route }) => {
                             <View className="w-12 h-12 bg-white/20 rounded-2xl items-center justify-center">
                                 <ShieldCheck size={28} color="white" />
                             </View>
-                            <Text className="ml-4 text-white font-black text-xl tracking-tight">Security Guarantee</Text>
+                            <Text className="ml-4 text-white font-black text-xl tracking-tight">{t('privacy.security_guarantee')}</Text>
                         </View>
 
                         <Text style={{ color: '#FFFFFF' }} className="text-white font-bold text-lg leading-relaxed">
-                            All your data is safe and secure with us. We use advanced encryption protocols to protect every piece of your information.
+                            {t('privacy.security_desc')}
                         </Text>
 
                         <View className="flex-row items-center mt-6 bg-white/10 self-start px-4 py-2 rounded-full border border-white/20">
                             <CheckCircle2 size={14} color="#4ADE80" strokeWidth={3} />
-                            <Text style={{ color: '#FFFFFF' }} className="text-white/90 text-[10px] font-black tracking-widest ml-2 uppercase">Verified Protection</Text>
+                            <Text style={{ color: '#FFFFFF' }} className="text-white/90 text-[10px] font-black tracking-widest ml-2 uppercase">{t('privacy.verified_protection')}</Text>
                         </View>
                     </View>
                 </View>
 
                 {/* Policy List Title */}
                 <View className="px-6 mt-12 mb-6">
-                    <Text style={{ color: colors.secondary }} className="text-[10px] font-black tracking-[3px] uppercase">Legal Hub</Text>
-                    <Text style={{ color: colors.text }} className="text-2xl font-black mt-2">Security & Privacy</Text>
+                    <Text style={{ color: colors.secondary }} className="text-[10px] font-black tracking-[3px] uppercase">{t('privacy.legal_hub')}</Text>
+                    <Text style={{ color: colors.text }} className="text-2xl font-black mt-2">{t('privacy.security_privacy')}</Text>
                 </View>
 
                 {/* Interactive Policy Cards */}
@@ -210,14 +212,14 @@ const PrivacyCenterScreen = ({ navigation, route }) => {
                     <View style={{ backgroundColor: colors.card }} className="w-16 h-16 rounded-3xl items-center justify-center mb-6 shadow-sm shadow-blue-200">
                         <Info size={28} color={colors.secondary} strokeWidth={2.5} />
                     </View>
-                    <Text style={{ color: colors.text }} className="font-black text-center text-xl tracking-tight">Zero-Leaking Protocol</Text>
+                    <Text style={{ color: colors.text }} className="font-black text-center text-xl tracking-tight">{t('privacy.zero_leak_title')}</Text>
                     <Text style={{ color: colors.textSecondary }} className="text-center text-[13px] font-bold mt-3 leading-relaxed px-2 opacity-60">
-                        Your trust is built on our commitment to transparency. We do not share merchant data with any third-party aggregators.
+                        {t('privacy.zero_leak_desc')}
                     </Text>
 
                     <View style={{ backgroundColor: colors.border }} className="h-[1px] w-full my-8 opacity-30" />
 
-                    <Text style={{ color: colors.textSecondary }} className="font-extrabold text-[9px] tracking-[3px] uppercase opacity-30">FlashDeals Trust Engine</Text>
+                    <Text style={{ color: colors.textSecondary }} className="font-extrabold text-[9px] tracking-[3px] uppercase opacity-30">{t('privacy.trust_engine')}</Text>
                 </View>
             </ScrollView>
         </SafeAreaView>

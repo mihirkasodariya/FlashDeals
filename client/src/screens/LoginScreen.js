@@ -5,11 +5,13 @@ import {
     TouchableOpacity,
     ScrollView,
     KeyboardAvoidingView,
-    Platform
+    Platform,
+    Alert
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Device from 'expo-device';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTranslation } from 'react-i18next';
 import FloatingInput from '../components/FloatingInput';
 
 import CustomButton from '../components/CustomButton';
@@ -21,6 +23,7 @@ import { API_BASE_URL } from '../config';
 
 const LoginScreen = ({ navigation }) => {
     const { colors, isDarkMode } = useTheme();
+    const { t } = useTranslation();
     const [loginMode, setLoginMode] = useState('password'); // 'password' or 'otp'
     const [mobile, setMobile] = useState('');
     const [password, setPassword] = useState('');
@@ -51,7 +54,7 @@ const LoginScreen = ({ navigation }) => {
 
     const handleSendOTP = async () => {
         if (!mobile || mobile.length < 10) {
-            alert("Enter valid mobile number first");
+            Alert.alert(t('common.error'), t('forgot_password.enter_mobile'));
             return;
         }
         setLoading(true);
@@ -66,29 +69,29 @@ const LoginScreen = ({ navigation }) => {
             if (data.success) {
                 setOtpSent(true);
                 setTimer(30);
-                alert("Demo OTP: 123456 sent!");
+                Alert.alert(t('common.success'), t('otp.demo_otp'));
             } else {
-                alert(data.message || "Failed to send OTP");
+                Alert.alert(t('common.error'), data.message || t('login.failed'));
             }
         } catch (error) {
             setLoading(false);
-            alert("Network error");
+            Alert.alert(t('common.error'), t('register.server_error'));
         }
     };
 
     const handleLogin = async () => {
         if (!mobile || mobile.length < 10) {
-            alert("Please enter a valid 10-digit mobile number");
+            Alert.alert(t('common.error'), t('forgot_password.enter_mobile'));
             return;
         }
 
         if (loginMode === 'password' && !password) {
-            alert("Please enter your password");
+            Alert.alert(t('common.error'), t('register.fill_all_fields'));
             return;
         }
 
         if (loginMode === 'otp' && (!otp || otp.length < 6)) {
-            alert("Please enter 6-digit OTP");
+            Alert.alert(t('common.error'), t('otp.enter_6_digit'));
             return;
         }
 
@@ -139,11 +142,11 @@ const LoginScreen = ({ navigation }) => {
                     navigation.navigate('Main');
                 }
             } else {
-                alert(data.message || "Login failed");
+                Alert.alert(t('common.error'), data.message || t('login.failed'));
             }
         } catch (error) {
             setLoading(false);
-            alert("Server connection failed");
+            Alert.alert(t('common.error'), t('register.server_error'));
         }
     };
 
@@ -171,8 +174,8 @@ const LoginScreen = ({ navigation }) => {
                                 Flash<Text style={{ color: colors.secondary }}>Deals</Text>
                             </Text>
                         </View>
-                        <Text style={{ color: colors.text }} className="text-2xl font-bold mb-2">Welcome Back!</Text>
-                        <Text style={{ color: colors.textSecondary }} className="text-sm text-center">Login to access the best deals nearby.</Text>
+                        <Text style={{ color: colors.text }} className="text-2xl font-bold mb-2">{t('login.welcome_back')}</Text>
+                        <Text style={{ color: colors.textSecondary }} className="text-sm text-center">{t('login.subtitle')}</Text>
                     </View>
 
                     {/* Premium Login Switcher */}
@@ -196,7 +199,7 @@ const LoginScreen = ({ navigation }) => {
                                 onPress={() => setLoginMode(mode)}
                             >
                                 <Text style={{ color: loginMode === mode ? colors.text : colors.textSecondary }} className={`text-[11px] font-black tracking-wider`}>
-                                    {mode === 'password' ? 'Password' : 'OTP Login'}
+                                    {mode === 'password' ? t('login.password_login') : t('login.otp_login')}
                                 </Text>
                             </TouchableOpacity>
                         ))}
@@ -205,16 +208,16 @@ const LoginScreen = ({ navigation }) => {
                     {loginMode === 'otp' && otpSent ? (
                         <View>
                             <View className="mb-6 items-center">
-                                <Text style={{ color: colors.textSecondary }} className="text-xs font-bold tracking-widest mb-1">Enter Code Sent OTP</Text>
+                                <Text style={{ color: colors.textSecondary }} className="text-xs font-bold tracking-widest mb-1">{t('login.enter_code')}</Text>
                                 <View className="flex-row items-center">
                                     <Text style={{ color: colors.text }} className="font-black text-sm">+91 {mobile}</Text>
                                     <TouchableOpacity onPress={() => { setOtpSent(false); setOtp(''); }}>
-                                        <Text style={{ color: colors.secondary }} className="ml-2 font-bold text-xs underline">Change</Text>
+                                        <Text style={{ color: colors.secondary }} className="ml-2 font-bold text-xs underline">{t('login.change')}</Text>
                                     </TouchableOpacity>
                                 </View>
                             </View>
                             <FloatingInput
-                                label="6-Digit OTP"
+                                label={t('common.otp') + " (6-Digit)"}
                                 value={otp}
                                 onChangeText={setOtp}
                                 keyboardType="number-pad"
@@ -222,10 +225,10 @@ const LoginScreen = ({ navigation }) => {
                             />
                             <View className="items-center mb-6">
                                 {timer > 0 ? (
-                                    <Text style={{ color: colors.textSecondary }} className="text-xs font-bold">Resend OTP in {timer}s</Text>
+                                    <Text style={{ color: colors.textSecondary }} className="text-xs font-bold">{t('login.resend_in', { seconds: timer })}</Text>
                                 ) : (
                                     <TouchableOpacity onPress={handleSendOTP}>
-                                        <Text style={{ color: colors.secondary }} className="font-black text-xs tracking-widest underline">Resend code</Text>
+                                        <Text style={{ color: colors.secondary }} className="font-black text-xs tracking-widest underline">{t('login.resend_code')}</Text>
                                     </TouchableOpacity>
                                 )}
                             </View>
@@ -233,7 +236,7 @@ const LoginScreen = ({ navigation }) => {
                     ) : (
                         <View>
                             <FloatingInput
-                                label="Mobile Number"
+                                label={t('common.mobile')}
                                 value={mobile}
                                 onChangeText={setMobile}
                                 keyboardType="phone-pad"
@@ -243,7 +246,7 @@ const LoginScreen = ({ navigation }) => {
 
                             {loginMode === 'password' && (
                                 <FloatingInput
-                                    label="Password"
+                                    label={t('common.password')}
                                     value={password}
                                     onChangeText={setPassword}
                                     secureTextEntry
@@ -257,19 +260,19 @@ const LoginScreen = ({ navigation }) => {
                             className="self-end mb-5"
                             onPress={() => navigation.navigate('ForgotPassword')}
                         >
-                            <Text style={{ color: colors.accent }} className="font-semibold text-sm">Forgot Password?</Text>
+                            <Text style={{ color: colors.accent }} className="font-semibold text-sm">{t('common.forgot_password')}</Text>
                         </TouchableOpacity>
                     )}
 
                     <CustomButton
-                        title={loginMode === 'otp' ? (otpSent ? "Verify & Login" : "Get Verification Code") : "Login"}
+                        title={loginMode === 'otp' ? (otpSent ? t('login.verify_login') : t('login.get_otp')) : t('common.login')}
                         onPress={handleAction}
                         loading={loading}
                     />
 
                     <View className="flex-row items-center my-6">
                         <View style={{ backgroundColor: colors.border }} className="flex-1 h-[1px]" />
-                        <Text style={{ color: colors.textSecondary }} className="mx-4 text-xs font-bold">OR</Text>
+                        <Text style={{ color: colors.textSecondary }} className="mx-4 text-xs font-bold">{t('common.or')}</Text>
                         <View style={{ backgroundColor: colors.border }} className="flex-1 h-[1px]" />
                     </View>
 
@@ -288,20 +291,20 @@ const LoginScreen = ({ navigation }) => {
                         className="items-center mb-6"
                         onPress={() => navigation.navigate('Main')}
                     >
-                        <Text style={{ color: colors.textSecondary }} className="text-sm font-semibold underline">Skip Login</Text>
+                        <Text style={{ color: colors.textSecondary }} className="text-sm font-semibold underline">{t('login.skip_login')}</Text>
                     </TouchableOpacity>
 
                     <View className="flex-row justify-center mb-10">
-                        <Text style={{ color: colors.text }} className="text-sm">Don't have an account? </Text>
+                        <Text style={{ color: colors.text }} className="text-sm">{t('common.dont_have_account')} </Text>
                         <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-                            <Text style={{ color: colors.secondary }} className="font-bold text-sm">Register Now</Text>
+                            <Text style={{ color: colors.secondary }} className="font-bold text-sm">{t('common.register_now')}</Text>
                         </TouchableOpacity>
                     </View>
 
                     <View className="flex-row justify-center items-center">
-                        <Text style={{ color: colors.textSecondary }} className="text-xs">Terms & Conditions</Text>
+                        <Text style={{ color: colors.textSecondary }} className="text-xs">{t('register.terms_conditions')}</Text>
                         <View style={{ backgroundColor: colors.border }} className="w-1 h-1 rounded-full mx-2" />
-                        <Text style={{ color: colors.textSecondary }} className="text-xs">Privacy Policy</Text>
+                        <Text style={{ color: colors.textSecondary }} className="text-xs">{t('privacy.policy_privacy_title')}</Text>
                     </View>
                 </ScrollView>
             </KeyboardAvoidingView>

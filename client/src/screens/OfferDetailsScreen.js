@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Text from '../components/CustomText';
 import { View, ScrollView, Image, TouchableOpacity, Share, useWindowDimensions, Alert, ActivityIndicator, StatusBar, Platform, Linking, Modal } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -13,12 +14,13 @@ import { API_BASE_URL } from '../config';
 const OfferDetailsScreen = ({ route, navigation }) => {
     const insets = useSafeAreaInsets();
     const { colors, isDarkMode } = useTheme();
+    const { t, i18n } = useTranslation();
     const { offer } = route.params || {};
 
     if (!offer) {
         return (
             <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} className="items-center justify-center">
-                <Text style={{ color: colors.text }} className="font-black">Offer Not Found</Text>
+                <Text style={{ color: colors.text }} className="font-black">{t('offer_details.offer_not_found')}</Text>
             </SafeAreaView>
         );
     }
@@ -81,7 +83,9 @@ const OfferDetailsScreen = ({ route, navigation }) => {
             const data = await response.json();
             if (!data.success) {
                 setIsFavorite(isFavorite); // Revert
-                Alert.alert("Error", "Could not update wishlist");
+                Alert.alert(t('common.error'), t('offer_details.removed_wishlist'));
+            } else {
+                Alert.alert(t('common.success'), data.added ? t('offer_details.added_wishlist') : t('offer_details.removed_wishlist'));
             }
         } catch (error) {
             console.error('Wishlist toggle error:', error);
@@ -99,8 +103,8 @@ const OfferDetailsScreen = ({ route, navigation }) => {
         ? (offer.image.startsWith('http') ? offer.image : `${STATIC_BASE_URL}${offer.image}`)
         : 'https://via.placeholder.com/400x400';
 
-    const storeName = offer.vendorId?.storeName || 'Local Store';
-    const storeAddress = offer.vendorId?.storeAddress || 'Address available at store';
+    const storeName = offer.vendorId?.storeName || t('offer_details.nearby');
+    const storeAddress = offer.vendorId?.storeAddress || t('public_store.address') + ' details managed at store';
 
     const defaultLogo = require('../../assets/logos/storeLogo.png');
     const storeLogoSource = offer.vendorId?.storeImage
@@ -111,36 +115,26 @@ const OfferDetailsScreen = ({ route, navigation }) => {
     const formatDate = (dateStr) => {
         if (!dateStr) return 'TBA';
         const date = new Date(dateStr);
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        return `${date.getDate().toString().padStart(2, '0')} ${months[date.getMonth()]}`;
+        return date.toLocaleDateString(i18n.language === 'en' ? 'en-GB' : i18n.language === 'hi' ? 'hi-IN' : 'gu-IN', {
+            day: 'numeric',
+            month: 'short'
+        });
     };
 
     const handleShare = async () => {
         try {
             await Share.share({
-                message: `Check out this amazing deal: ${offer.title} at ${storeName}! Download FlashDeals to get more.`,
+                message: t('offer_details.share_msg', { title: offer.title, store: storeName }),
             });
         } catch (error) {
             console.log(error.message);
         }
     };
 
-    const handleRedeem = () => {
-        setIsRedeeming(true);
-        setTimeout(() => {
-            setIsRedeeming(false);
-            Alert.alert(
-                "Offer Activated",
-                "Flash Code: FD-9921\n\nShow this at the counter to claim your discount!",
-                [{ text: "Great, Got It!" }]
-            );
-        }, 1500);
-    };
-
     const handleGetDirections = () => {
         const location = offer.vendorId?.location;
         if (!location || !location.latitude || !location.longitude) {
-            Alert.alert("Location Not Found", "The store location is not available.");
+            Alert.alert(t('common.error'), t('public_store.profile_not_found'));
             return;
         }
 
@@ -160,7 +154,7 @@ const OfferDetailsScreen = ({ route, navigation }) => {
                 Linking.openURL(browserUrl);
             }
         }).catch(() => {
-            Alert.alert("Error", "Could not open map application.");
+            Alert.alert(t('common.error'), t('register.server_error'));
         });
     };
 
@@ -168,7 +162,6 @@ const OfferDetailsScreen = ({ route, navigation }) => {
         <View style={{ flex: 1, backgroundColor: colors.background }}>
             <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={colors.background} />
 
-            {/* Status Bar Line */}
             <View style={{ height: Platform.OS === 'ios' ? insets.top - 12 : insets.top, backgroundColor: colors.background }} />
 
             <View
@@ -219,7 +212,7 @@ const OfferDetailsScreen = ({ route, navigation }) => {
 
                     <View className="absolute bottom-10 left-6 right-6 flex-row justify-end items-end">
                         <View style={{ backgroundColor: isDarkMode ? 'rgba(31, 41, 55, 0.9)' : 'rgba(255, 255, 255, 0.9)', borderColor: colors.border }} className="px-4 py-2 rounded-2xl shadow-lg border">
-                            <Text style={{ color: staticColors.secondary }} className="font-black text-xs tracking-widest">Valid: {formatDate(offer.startDate)} - {formatDate(offer.endDate)}</Text>
+                            <Text style={{ color: staticColors.secondary }} className="font-black text-xs tracking-widest">{t('offer_details.valid_from', { start: formatDate(offer.startDate), end: formatDate(offer.endDate) })}</Text>
                         </View>
                     </View>
                 </TouchableOpacity>
@@ -227,7 +220,7 @@ const OfferDetailsScreen = ({ route, navigation }) => {
                 <View className="px-6 py-8">
                     <View className="mb-8">
                         <Text style={{ color: staticColors.secondary }} className="text-[10px] font-black tracking-[2px] mb-2">
-                            {offer.category || 'Offer'}
+                            {offer.category ? t(`categories.${offer.category.toLowerCase()}`) : t('common.offer')}
                         </Text>
                         <Text style={{ color: colors.text }} className="text-4xl font-black tracking-tighter leading-[44px]">
                             {offer.title}
@@ -248,7 +241,7 @@ const OfferDetailsScreen = ({ route, navigation }) => {
                                 <Text style={{ color: colors.text }} className="font-black text-lg">{storeName}</Text>
                                 <View className="flex-row items-center mt-1">
                                     <MapPin size={14} color={colors.textSecondary} />
-                                    <Text style={{ color: colors.textSecondary }} className="text-xs font-bold ml-1">{offer.distance || 'Nearby'} km Away</Text>
+                                    <Text style={{ color: colors.textSecondary }} className="text-xs font-bold ml-1">{t('offer_details.km_away', { distance: offer.distance || t('common.near') })} {t('common.km')}</Text>
                                 </View>
                             </View>
                             <ChevronRight size={20} color={colors.primary} style={{ opacity: 0.3 }} />
@@ -265,7 +258,7 @@ const OfferDetailsScreen = ({ route, navigation }) => {
                                 className="flex-1 border py-4 rounded-2xl flex-row items-center justify-center shadow-sm"
                             >
                                 <Map size={18} color={colors.primary} />
-                                <Text style={{ color: colors.primary }} className="ml-2 font-black text-xs tracking-widest">Directions</Text>
+                                <Text style={{ color: colors.primary }} className="ml-2 font-black text-xs tracking-widest">{t('offer_details.directions')}</Text>
                             </TouchableOpacity>
                         </View>
                     </TouchableOpacity>
@@ -273,7 +266,7 @@ const OfferDetailsScreen = ({ route, navigation }) => {
                     <View className="mb-10">
                         <View className="flex-row items-center mb-4">
                             <View style={{ backgroundColor: staticColors.secondary }} className="w-1.5 h-6 rounded-full mr-3" />
-                            <Text style={{ color: colors.text }} className="text-xl font-black tracking-tight">Offer Details</Text>
+                            <Text style={{ color: colors.text }} className="text-xl font-black tracking-tight">{t('offer_details.offer_title')}</Text>
                         </View>
                         <Text style={{ color: colors.textSecondary }} className="text-base leading-7 font-medium">
                             {offer.description}
@@ -283,14 +276,14 @@ const OfferDetailsScreen = ({ route, navigation }) => {
                     <View style={{ backgroundColor: `${colors.primary}10`, borderColor: `${colors.primary}10` }} className="p-8 rounded-[40px] border">
                         <View className="flex-row items-center mb-6">
                             <Sparkles size={16} color={colors.primary} strokeWidth={2} />
-                            <Text style={{ color: colors.primary }} className="font-black text-sm tracking-[3px] ml-3">Verified Offer</Text>
+                            <Text style={{ color: colors.primary }} className="font-black text-sm tracking-[3px] ml-3">{t('offer_details.verified_offer')}</Text>
                         </View>
                         <View className="flex-row items-start mb-4">
                             <View style={{ backgroundColor: colors.card }} className="w-6 h-6 rounded-full items-center justify-center mr-4 shadow-sm">
                                 <Clock size={12} color={colors.primary} strokeWidth={3} />
                             </View>
                             <Text style={{ color: colors.text }} className="font-bold text-sm flex-1 leading-6">
-                                This offer is valid from {formatDate(offer.startDate)} to {formatDate(offer.endDate)}.
+                                {t('offer_details.valid_msg', { start: formatDate(offer.startDate), end: formatDate(offer.endDate) })}
                             </Text>
                         </View>
                     </View>
@@ -299,7 +292,6 @@ const OfferDetailsScreen = ({ route, navigation }) => {
                 <View className="h-20" />
             </ScrollView>
 
-            {/* Premium Full Screen Image Viewer */}
             <Modal
                 visible={isImageModalVisible}
                 transparent={true}
@@ -309,7 +301,6 @@ const OfferDetailsScreen = ({ route, navigation }) => {
                 <View style={{ flex: 1, backgroundColor: 'black' }}>
                     <StatusBar barStyle="light-content" backgroundColor="black" />
 
-                    {/* Close Button UI */}
                     <View
                         style={{ top: insets.top + (Platform.OS === 'ios' ? 0 : 20) }}
                         className="absolute right-6 z-50"
@@ -338,12 +329,11 @@ const OfferDetailsScreen = ({ route, navigation }) => {
                         />
                     </ScrollView>
 
-                    {/* Footer Info in Modal */}
                     <View
                         style={{ bottom: insets.bottom + 20 }}
                         className="absolute left-0 right-0 items-center"
                     >
-                        <Text className="text-white/40 text-[10px] font-black tracking-[2px]">Pinch to Zoom · Swipe to Explore</Text>
+                        <Text className="text-white/40 text-[10px] font-black tracking-[2px]">{t('offer_details.pinch_zoom')}</Text>
                     </View>
                 </View>
             </Modal>

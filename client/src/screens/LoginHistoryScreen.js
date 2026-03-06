@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import Text from '../components/CustomText';
 import {
     View,
@@ -22,6 +23,7 @@ const { width } = Dimensions.get('window');
 
 const LoginHistoryScreen = ({ navigation }) => {
     const { colors, isDarkMode } = useTheme();
+    const { t, i18n } = useTranslation();
     const [devices, setDevices] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -78,10 +80,10 @@ const LoginHistoryScreen = ({ navigation }) => {
                     setShowLogoutModal(false);
                 }
             } else {
-                Alert.alert("Failed", data.message || "Could not logout device");
+                Alert.alert(t('common.error'), data.message || t('login_history.failed'));
             }
         } catch (error) {
-            Alert.alert("Error", "Server connection timed out");
+            Alert.alert(t('common.error'), t('register.server_error'));
         } finally {
             setActionLoading(null);
             setSelectedDeviceId(null);
@@ -104,10 +106,10 @@ const LoginHistoryScreen = ({ navigation }) => {
 
     const formatDate = (dateString) => {
         const date = new Date(dateString);
-        return date.toLocaleDateString('en-GB', {
+        return date.toLocaleDateString(i18n.language === 'en' ? 'en-GB' : i18n.language === 'hi' ? 'hi-IN' : 'gu-IN', {
             day: 'numeric',
             month: 'short'
-        }) + ' at ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }) + ' ' + t('login_history.at') + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
 
     const getDeviceIcon = (info, active) => {
@@ -135,7 +137,7 @@ const LoginHistoryScreen = ({ navigation }) => {
                 >
                     <ChevronLeft size={20} color={colors.primary} />
                 </TouchableOpacity>
-                <Text style={{ color: colors.text }} className="text-base font-black tracking-tight">Security & Access</Text>
+                <Text style={{ color: colors.text }} className="text-base font-black tracking-tight">{t('login_history.security_access')}</Text>
                 <TouchableOpacity onPress={onRefresh} className="w-10 h-10 items-center justify-center">
                     <Zap size={18} color={colors.primary} />
                 </TouchableOpacity>
@@ -151,9 +153,9 @@ const LoginHistoryScreen = ({ navigation }) => {
             >
                 {/* Dashboard Header */}
                 <View className="px-6 pt-8 pb-4">
-                    <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black mb-2 uppercase tracking-widest opacity-60">Connected Devices</Text>
-                    <Text style={{ color: colors.text }} className="text-3xl font-black leading-tight">Current Sessions</Text>
-                    <Text style={{ color: colors.textSecondary }} className="text-sm font-bold mt-2 opacity-80">Manage all active hardware connected to your merchant profile.</Text>
+                    <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black mb-2 uppercase tracking-widest opacity-60">{t('login_history.connected_devices')}</Text>
+                    <Text style={{ color: colors.text }} className="text-3xl font-black leading-tight">{t('login_history.current_sessions')}</Text>
+                    <Text style={{ color: colors.textSecondary }} className="text-sm font-bold mt-2 opacity-80">{t('login_history.manage_hardware')}</Text>
                 </View>
 
                 {/* Status Overview */}
@@ -163,8 +165,8 @@ const LoginHistoryScreen = ({ navigation }) => {
                             <ShieldCheck size={24} color="white" />
                         </View>
                         <View className="ml-5 flex-1">
-                            <Text className="text-white font-black text-sm">Everything Safe</Text>
-                            <Text className="text-white/70 text-[10px] font-bold mt-1">Automatic session monitoring is active for {devices.length} verified paths.</Text>
+                            <Text className="text-white font-black text-sm">{t('login_history.everything_safe')}</Text>
+                            <Text className="text-white/70 text-[10px] font-bold mt-1">{t('login_history.monitoring_active', { count: devices.length })}</Text>
                         </View>
                     </View>
                 </View>
@@ -187,12 +189,12 @@ const LoginHistoryScreen = ({ navigation }) => {
                                                 {index === 0 && (
                                                     <View style={{ backgroundColor: `${colors.success}15`, borderColor: `${colors.success}30` }} className="flex-row items-center px-2 py-0.5 rounded-full border ml-2">
                                                         <View style={{ backgroundColor: colors.success }} className="w-1.5 h-1.5 rounded-full mr-1" />
-                                                        <Text style={{ color: colors.success }} className="text-[8px] font-black uppercase">Live</Text>
+                                                        <Text style={{ color: colors.success }} className="text-[8px] font-black uppercase">{t('login_history.live')}</Text>
                                                     </View>
                                                 )}
                                             </View>
                                             <Text style={{ color: colors.textSecondary }} className="text-[11px] font-bold mt-1 opacity-70">
-                                                {index === 0 ? 'Device in Hand' : `Authorized Path • ${device.os}`}
+                                                {index === 0 ? t('login_history.device_in_hand') : `${t('login_history.authorized_path')} • ${device.os}`}
                                             </Text>
                                         </View>
                                     </View>
@@ -206,14 +208,14 @@ const LoginHistoryScreen = ({ navigation }) => {
                                         {actionLoading === device._id ? (
                                             <ActivityIndicator size="small" color="#EF4444" />
                                         ) : (
-                                            <Text className="text-red-500 font-black text-[10px]">LOGOUT</Text>
+                                            <Text className="text-red-500 font-black text-[10px]">{t('login_history.logout_upper')}</Text>
                                         )}
                                     </TouchableOpacity>
                                 </View>
 
                                 <View className="ml-[76px] mt-2 flex-row items-center">
                                     <Clock size={12} color={colors.textSecondary} opacity={0.5} />
-                                    <Text style={{ color: colors.textSecondary }} className="text-[10px] font-bold ml-2 opacity-50">Last seen {formatDate(device.lastLogin)}</Text>
+                                    <Text style={{ color: colors.textSecondary }} className="text-[10px] font-bold ml-2 opacity-50">{t('login_history.last_seen')} {formatDate(device.lastLogin)}</Text>
                                 </View>
 
                                 {index < devices.length - 1 && (
@@ -229,9 +231,9 @@ const LoginHistoryScreen = ({ navigation }) => {
                     <View style={{ backgroundColor: colors.card }} className="w-12 h-12 rounded-full items-center justify-center mb-4 shadow-sm">
                         <ShieldAlert size={20} color={colors.warning} />
                     </View>
-                    <Text style={{ color: colors.text }} className="font-black text-center text-sm">Recognize Your Hardware?</Text>
+                    <Text style={{ color: colors.text }} className="font-black text-center text-sm">{t('login_history.recognize_hardware')}</Text>
                     <Text style={{ color: colors.textSecondary }} className="text-center text-[11px] font-bold mt-2 leading-relaxed px-4 opacity-70">
-                        We periodically sign out inactive devices to keep your vault secure. If you don't recognize an entry, terminate the session and change your pin.
+                        {t('login_history.security_policy_desc')}
                     </Text>
                 </View>
             </ScrollView>
@@ -250,9 +252,9 @@ const LoginHistoryScreen = ({ navigation }) => {
                                 <ShieldAlert size={40} color="#EF4444" strokeWidth={1.5} />
                             </View>
 
-                            <Text style={{ color: colors.text }} className="text-2xl font-black text-center">Terminate Session?</Text>
+                            <Text style={{ color: colors.text }} className="text-2xl font-black text-center">{t('login_history.terminate_session')}</Text>
                             <Text style={{ color: colors.textSecondary }} className="font-bold text-center mt-3 leading-relaxed opacity-70 px-2">
-                                This will instantly disconnect the device. Any unsaved merchant data on that device may be lost.
+                                {t('login_history.terminate_desc')}
                             </Text>
                         </View>
 
@@ -268,7 +270,7 @@ const LoginHistoryScreen = ({ navigation }) => {
                                 ) : (
                                     <>
                                         <LogOut size={18} color="white" />
-                                        <Text className="text-white font-black text-sm ml-3">YES, TERMINATE</Text>
+                                        <Text className="text-white font-black text-sm ml-3">{t('login_history.yes_terminate')}</Text>
                                     </>
                                 )}
                             </TouchableOpacity>
@@ -278,7 +280,7 @@ const LoginHistoryScreen = ({ navigation }) => {
                                 style={{ backgroundColor: isDarkMode ? '#2D3748' : '#F1F5F9' }}
                                 className="py-5 rounded-[24px] items-center mt-3"
                             >
-                                <Text style={{ color: colors.text }} className="font-black text-sm">CANCEL</Text>
+                                <Text style={{ color: colors.text }} className="font-black text-sm">{t('common.no')}</Text>
                             </TouchableOpacity>
                         </View>
                     </View>

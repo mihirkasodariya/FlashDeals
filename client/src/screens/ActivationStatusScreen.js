@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import Text from '../components/CustomText';
 import {
     View,
@@ -11,18 +12,19 @@ import { useTheme } from '../context/ThemeContext';
 
 const ActivationStatusScreen = ({ navigation }) => {
     const { colors } = useTheme();
+    const { t } = useTranslation();
     const steps = [
-        { title: 'Application Submitted', status: 'completed', desc: 'Your registration details have been received.' },
-        { title: 'Under Review', status: 'active', desc: 'Our team is verifying your documents.' },
-        { title: 'Store Activation', status: 'pending', desc: 'Your store will be live shortly.' },
+        { title: t('activation_status.step1_title'), status: 'completed', desc: t('activation_status.step1_desc') },
+        { title: t('activation_status.step2_title'), status: 'active', desc: t('activation_status.step2_desc') },
+        { title: t('activation_status.step3_title'), status: 'pending', desc: t('activation_status.step3_desc') },
     ];
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: colors.background, paddingHorizontal: 24 }}>
             <View className="items-center mt-14 mb-10">
                 <ShieldCheck size={40} color={colors.primary} />
-                <Text style={{ color: colors.text }} className="text-2xl font-bold mt-4 mb-2">Registration Pending</Text>
-                <Text style={{ color: colors.textSecondary }} className="text-sm text-center leading-tight">Thank you for joining FlashDeals! Your vendor account is currently being processed.</Text>
+                <Text style={{ color: colors.text }} className="text-2xl font-bold mt-4 mb-2">{t('activation_status.reg_pending')}</Text>
+                <Text style={{ color: colors.textSecondary }} className="text-sm text-center leading-tight">{t('activation_status.thank_you')}</Text>
             </View>
 
             <View className="pl-2.5">
@@ -53,19 +55,19 @@ const ActivationStatusScreen = ({ navigation }) => {
             <View style={{ backgroundColor: `${colors.accent}1A` }} className="flex-row p-4 rounded-xl mt-10 items-center">
                 <Clock size={20} color={colors.accent} />
                 <View className="ml-3">
-                    <Text style={{ color: colors.accent }} className="text-sm font-bold">Estimated Time</Text>
-                    <Text style={{ color: colors.textSecondary }} className="text-[12px] mt-0.5">Account activation usually takes between 24 - 48 hours.</Text>
+                    <Text style={{ color: colors.accent }} className="text-sm font-bold">{t('activation_status.estimated_time')}</Text>
+                    <Text style={{ color: colors.textSecondary }} className="text-[12px] mt-0.5">{t('activation_status.estimated_desc')}</Text>
                 </View>
             </View>
 
             <View className="mt-auto mb-10">
                 <CustomButton
-                    title="Return To Home"
+                    title={t('activation_status.return_home')}
                     onPress={() => navigation.navigate('Login')}
                     variant="outline"
                 />
-                <TouchableOpacity className="items-center mt-4">
-                    <Text style={{ color: colors.textSecondary }} className="underline text-sm">Contact Support</Text>
+                <TouchableOpacity className="items-center mt-4" onPress={() => navigation.navigate('SupportCenter')}>
+                    <Text style={{ color: colors.textSecondary }} className="underline text-sm">{t('profile.support_center')}</Text>
                 </TouchableOpacity>
             </View>
         </SafeAreaView>

@@ -1,5 +1,8 @@
 import './src/theme/global.css';
+import './src/i18n'; // Force initial logic
 import React from 'react';
+import { I18nextProvider } from 'react-i18next';
+import i18n from './src/i18n';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -182,7 +185,9 @@ export default function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <ThemeProvider>
-          <AppContent />
+          <I18nextProvider i18n={i18n}>
+            <AppContent />
+          </I18nextProvider>
         </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Text from '../components/CustomText';
 import {
     View,
@@ -15,12 +16,13 @@ import { useTheme } from '../context/ThemeContext';
 
 const ForgotPasswordScreen = ({ navigation }) => {
     const { colors } = useTheme();
+    const { t } = useTranslation();
     const [mobile, setMobile] = useState('');
     const [loading, setLoading] = useState(false);
 
     const handleReset = () => {
         if (!mobile) {
-            Alert.alert("Error", "Please enter your mobile number");
+            Alert.alert(t('common.error'), t('forgot_password.enter_mobile'));
             return;
         }
         setLoading(true);
@@ -50,20 +52,20 @@ const ForgotPasswordScreen = ({ navigation }) => {
                     <Lock size={40} color={colors.primary} />
                 </View>
 
-                <Text style={{ color: colors.text }} className="text-[26px] font-bold mb-3 text-center">Forgot Password?</Text>
+                <Text style={{ color: colors.text }} className="text-[26px] font-bold mb-3 text-center">{t('forgot_password.title')}</Text>
                 <Text style={{ color: colors.textSecondary }} className="text-sm text-center leading-tight mb-10 px-2.5">
-                    No worries! Enter your registered mobile number and we'll send you an OTP to reset your password.
+                    {t('forgot_password.subtitle')}
                 </Text>
 
                 <FloatingInput
-                    label="Mobile Number"
+                    label={t('common.mobile')}
                     value={mobile}
                     onChangeText={setMobile}
                     keyboardType="phone-pad"
                 />
 
                 <CustomButton
-                    title="Send OTP"
+                    title={t('forgot_password.send_otp')}
                     onPress={handleReset}
                     loading={loading}
                     className="mt-5 w-full"
@@ -73,7 +75,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
                     className="mt-8"
                     onPress={() => navigation.navigate('Login')}
                 >
-                    <Text style={{ color: colors.secondary }} className="font-bold text-sm">Back to Login</Text>
+                    <Text style={{ color: colors.secondary }} className="font-bold text-sm">{t('forgot_password.back_to_login')}</Text>
                 </TouchableOpacity>
             </KeyboardAvoidingView>
         </SafeAreaView>

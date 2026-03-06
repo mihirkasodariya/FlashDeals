@@ -7,11 +7,13 @@ import { colors as staticColors } from '../theme/colors';
 import { useTheme } from '../context/ThemeContext';
 import { API_BASE_URL } from '../config';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 
 const OfferCard = ({ offer, onPress, grid, isFavorite = false, onRefresh }) => {
     if (!offer) return null;
     const navigation = useNavigation();
     const { colors, isDarkMode } = useTheme();
+    const { t, i18n } = useTranslation();
     const [localFavorite, setLocalFavorite] = React.useState(isFavorite);
 
     React.useEffect(() => {
@@ -73,11 +75,11 @@ const OfferCard = ({ offer, onPress, grid, isFavorite = false, onRefresh }) => {
         const diff = end - now;
         const totalHours = Math.floor(diff / (1000 * 60 * 60));
 
-        if (totalHours <= 0) return 'Expiring';
+        if (totalHours <= 0) return t('common.expiring');
 
         if (totalHours > 24) {
             const days = Math.floor(totalHours / 24);
-            return `${days} Days`;
+            return `${days} ${t('common.days')}`;
         }
 
         return `${totalHours}h`;
@@ -85,10 +87,12 @@ const OfferCard = ({ offer, onPress, grid, isFavorite = false, onRefresh }) => {
 
     // Format Date helper
     const formatDate = (dateStr) => {
-        if (!dateStr) return 'TBA';
+        if (!dateStr) return t('common.tba');
         const date = new Date(dateStr);
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        return `${date.getDate().toString().padStart(2, '0')} ${months[date.getMonth()]}`;
+        return date.toLocaleDateString(i18n.language === 'en' ? 'en-GB' : i18n.language === 'hi' ? 'hi-IN' : 'gu-IN', {
+            day: 'numeric',
+            month: 'short'
+        });
     };
 
     const handleCardPress = async () => {
@@ -156,7 +160,7 @@ const OfferCard = ({ offer, onPress, grid, isFavorite = false, onRefresh }) => {
                     <View style={{ backgroundColor: colors.surface }} className={`flex-row items-center ${grid ? 'px-1.5 py-1' : 'px-3 py-2'} rounded-lg`}>
                         <MapPin size={grid ? 8 : 10} color={staticColors.secondary} strokeWidth={3} />
                         <Text style={{ color: colors.text }} className={`font-bold ${grid ? 'text-[7px]' : 'text-[10px]'} ml-1 tracking-tight`}>
-                            {offer.distance || 'Near'} km
+                            {offer.distance || t('common.near')} {t('common.km')}
                         </Text>
                     </View>
 

@@ -2,6 +2,7 @@ import React from 'react';
 import Text from '../components/CustomText';
 import { View, ScrollView, TouchableOpacity, Image, useWindowDimensions, Modal, Pressable, Alert, ActivityIndicator, StyleSheet, TextInput, Platform, DeviceEventEmitter } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User, Settings, Bell, Shield, HelpCircle, LogOut, ChevronRight, Package as LucidePackage, Store, Edit3, Camera, Lock, History, Headphones, CheckCircle2, LogIn, X } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
@@ -13,6 +14,7 @@ import { API_BASE_URL } from '../config';
 const ProfileScreen = ({ navigation }) => {
     const { width } = useWindowDimensions();
     const { colors, isDarkMode } = useTheme();
+    const { t } = useTranslation();
     const [isLogoutModalVisible, setIsLogoutModalVisible] = React.useState(false);
     const [isEditModalVisible, setIsEditModalVisible] = React.useState(false);
     const [isRoleSwitchModalVisible, setIsRoleSwitchModalVisible] = React.useState(false);
@@ -91,7 +93,7 @@ const ProfileScreen = ({ navigation }) => {
     const pickImage = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== 'granted') {
-            Alert.alert("Permission", "Permission to access library is required");
+            Alert.alert(t('common.error'), t('profile.permission_required'));
             return;
         }
 
@@ -109,7 +111,7 @@ const ProfileScreen = ({ navigation }) => {
 
     const handleSaveProfile = async () => {
         if (!editName) {
-            Alert.alert("Error", "Name is required");
+            Alert.alert(t('common.error'), t('profile.name_required'));
             return;
         }
 
@@ -141,7 +143,7 @@ const ProfileScreen = ({ navigation }) => {
                 setUser(data.user);
                 setIsEditModalVisible(false);
                 setEditImage(null);
-                setSuccessMessage("Profile updated successfully!");
+                setSuccessMessage(t('profile.profile_updated'));
                 setIsSuccessModalVisible(true);
             }
         } catch (error) {
@@ -178,7 +180,7 @@ const ProfileScreen = ({ navigation }) => {
             const data = await response.json();
             if (data.success) {
                 setIsRoleSwitchModalVisible(false);
-                setSuccessMessage("Switched to Personal Account successfully!");
+                setSuccessMessage(t('profile.switched_personal_success'));
                 setIsSuccessModalVisible(true);
                 const isMounted = { current: true };
                 fetchProfile(isMounted);
@@ -203,13 +205,13 @@ const ProfileScreen = ({ navigation }) => {
 
     const menuItems = [
         ...(user && isVendor ? [
-            { icon: LucidePackage, label: 'Add New Offer', color: colors.secondary, onPress: () => navigation.navigate('AddOffer') },
-            { icon: Store, label: 'Manage Store', color: colors.primary, onPress: () => navigation.navigate('EditStore', { vendorData: user }) }
+            { icon: LucidePackage, label: t('profile.add_new_offer'), color: colors.secondary, onPress: () => navigation.navigate('AddOffer') },
+            { icon: Store, label: t('profile.manage_store'), color: colors.primary, onPress: () => navigation.navigate('EditStore', { vendorData: user }) }
         ] : []),
-        { icon: Bell, label: 'Notifications', color: colors.warning, onPress: () => navigation.navigate('Notifications') },
-        { icon: Shield, label: 'Privacy Center', color: colors.primary, onPress: () => navigation.navigate('PrivacyCenter') },
-        { icon: Headphones, label: 'Support Center', color: colors.secondary, onPress: () => navigation.navigate('SupportCenter') },
-        { icon: Settings, label: 'App Settings', color: colors.primary, onPress: () => navigation.navigate('AppSettings') },
+        { icon: Bell, label: t('profile.notifications'), color: colors.warning, onPress: () => navigation.navigate('Notifications') },
+        { icon: Shield, label: t('profile.privacy_center'), color: colors.primary, onPress: () => navigation.navigate('PrivacyCenter') },
+        { icon: Headphones, label: t('profile.support_center'), color: colors.secondary, onPress: () => navigation.navigate('SupportCenter') },
+        { icon: Settings, label: t('profile.app_settings'), color: colors.primary, onPress: () => navigation.navigate('AppSettings') },
     ];
 
     if (loading) {
@@ -248,7 +250,7 @@ const ProfileScreen = ({ navigation }) => {
                                 <Text style={{ color: colors.text }} className="text-3xl font-black tracking-tight">{user.name}</Text>
                                 <View className="flex-row items-center mt-2">
                                     <View style={{ backgroundColor: isVendor ? `${colors.secondary}20` : `${colors.primary}20` }} className="px-2 py-0.5 rounded-full mr-2">
-                                        <Text style={{ color: isVendor ? colors.secondary : colors.primary }} className="text-[12px] font-black tracking-widest">{isVendor ? 'Vendor' : 'Personal'}</Text>
+                                        <Text style={{ color: isVendor ? colors.secondary : colors.primary }} className="text-[12px] font-black tracking-widest">{isVendor ? t('profile.vendor') : t('profile.personal')}</Text>
                                     </View>
                                     <Text style={{ color: colors.textSecondary }} className="text-[12px] font-medium">{user.mobile}</Text>
                                 </View>
@@ -259,15 +261,15 @@ const ProfileScreen = ({ navigation }) => {
                             <View style={{ backgroundColor: colors.surface }} className="w-24 h-24 rounded-full items-center justify-center mb-6">
                                 <User size={48} color={colors.primary} opacity={0.3} />
                             </View>
-                            <Text style={{ color: colors.text }} className="text-2xl font-black text-center">Guest Access</Text>
-                            <Text style={{ color: colors.textSecondary }} className="text-sm font-bold opacity-60 mt-1 mb-8">Sign in to unlock all features</Text>
+                            <Text style={{ color: colors.text }} className="text-2xl font-black text-center">{t('profile.guest_access')}</Text>
+                            <Text style={{ color: colors.textSecondary }} className="text-sm font-bold opacity-60 mt-1 mb-8">{t('profile.sign_in_unlock')}</Text>
                             <TouchableOpacity
                                 onPress={() => navigation.navigate('Login')}
                                 style={{ backgroundColor: colors.primary }}
                                 className="flex-row items-center px-10 py-4 rounded-[24px] shadow-lg shadow-primary/20"
                             >
                                 <LogIn size={20} color="white" />
-                                <Text style={{ color: '#FFFFFF' }} className="text-white font-black ml-3 tracking-widest">Sign in now</Text>
+                                <Text style={{ color: '#FFFFFF' }} className="text-white font-black ml-3 tracking-widest">{t('profile.sign_in_now')}</Text>
                             </TouchableOpacity>
                         </View>
                     )}
@@ -275,7 +277,7 @@ const ProfileScreen = ({ navigation }) => {
 
                 {/* Settings Menu Sections */}
                 <View className="px-6 py-6">
-                    <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-[4px] mb-6 opacity-40">Account Settings</Text>
+                    <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-[4px] mb-6 opacity-40">{t('profile.account_settings')}</Text>
 
                     <View style={{ backgroundColor: colors.card, borderColor: colors.border }} className="rounded-[32px] p-4 shadow-sm border">
                         {menuItems.map((item, index) => (
@@ -301,7 +303,7 @@ const ProfileScreen = ({ navigation }) => {
                         >
                             <Store size={20} color="white" />
                             <Text style={{ color: '#FFFFFF' }} className="ml-3 font-black text-sm tracking-widest">
-                                Become a Vendor Account
+                                {t('profile.become_vendor')}
                             </Text>
                         </TouchableOpacity>
                     ) : (
@@ -317,7 +319,7 @@ const ProfileScreen = ({ navigation }) => {
                                     <>
                                         <Store size={20} color="white" />
                                         <Text style={{ color: '#FFFFFF' }} className="ml-3 font-black text-sm tracking-widest">
-                                            {isVendor ? 'Switch to Personal Account' : 'Become a Vendor Account'}
+                                            {isVendor ? t('profile.switch_personal') : t('profile.become_vendor')}
                                         </Text>
                                     </>
                                 )}
@@ -328,7 +330,7 @@ const ProfileScreen = ({ navigation }) => {
                                 onPress={() => setIsLogoutModalVisible(true)}
                             >
                                 <LogOut size={20} color="white" />
-                                <Text style={{ color: '#FFFFFF' }} className="ml-3 font-black text-sm tracking-widest">Secure Sign Out</Text>
+                                <Text style={{ color: '#FFFFFF' }} className="ml-3 font-black text-sm tracking-widest">{t('profile.secure_sign_out')}</Text>
                             </TouchableOpacity>
                         </>
                     )}
@@ -350,11 +352,11 @@ const ProfileScreen = ({ navigation }) => {
                                 <View style={{ backgroundColor: `${colors.error}15` }} className="w-20 h-20 rounded-[30px] items-center justify-center mb-6">
                                     <LogOut size={40} color="#FF4444" strokeWidth={1.5} />
                                 </View>
-                                <Text style={{ color: colors.text }} className="text-2xl font-black mb-2 text-center tracking-tight">Sign Out?</Text>
-                                <Text style={{ color: colors.textSecondary }} className="text-center mb-10 font-medium leading-5 opacity-70 px-2">Are you sure you want to disconnect from your active session?</Text>
+                                <Text style={{ color: colors.text }} className="text-2xl font-black mb-2 text-center tracking-tight">{t('profile.sign_out_title')}</Text>
+                                <Text style={{ color: colors.textSecondary }} className="text-center mb-10 font-medium leading-5 opacity-70 px-2">{t('profile.sign_out_desc')}</Text>
                                 <View className="w-full space-y-4">
-                                    <TouchableOpacity onPress={handleLogout} style={{ backgroundColor: '#FF4444' }} className="w-full py-5 rounded-[24px] items-center mb-4"><Text style={{ color: '#FFFFFF' }} className="font-black text-sm tracking-widest text-white">YES, LOGOUT</Text></TouchableOpacity>
-                                    <TouchableOpacity onPress={() => setIsLogoutModalVisible(false)} style={{ backgroundColor: isDarkMode ? '#2D3748' : '#F7FAFC' }} className="w-full py-5 rounded-[24px] items-center"><Text style={{ color: colors.text }} className="font-black text-xs tracking-[3px]">CANCEL</Text></TouchableOpacity>
+                                    <TouchableOpacity onPress={handleLogout} style={{ backgroundColor: '#FF4444' }} className="w-full py-5 rounded-[24px] items-center mb-4"><Text style={{ color: '#FFFFFF' }} className="font-black text-sm tracking-widest text-white">{t('profile.yes_logout')}</Text></TouchableOpacity>
+                                    <TouchableOpacity onPress={() => setIsLogoutModalVisible(false)} style={{ backgroundColor: isDarkMode ? '#2D3748' : '#F7FAFC' }} className="w-full py-5 rounded-[24px] items-center"><Text style={{ color: colors.text }} className="font-black text-xs tracking-[3px]">{t('common.cancel')}</Text></TouchableOpacity>
                                 </View>
                             </View>
                         </View>
@@ -365,7 +367,7 @@ const ProfileScreen = ({ navigation }) => {
                         <View className="flex-1 justify-end bg-black/60">
                             <View style={{ backgroundColor: colors.background }} className="rounded-t-[48px] p-8 min-h-[70%]">
                                 <View className="flex-row justify-between items-center mb-10">
-                                    <Text style={{ color: colors.text }} className="text-3xl font-black tracking-tight">Edit Profile</Text>
+                                    <Text style={{ color: colors.text }} className="text-3xl font-black tracking-tight">{t('profile.edit_profile')}</Text>
                                     <TouchableOpacity onPress={() => setIsEditModalVisible(false)} style={{ backgroundColor: colors.surface }} className="w-12 h-12 rounded-2xl items-center justify-center">
                                         <X size={24} color={colors.textSecondary} />
                                     </TouchableOpacity>
@@ -391,11 +393,11 @@ const ProfileScreen = ({ navigation }) => {
 
                                     <View className="space-y-6">
                                         <View>
-                                            <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-[2px] mb-2 opacity-60 ml-2">Full Name</Text>
+                                            <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-[2px] mb-2 opacity-60 ml-2">{t('profile.full_name')}</Text>
                                             <TextInput
                                                 value={editName}
                                                 onChangeText={setEditName}
-                                                placeholder="Enter your name"
+                                                placeholder={t('profile.placeholder_name')}
                                                 placeholderTextColor={colors.textSecondary + '80'}
                                                 style={{ backgroundColor: colors.card, color: colors.text, borderColor: colors.border }}
                                                 className="w-full h-16 rounded-[20px] px-6 font-bold text-base border"
@@ -403,7 +405,7 @@ const ProfileScreen = ({ navigation }) => {
                                         </View>
 
                                         <View className="mt-4">
-                                            <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-[2px] mb-2 opacity-60 ml-2">Mobile (Read Only)</Text>
+                                            <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-[2px] mb-2 opacity-60 ml-2">{t('profile.mobile_readonly')}</Text>
                                             <TextInput
                                                 value={editMobile}
                                                 disabled={true}
@@ -423,7 +425,7 @@ const ProfileScreen = ({ navigation }) => {
                                         {saving ? (
                                             <ActivityIndicator color="white" />
                                         ) : (
-                                            <Text style={{ color: '#FFFFFF' }} className="text-white font-black text-sm tracking-widest">Update Profile</Text>
+                                            <Text style={{ color: '#FFFFFF' }} className="text-white font-black text-sm tracking-widest">{t('profile.update_profile')}</Text>
                                         )}
                                     </TouchableOpacity>
                                 </ScrollView>
@@ -439,12 +441,12 @@ const ProfileScreen = ({ navigation }) => {
                                     <Store size={40} color={colors.primary} strokeWidth={1.5} />
                                 </View>
                                 <Text style={{ color: colors.text }} className="text-2xl font-black mb-2 text-center tracking-tight">
-                                    {roleSwitchMode === 'vendor' ? 'Start Selling?' : 'Back to Personal?'}
+                                    {roleSwitchMode === 'vendor' ? t('profile.start_selling') : t('profile.back_to_personal')}
                                 </Text>
                                 <Text style={{ color: colors.textSecondary }} className="text-center mb-10 font-medium leading-5 opacity-70 px-2">
                                     {roleSwitchMode === 'vendor'
-                                        ? 'Update your store details to start launching exclusive flash deals nearby.'
-                                        : 'Switch back to your personal account to enjoy exclusive nearby deals.'}
+                                        ? t('profile.start_selling_desc')
+                                        : t('profile.back_to_personal_desc')}
                                 </Text>
                                 <View className="w-full space-y-4">
                                     <TouchableOpacity
@@ -456,7 +458,7 @@ const ProfileScreen = ({ navigation }) => {
                                         {switching ? (
                                             <ActivityIndicator color="white" />
                                         ) : (
-                                            <Text style={{ color: '#FFFFFF' }} className="font-black text-sm tracking-widest text-white">CONFIRM SWITCH</Text>
+                                            <Text style={{ color: '#FFFFFF' }} className="font-black text-sm tracking-widest text-white">{t('profile.confirm_switch')}</Text>
                                         )}
                                     </TouchableOpacity>
                                     <TouchableOpacity
@@ -464,7 +466,7 @@ const ProfileScreen = ({ navigation }) => {
                                         style={{ backgroundColor: isDarkMode ? '#2D3748' : '#F7FAFC' }}
                                         className="w-full py-5 rounded-[24px] items-center"
                                     >
-                                        <Text style={{ color: colors.text }} className="font-black text-xs tracking-[3px]">NOT NOW</Text>
+                                        <Text style={{ color: colors.text }} className="font-black text-xs tracking-[3px]">{t('common.not_now')}</Text>
                                     </TouchableOpacity>
                                 </View>
                             </View>
@@ -484,7 +486,7 @@ const ProfileScreen = ({ navigation }) => {
                                     style={{ backgroundColor: colors.success }}
                                     className="px-10 py-4 rounded-[20px]"
                                 >
-                                    <Text style={{ color: '#FFFFFF' }} className="text-white font-black text-xs tracking-widest">COOL</Text>
+                                    <Text style={{ color: '#FFFFFF' }} className="text-white font-black text-xs tracking-widest">{t('profile.cool')}</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Text from '../components/CustomText';
 import { View, ScrollView, TextInput, TouchableOpacity, Image, Alert, ActivityIndicator, Platform, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -11,15 +12,16 @@ import { useTheme } from '../context/ThemeContext';
 import { colors as staticColors } from '../theme/colors';
 import { API_BASE_URL } from '../config';
 
-const CATEGORIES = ['Food', 'Grocery', 'Fashion', 'Electronics', 'Health', 'Other'];
+const CATEGORY_KEYS = ['food', 'grocery', 'fashion', 'electronics', 'health', 'other'];
 
 const AddOfferScreen = ({ navigation }) => {
     const { colors, isDarkMode } = useTheme();
+    const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [image, setImage] = useState(null);
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
-    const [category, setCategory] = useState(CATEGORIES[0]);
+    const [categoryKey, setCategoryKey] = useState(CATEGORY_KEYS[0]);
 
     const [startDate, setStartDate] = useState(new Date());
     const [endDate, setEndDate] = useState(new Date(Date.now() + 86400000));
@@ -49,13 +51,13 @@ const AddOfferScreen = ({ navigation }) => {
                     <View className="flex-1 justify-end bg-black/40">
                         <View style={{ backgroundColor: colors.card }} className="rounded-t-[40px] p-8 pb-12 shadow-2xl">
                             <View className="flex-row justify-between items-center mb-6">
-                                <Text style={{ color: colors.text }} className="text-xl font-black text-primary">Select Date</Text>
+                                <Text style={{ color: colors.text }} className="text-xl font-black text-primary">{t('store.select_date')}</Text>
                                 <TouchableOpacity
                                     onPress={onClose}
                                     style={{ backgroundColor: `${colors.primary}10` }}
                                     className="px-6 py-2 rounded-xl"
                                 >
-                                    <Text style={{ color: colors.primary }} className="font-black text-sm">Done</Text>
+                                    <Text style={{ color: colors.primary }} className="font-black text-sm">{t('store.done')}</Text>
                                 </TouchableOpacity>
                             </View>
                             <DateTimePicker
@@ -99,7 +101,7 @@ const AddOfferScreen = ({ navigation }) => {
 
     const handleAddOffer = async () => {
         if (!title || !description || !image || !startDate || !endDate) {
-            Alert.alert('Error', 'Please fill all fields and select an image');
+            Alert.alert(t('common.error'), t('store.fill_all_fields'));
             return;
         }
 
@@ -110,7 +112,7 @@ const AddOfferScreen = ({ navigation }) => {
             const formData = new FormData();
             formData.append('title', title);
             formData.append('description', description);
-            formData.append('category', category);
+            formData.append('category', categoryKey);
             formData.append('startDate', startDate.toISOString());
             formData.append('endDate', endDate.toISOString());
 
@@ -135,14 +137,14 @@ const AddOfferScreen = ({ navigation }) => {
 
             const data = await response.json();
             if (data.success) {
-                Alert.alert('Success', 'Offer added successfully!');
+                Alert.alert(t('common.success'), t('store.offer_added'));
                 navigation.goBack();
             } else {
-                Alert.alert('Error', data.message || 'Failed to add offer');
+                Alert.alert(t('common.error'), data.message || t('store.failed_add_offer'));
             }
         } catch (error) {
             console.error('Add offer error:', error);
-            Alert.alert('Error', 'Something went wrong');
+            Alert.alert(t('common.error'), t('common.server_error'));
         } finally {
             setLoading(false);
         }
@@ -158,7 +160,7 @@ const AddOfferScreen = ({ navigation }) => {
                 >
                     <ChevronLeft size={24} color={colors.primary} />
                 </TouchableOpacity>
-                <Text style={{ color: colors.text }} className="ml-4 text-xl font-black">Add New Flash Offer</Text>
+                <Text style={{ color: colors.text }} className="ml-4 text-xl font-black">{t('store.add_new_offer')}</Text>
             </View>
 
             <ScrollView className="flex-1 px-6 pt-6" showsVerticalScrollIndicator={false}>
@@ -180,8 +182,8 @@ const AddOfferScreen = ({ navigation }) => {
                             <View style={{ backgroundColor: `${colors.primary}10` }} className="w-20 h-20 rounded-[32px] items-center justify-center mb-4">
                                 <Camera size={36} color={colors.primary} strokeWidth={1.5} />
                             </View>
-                            <Text style={{ color: colors.primary }} className="font-black text-xs tracking-widest uppercase opacity-60">Select Offer Banner</Text>
-                            <Text style={{ color: colors.textSecondary }} className="text-[10px] font-bold mt-1 opacity-40">Tap to upload 16:9 image</Text>
+                            <Text style={{ color: colors.primary }} className="font-black text-xs tracking-widest uppercase opacity-60">{t('store.select_banner')}</Text>
+                            <Text style={{ color: colors.textSecondary }} className="text-[10px] font-bold mt-1 opacity-40">{t('store.tap_upload')}</Text>
                         </View>
                     )}
                 </TouchableOpacity>
@@ -189,13 +191,13 @@ const AddOfferScreen = ({ navigation }) => {
                 {/* Form Fields */}
                 <View className="mt-8 space-y-6 pb-20">
                     <View>
-                        <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-2 ml-1 uppercase">Offer Title</Text>
+                        <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-2 ml-1 uppercase">{t('store.offer_title')}</Text>
                         <View style={{ backgroundColor: colors.surface }} className="flex-row items-center px-4 py-4 rounded-2xl">
                             <Type size={18} color={colors.primary} className="mr-3" />
                             <TextInput
                                 style={{ color: colors.text }}
                                 className="flex-1 font-bold"
-                                placeholder="E.g. 50% Off on All Pizzas"
+                                placeholder={t('store.title_placeholder')}
                                 placeholderTextColor={isDarkMode ? '#666' : '#999'}
                                 value={title}
                                 onChangeText={setTitle}
@@ -204,13 +206,13 @@ const AddOfferScreen = ({ navigation }) => {
                     </View>
 
                     <View className="mt-6">
-                        <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-2 ml-1 uppercase">Detail Description</Text>
+                        <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-2 ml-1 uppercase">{t('store.detail_desc')}</Text>
                         <View style={{ backgroundColor: colors.surface }} className="flex-row items-start px-4 py-4 rounded-2xl min-h-[120px]">
                             <FileText size={18} color={colors.primary} className="mr-3 mt-1" />
                             <TextInput
                                 style={{ color: colors.text }}
                                 className="flex-1 font-bold"
-                                placeholder="Tell users about the offer, terms, etc."
+                                placeholder={t('store.desc_placeholder')}
                                 placeholderTextColor={isDarkMode ? '#666' : '#999'}
                                 multiline
                                 numberOfLines={4}
@@ -222,16 +224,16 @@ const AddOfferScreen = ({ navigation }) => {
                     </View>
 
                     <View className="mt-6">
-                        <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-2 ml-1 uppercase">Category</Text>
+                        <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-2 ml-1 uppercase">{t('support.category')}</Text>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row mt-2">
-                            {CATEGORIES.map(cat => (
+                            {CATEGORY_KEYS.map(catKey => (
                                 <TouchableOpacity
-                                    key={cat}
-                                    onPress={() => setCategory(cat)}
-                                    style={{ backgroundColor: category === cat ? colors.primary : colors.surface }}
+                                    key={catKey}
+                                    onPress={() => setCategoryKey(catKey)}
+                                    style={{ backgroundColor: categoryKey === catKey ? colors.primary : colors.surface }}
                                     className="mr-3 px-6 py-3 rounded-2xl"
                                 >
-                                    <Text style={{ color: category === cat ? '#FFFFFF' : colors.textSecondary }} className="font-black text-xs">{cat}</Text>
+                                    <Text style={{ color: categoryKey === catKey ? '#FFFFFF' : colors.textSecondary }} className="font-black text-xs">{t(`categories.${catKey}`)}</Text>
                                 </TouchableOpacity>
                             ))}
                         </ScrollView>
@@ -239,7 +241,7 @@ const AddOfferScreen = ({ navigation }) => {
 
                     <View className="flex-row gap-4 mt-6">
                         <View className="flex-1">
-                            <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-2 ml-1 uppercase">Start Date</Text>
+                            <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-2 ml-1 uppercase">{t('store.start_date')}</Text>
                             <TouchableOpacity
                                 onPress={() => setShowStartPicker(true)}
                                 style={{ backgroundColor: colors.surface }}
@@ -254,7 +256,7 @@ const AddOfferScreen = ({ navigation }) => {
                         </View>
 
                         <View className="flex-1">
-                            <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-2 ml-1 uppercase">End Date</Text>
+                            <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-2 ml-1 uppercase">{t('store.end_date')}</Text>
                             <TouchableOpacity
                                 onPress={() => setShowEndPicker(true)}
                                 style={{ backgroundColor: colors.surface }}
@@ -280,7 +282,7 @@ const AddOfferScreen = ({ navigation }) => {
                     {loading ? (
                         <ActivityIndicator color="white" />
                     ) : (
-                        <Text style={{ color: '#FFFFFF' }} className="font-black text-sm tracking-widest">Publish Flash Offer</Text>
+                        <Text style={{ color: '#FFFFFF' }} className="font-black text-sm tracking-widest">{t('store.publish_offer')}</Text>
                     )}
                 </TouchableOpacity>
             </View>

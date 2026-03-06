@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import Text from '../components/CustomText';
 import {
     View,
@@ -47,6 +48,7 @@ const { width, height } = Dimensions.get('window');
 
 const SupportCenterScreen = ({ navigation }) => {
     const { colors, isDarkMode } = useTheme();
+    const { t, i18n } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [tickets, setTickets] = useState([]);
     const [isModalVisible, setIsModalVisible] = useState(false);
@@ -56,18 +58,20 @@ const SupportCenterScreen = ({ navigation }) => {
     const [form, setForm] = useState({
         subject: '',
         description: '',
-        category: 'General'
+        category: t('support.cat_general')
     });
     const [image, setImage] = useState(null);
 
     useEffect(() => {
         fetchTickets();
-    }, []);
+        // Update category if language changes
+        setForm(prev => ({ ...prev, category: t('support.cat_general') }));
+    }, [i18n.language]);
 
     const pickImage = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== 'granted') {
-            Alert.alert('Permission Denied', 'Sorry, we need camera roll permissions to make this work!');
+            Alert.alert(t('support.permission_denied'), t('support.gallery_permission_desc'));
             return;
         }
 
@@ -105,7 +109,7 @@ const SupportCenterScreen = ({ navigation }) => {
 
     const handleCreateTicket = async () => {
         if (!form.subject || !form.description) {
-            Alert.alert('Error', 'Please fill in all fields');
+            Alert.alert(t('common.error'), t('support.fill_fields'));
             return;
         }
 
@@ -138,16 +142,16 @@ const SupportCenterScreen = ({ navigation }) => {
 
             const data = await response.json();
             if (data.success) {
-                Alert.alert('Success', 'Support ticket created successfully');
+                Alert.alert(t('common.success'), t('support.ticket_success'));
                 setIsModalVisible(false);
-                setForm({ subject: '', description: '', category: 'General' });
+                setForm({ subject: '', description: '', category: t('support.cat_general') });
                 setImage(null);
                 fetchTickets();
             } else {
-                Alert.alert('Error', data.message);
+                Alert.alert(t('common.error'), data.message);
             }
         } catch (error) {
-            Alert.alert('Error', 'Failed to create ticket');
+            Alert.alert(t('common.error'), t('support.failed_ticket'));
         } finally {
             setSubmitting(false);
         }
@@ -177,8 +181,8 @@ const SupportCenterScreen = ({ navigation }) => {
                     <ChevronLeft size={24} color={colors.primary} />
                 </TouchableOpacity>
                 <View className="items-center">
-                    <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-[2px] uppercase opacity-60">Help Center</Text>
-                    <Text style={{ color: colors.text }} className="text-sm font-black mt-0.5">Contact Support</Text>
+                    <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-[2px] uppercase opacity-60">{t('support.help_center')}</Text>
+                    <Text style={{ color: colors.text }} className="text-sm font-black mt-0.5">{t('support.title')}</Text>
                 </View>
                 <TouchableOpacity
                     onPress={fetchTickets}
@@ -205,10 +209,10 @@ const SupportCenterScreen = ({ navigation }) => {
                     </View>
 
                     <Text style={{ color: isDarkMode ? colors.text : "white" }} className="text-3xl font-black text-center tracking-tight leading-8">
-                        How can we{"\n"}help you?
+                        {t('support.hero_title')}
                     </Text>
                     <Text style={{ color: isDarkMode ? colors.textSecondary : 'rgba(255, 255, 255, 0.6)' }} className="text-xs font-bold text-center mt-3 px-10">
-                        Our experts are ready to assist you. Start a new ticket or contact us via email.
+                        {t('support.hero_desc')}
                     </Text>
                     <TouchableOpacity
                         onPress={() => setIsModalVisible(true)}
@@ -216,7 +220,7 @@ const SupportCenterScreen = ({ navigation }) => {
                         className="mt-8 px-8 py-4 rounded-2xl shadow-xl shadow-black/10 flex-row items-center"
                     >
                         <Plus size={18} color={isDarkMode ? "white" : colors.primary} strokeWidth={3} />
-                        <Text style={{ color: isDarkMode ? "white" : colors.primary }} className="font-black text-sm ml-2">New Ticket</Text>
+                        <Text style={{ color: isDarkMode ? "white" : colors.primary }} className="font-black text-sm ml-2">{t('support.new_ticket')}</Text>
                     </TouchableOpacity>
                 </View>
 
@@ -230,8 +234,8 @@ const SupportCenterScreen = ({ navigation }) => {
                         <View style={{ backgroundColor: '#3B82F615' }} className="w-12 h-12 rounded-2xl items-center justify-center mb-3">
                             <Mail size={22} color="#3B82F6" strokeWidth={2.5} />
                         </View>
-                        <Text style={{ color: colors.text }} className="text-[11px] font-black uppercase">Email Support</Text>
-                        <Text style={{ color: colors.textSecondary }} className="text-[9px] font-bold mt-1 opacity-50">24h response</Text>
+                        <Text style={{ color: colors.text }} className="text-[11px] font-black uppercase">{t('support.email_support')}</Text>
+                        <Text style={{ color: colors.textSecondary }} className="text-[9px] font-bold mt-1 opacity-50">{t('support.email_desc')}</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -242,8 +246,8 @@ const SupportCenterScreen = ({ navigation }) => {
                         <View style={{ backgroundColor: '#8B5CF615' }} className="w-12 h-12 rounded-2xl items-center justify-center mb-3">
                             <Shield size={22} color="#8B5CF6" strokeWidth={2.5} />
                         </View>
-                        <Text style={{ color: colors.text }} className="text-[11px] font-black uppercase">Support Policy</Text>
-                        <Text style={{ color: colors.textSecondary }} className="text-[9px] font-bold mt-1 opacity-50">Read guidelines</Text>
+                        <Text style={{ color: colors.text }} className="text-[11px] font-black uppercase">{t('support.policy_support')}</Text>
+                        <Text style={{ color: colors.textSecondary }} className="text-[9px] font-bold mt-1 opacity-50">{t('support.policy_desc')}</Text>
                     </TouchableOpacity>
                 </View>
 
@@ -251,11 +255,11 @@ const SupportCenterScreen = ({ navigation }) => {
                 <View className="px-8 mt-12">
                     <View className="flex-row items-center justify-between mb-8">
                         <View>
-                            <Text style={{ color: colors.secondary }} className="text-[11px] font-black tracking-[3px] mb-1 uppercase">Ticket history</Text>
-                            <Text style={{ color: colors.text }} className="text-base font-black">Your active requests</Text>
+                            <Text style={{ color: colors.secondary }} className="text-[11px] font-black tracking-[3px] mb-1 uppercase">{t('support.ticket_history')}</Text>
+                            <Text style={{ color: colors.text }} className="text-base font-black">{t('support.active_requests')}</Text>
                         </View>
                         <View style={{ backgroundColor: colors.surface, borderColor: colors.border }} className="px-3 py-1.5 rounded-xl border">
-                            <Text style={{ color: colors.primary }} className="text-[10px] font-black">{tickets.length} Total</Text>
+                            <Text style={{ color: colors.primary }} className="text-[10px] font-black">{t('support.total_tickets', { count: tickets.length })}</Text>
                         </View>
                     </View>
 
@@ -280,7 +284,7 @@ const SupportCenterScreen = ({ navigation }) => {
                                     className="px-3 py-1.5 rounded-full"
                                 >
                                     <Text style={{ color: getStatusColor(ticket.status) }} className="text-[9px] font-black tracking-widest uppercase">
-                                        {ticket.status}
+                                        {t(`support.status_${ticket.status.toLowerCase().replace(' ', '_')}`)}
                                     </Text>
                                 </View>
                             </View>
@@ -299,7 +303,7 @@ const SupportCenterScreen = ({ navigation }) => {
                                     </Text>
                                 </View>
                                 <View className="flex-row items-center">
-                                    <Text style={{ color: colors.secondary }} className="text-[10px] font-black mr-2 italic uppercase">{ticket.category}</Text>
+                                    <Text style={{ color: colors.secondary }} className="text-[10px] font-black mr-2 italic uppercase">{t(`support.cat_${ticket.category.toLowerCase()}`)}</Text>
                                     <ChevronRight size={14} color={colors.textSecondary} opacity={0.3} />
                                 </View>
                             </View>
@@ -311,9 +315,9 @@ const SupportCenterScreen = ({ navigation }) => {
                             <View style={{ backgroundColor: colors.surface }} className="w-16 h-16 rounded-[24px] items-center justify-center shadow-sm mb-6">
                                 <AlertCircle size={32} color={colors.textSecondary} opacity={0.3} />
                             </View>
-                            <Text style={{ color: colors.text }} className="font-black text-sm">No active tickets</Text>
+                            <Text style={{ color: colors.text }} className="font-black text-sm">{t('support.no_tickets')}</Text>
                             <Text style={{ color: colors.textSecondary }} className="font-bold text-xs mt-2 text-center opacity-60">
-                                Need help? Start a new support ticket above.
+                                {t('support.no_tickets_desc')}
                             </Text>
                         </View>
                     )}
@@ -341,8 +345,8 @@ const SupportCenterScreen = ({ navigation }) => {
                             >
                                 <View className="flex-row items-center justify-between mb-8">
                                     <View>
-                                        <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-[2px] uppercase opacity-60">Support Request</Text>
-                                        <Text style={{ color: colors.text }} className="text-2xl font-black">New Ticket</Text>
+                                        <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-[2px] uppercase opacity-60">{t('support.request_title')}</Text>
+                                        <Text style={{ color: colors.text }} className="text-2xl font-black">{t('support.new_ticket')}</Text>
                                     </View>
                                     <TouchableOpacity
                                         onPress={() => setIsModalVisible(false)}
@@ -353,40 +357,43 @@ const SupportCenterScreen = ({ navigation }) => {
                                     </TouchableOpacity>
                                 </View>
 
-                                <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-3 ml-2 uppercase opacity-60">Category</Text>
+                                <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-3 ml-2 uppercase opacity-60">{t('support.category')}</Text>
                                 <ScrollView
                                     horizontal
                                     showsHorizontalScrollIndicator={false}
                                     className="mb-8"
                                     contentContainerStyle={{ paddingLeft: 4 }}
                                 >
-                                    {['General', 'Technical', 'Billing', 'Verification', 'Other'].map((cat) => (
-                                        <TouchableOpacity
-                                            key={cat}
-                                            onPress={() => setForm(prev => ({ ...prev, category: cat }))}
-                                            style={{ backgroundColor: form.category === cat ? colors.primary : colors.surface }}
-                                            className={`px-6 py-4 rounded-2xl mr-3 border-2 ${form.category === cat ? 'border-primary' : 'border-transparent'}`}
-                                        >
-                                            <Text style={{ color: form.category === cat ? 'white' : colors.textSecondary }} className="text-xs font-black">{cat}</Text>
-                                        </TouchableOpacity>
-                                    ))}
+                                    {['General', 'Technical', 'Billing', 'Verification', 'Other'].map((cat) => {
+                                        const catKey = `support.cat_${cat.toLowerCase()}`;
+                                        return (
+                                            <TouchableOpacity
+                                                key={cat}
+                                                onPress={() => setForm(prev => ({ ...prev, category: t(catKey) }))}
+                                                style={{ backgroundColor: form.category === t(catKey) ? colors.primary : colors.surface }}
+                                                className={`px-6 py-4 rounded-2xl mr-3 border-2 ${form.category === t(catKey) ? 'border-primary' : 'border-transparent'}`}
+                                            >
+                                                <Text style={{ color: form.category === t(catKey) ? 'white' : colors.textSecondary }} className="text-xs font-black">{t(catKey)}</Text>
+                                            </TouchableOpacity>
+                                        );
+                                    })}
                                 </ScrollView>
 
-                                <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-3 ml-2 uppercase opacity-60">Subject</Text>
+                                <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-3 ml-2 uppercase opacity-60">{t('support.subject')}</Text>
                                 <TextInput
                                     style={{ backgroundColor: colors.surface, color: colors.text, borderColor: colors.border }}
                                     className="rounded-2xl px-6 py-5 mb-8 font-bold border"
-                                    placeholder="Briefly describe the issue"
+                                    placeholder={t('support.subject_placeholder')}
                                     placeholderTextColor={isDarkMode ? '#ffffff40' : '#CBD5E1'}
                                     value={form.subject}
                                     onChangeText={(text) => setForm(prev => ({ ...prev, subject: text }))}
                                 />
 
-                                <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-3 ml-2 uppercase opacity-60">Description</Text>
+                                <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-3 ml-2 uppercase opacity-60">{t('support.description')}</Text>
                                 <TextInput
                                     style={{ backgroundColor: colors.surface, color: colors.text, borderColor: colors.border }}
                                     className="rounded-[32px] px-6 py-6 mb-8 font-bold border h-40"
-                                    placeholder="Provide details about your request..."
+                                    placeholder={t('support.description_placeholder')}
                                     placeholderTextColor={isDarkMode ? '#ffffff40' : '#CBD5E1'}
                                     multiline
                                     textAlignVertical="top"
@@ -395,8 +402,8 @@ const SupportCenterScreen = ({ navigation }) => {
                                 />
 
                                 <View className="flex-row items-center justify-between mb-4 ml-2">
-                                    <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest uppercase opacity-60">Attachment</Text>
-                                    <Text style={{ color: colors.textSecondary }} className="text-[9px] font-bold tracking-tight opacity-40">Optional</Text>
+                                    <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest uppercase opacity-60">{t('support.attachment')}</Text>
+                                    <Text style={{ color: colors.textSecondary }} className="text-[9px] font-bold tracking-tight opacity-40">{t('support.optional')}</Text>
                                 </View>
                                 <View className="mb-10">
                                     {!image ? (
@@ -408,7 +415,7 @@ const SupportCenterScreen = ({ navigation }) => {
                                             <View style={{ backgroundColor: colors.card }} className="w-14 h-14 rounded-2xl items-center justify-center shadow-sm mb-4">
                                                 <Camera size={26} color={colors.primary} />
                                             </View>
-                                            <Text style={{ color: colors.textSecondary }} className="font-bold text-xs opacity-60">Add photo or screenshot</Text>
+                                            <Text style={{ color: colors.textSecondary }} className="font-bold text-xs opacity-60">{t('support.add_photo')}</Text>
                                         </TouchableOpacity>
                                     ) : (
                                         <View className="relative">
@@ -440,7 +447,7 @@ const SupportCenterScreen = ({ navigation }) => {
                                     ) : (
                                         <>
                                             <Send size={18} color="white" strokeWidth={2.5} />
-                                            <Text className="text-white font-black text-base tracking-widest ml-3">Submit Request</Text>
+                                            <Text className="text-white font-black text-base tracking-widest ml-3">{t('support.submit')}</Text>
                                         </>
                                     )}
                                 </TouchableOpacity>

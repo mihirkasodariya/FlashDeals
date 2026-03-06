@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Text from '../components/CustomText';
 import { View, ScrollView, TouchableOpacity, TextInput, FlatList, Image, useWindowDimensions, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import { Search, MapPin, SlidersHorizontal, Bell, ChevronDown, Flame, Filter, LayoutGrid, List } from 'lucide-react-native';
 import { colors as staticColors } from '../theme/colors';
 import { useTheme } from '../context/ThemeContext';
@@ -10,18 +11,20 @@ import LocationSelectorModal from '../components/LocationSelectorModal';
 import { API_BASE_URL } from '../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const CATEGORIES = [
-    { id: '1', name: 'All', icon: '🛍️' },
-    { id: '2', name: 'Food', icon: '🍔' },
-    { id: '3', name: 'Grocery', icon: '🛒' },
-    { id: '4', name: 'Fashion', icon: '👕' },
-    { id: '5', name: 'Electronics', icon: '📱' },
-    { id: '6', name: 'Health', icon: '💊' },
+const getCategories = (t) => [
+    { id: '1', key: 'all', name: t('categories.all'), icon: '🛍️' },
+    { id: '2', key: 'food', name: t('categories.food'), icon: '🍔' },
+    { id: '3', key: 'grocery', name: t('categories.grocery'), icon: '🛒' },
+    { id: '4', key: 'fashion', name: t('categories.fashion'), icon: '👕' },
+    { id: '5', key: 'electronics', name: t('categories.electronics'), icon: '📱' },
+    { id: '6', key: 'health', name: t('categories.health'), icon: '💊' },
 ];
 
 const HomeScreen = ({ navigation }) => {
     const { width } = useWindowDimensions();
     const { colors, isDarkMode } = useTheme();
+    const { t } = useTranslation();
+    const CATEGORIES = getCategories(t);
     const [selectedCategory, setSelectedCategory] = useState('1');
     const [location, setLocation] = useState('Ahmedabad, Gujarat');
     const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
@@ -84,7 +87,7 @@ const HomeScreen = ({ navigation }) => {
     const allOffers = (offers || []).filter(offer => {
         if (!offer) return false;
         const matchesCategory = selectedCategory === '1' ||
-            (offer.category && offer.category.toLowerCase() === CATEGORIES.find(c => c.id === selectedCategory)?.name.toLowerCase());
+            (offer.category && offer.category.toLowerCase() === CATEGORIES.find(c => c.id === selectedCategory)?.key.toLowerCase());
         const matchesSearch = (offer.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
             (offer.vendorId?.storeName || '').toLowerCase().includes(searchQuery.toLowerCase());
         return matchesCategory && matchesSearch;
@@ -119,7 +122,7 @@ const HomeScreen = ({ navigation }) => {
                         </View>
                         <TouchableOpacity onPress={() => setIsLocationModalVisible(true)} className="ml-4">
                             <View className="flex-row items-center">
-                                <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black uppercase tracking-widest mr-1 opacity-60">Your Location</Text>
+                                <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black uppercase tracking-widest mr-1 opacity-60">{t('home.your_location')}</Text>
                                 <ChevronDown size={12} color={colors.textSecondary} />
                             </View>
                             <Text style={{ color: colors.text }} className="text-sm font-black tracking-tight">{location}</Text>
@@ -141,7 +144,7 @@ const HomeScreen = ({ navigation }) => {
                         <Search size={20} color={colors.textSecondary} strokeWidth={2.5} />
                         <TextInput
                             style={{ color: colors.text }}
-                            placeholder="Search magic offers..."
+                            placeholder={t('home.search_placeholder')}
                             placeholderTextColor={colors.textSecondary + '80'}
                             className="flex-1 ml-4 font-bold text-sm"
                             value={searchQuery}
@@ -209,9 +212,9 @@ const HomeScreen = ({ navigation }) => {
                                     <View>
                                         <View className="flex-row items-center mb-1">
                                             <View className="w-2 h-2 bg-error rounded-full mr-2" />
-                                            <Text style={{ color: colors.secondary }} className="text-[10px] font-black tracking-[2px]">Most Visited</Text>
+                                            <Text style={{ color: colors.secondary }} className="text-[10px] font-black tracking-[2px]">{t('home.most_visited')}</Text>
                                         </View>
-                                        <Text style={{ color: colors.text }} className="text-3xl font-black tracking-tighter">Hot Offers</Text>
+                                        <Text style={{ color: colors.text }} className="text-3xl font-black tracking-tighter">{t('home.hot_offers')}</Text>
                                     </View>
                                 </View>
                                 <FlatList
@@ -240,9 +243,9 @@ const HomeScreen = ({ navigation }) => {
                                     <View>
                                         <View className="flex-row items-center mb-1">
                                             <View className="w-2.5 h-2.5 bg-warning rounded-full mr-2" />
-                                            <Text style={{ color: colors.secondary }} className="text-[10px] font-black tracking-[2px]">Coming Soon</Text>
+                                            <Text style={{ color: colors.secondary }} className="text-[10px] font-black tracking-[2px]">{t('home.coming_soon')}</Text>
                                         </View>
-                                        <Text style={{ color: colors.text }} className="text-3xl font-black tracking-tighter">Upcoming Offers</Text>
+                                        <Text style={{ color: colors.text }} className="text-3xl font-black tracking-tighter">{t('home.upcoming_offers')}</Text>
                                     </View>
                                 </View>
                                 <FlatList
@@ -267,8 +270,8 @@ const HomeScreen = ({ navigation }) => {
                         {/* Main List */}
                         <View className="px-6 mt-8 flex-row items-center justify-between mb-4">
                             <View>
-                                <Text style={{ color: colors.secondary }} className="text-[10px] font-black tracking-[2px] mb-1">Flash Sales</Text>
-                                <Text style={{ color: colors.text }} className="text-2xl font-black">Near Your Place</Text>
+                                <Text style={{ color: colors.secondary }} className="text-[10px] font-black tracking-[2px] mb-1">{t('home.flash_sales')}</Text>
+                                <Text style={{ color: colors.text }} className="text-2xl font-black">{t('home.near_your_place')}</Text>
                             </View>
                             <TouchableOpacity
                                 onPress={() => setRadius(radius === 10 ? 1 : radius === 5 ? 10 : 5)}
@@ -276,7 +279,7 @@ const HomeScreen = ({ navigation }) => {
                                 className="px-4 py-2 rounded-xl shadow-md border flex-row items-center"
                             >
                                 <Filter size={14} color={colors.primary} strokeWidth={3} />
-                                <Text style={{ color: colors.primary }} className="text-xs font-black ml-2">{radius}km</Text>
+                                <Text style={{ color: colors.primary }} className="text-xs font-black ml-2">{radius}{t('common.km')}</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity
@@ -315,9 +318,9 @@ const HomeScreen = ({ navigation }) => {
                                     <View style={{ backgroundColor: colors.surface }} className="w-40 h-40 rounded-full items-center justify-center mb-6">
                                         <Search size={64} color={colors.border} />
                                     </View>
-                                    <Text style={{ color: colors.text }} className="text-2xl font-black text-center">No Treasures Found</Text>
+                                    <Text style={{ color: colors.text }} className="text-2xl font-black text-center">{t('home.no_offers_found')}</Text>
                                     <Text style={{ color: colors.textSecondary }} className="text-center px-10 mt-2 font-medium opacity-60">
-                                        We couldn't find any offers matching your current filters.
+                                        {t('home.no_offers_desc')}
                                     </Text>
                                 </View>
                             )}
