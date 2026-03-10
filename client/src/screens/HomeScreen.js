@@ -221,14 +221,9 @@ const HomeScreen = ({ navigation }) => {
     };
 
     useEffect(() => {
+        // Initial fetch only - Do not re-fetch on focus to prevent flickering
         fetchData();
-        if (navigation && navigation.addListener) {
-            const unsubscribe = navigation.addListener('focus', () => {
-                fetchData(1, true);
-            });
-            return unsubscribe;
-        }
-    }, [navigation]);
+    }, []);
 
     useEffect(() => {
         const delayDebounceFn = setTimeout(() => {
@@ -639,6 +634,10 @@ const HomeScreen = ({ navigation }) => {
                     onEndReached={handleLoadMore}
                     onEndReachedThreshold={0.5}
                     showsVerticalScrollIndicator={false}
+                    removeClippedSubviews={Platform.OS === 'android'} // Android optimization
+                    initialNumToRender={5}
+                    maxToRenderPerBatch={5}
+                    windowSize={5}
                     refreshControl={
                         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[colors.primary]} />
                     }

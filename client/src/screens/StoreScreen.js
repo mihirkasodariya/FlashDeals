@@ -12,6 +12,27 @@ import { colors as staticColors } from '../theme/colors';
 import { useTheme } from '../context/ThemeContext';
 import { API_BASE_URL } from '../config';
 
+const DummyBannerAd = ({ colors, label = "Google Test Ad (Banner)" }) => (
+    <View
+        style={{
+            backgroundColor: '#f5f5f5',
+            height: 60,
+            width: '100%',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderTopWidth: 1,
+            borderBottomWidth: 1,
+            borderColor: '#e0e0e0'
+        }}
+    >
+        <View style={{ backgroundColor: '#4285F4', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 2, marginRight: 8 }}>
+            <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>Ad</Text>
+        </View>
+        <Text style={{ color: '#616161', fontSize: 12, fontWeight: 'bold' }}>{label}</Text>
+    </View>
+);
+
 const StoreScreen = ({ navigation }) => {
     const { width } = useWindowDimensions();
     const { colors, isDarkMode } = useTheme();
@@ -45,18 +66,8 @@ const StoreScreen = ({ navigation }) => {
     React.useEffect(() => {
         const isMounted = { current: true };
         fetchProfile(isMounted);
-
-        if (navigation && navigation.addListener) {
-            const unsubscribe = navigation.addListener('focus', () => {
-                const innerMounted = { current: true };
-                fetchProfile(innerMounted);
-            });
-            return () => {
-                isMounted.current = false;
-                unsubscribe();
-            };
-        }
-    }, [navigation]);
+        return () => { isMounted.current = false; };
+    }, []);
 
     const handleUpdateLocation = async () => {
         setLocationLoading(true);
@@ -234,8 +245,17 @@ const StoreScreen = ({ navigation }) => {
                     </View>
                 </View>
 
+                {/* Integration Ad */}
+                <View className="px-6 pb-12">
+                    <DummyBannerAd colors={colors} label="Merchant Performance Sponsored Ad" />
+                </View>
+
                 <View className="h-32" />
             </ScrollView >
+
+            <View style={{ backgroundColor: colors.background }}>
+                <DummyBannerAd colors={colors} />
+            </View>
         </SafeAreaView >
     );
 };

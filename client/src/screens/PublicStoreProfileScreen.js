@@ -178,7 +178,7 @@ const PublicStoreProfileScreen = ({ route, navigation }) => {
                                 <Shield size={10} color="white" />
                                 <Text className="text-[8px] font-black text-white ml-1 tracking-widest uppercase">{t('public_store.verified_store')}</Text>
                             </View>
-                            <Text className="text-white font-black text-3xl tracking-tighter" numberOfLines={1}>
+                            <Text style={{ color: 'white' }} className="font-black text-3xl tracking-tighter" numberOfLines={1}>
                                 {vendor.storeName}
                             </Text>
                         </View>
