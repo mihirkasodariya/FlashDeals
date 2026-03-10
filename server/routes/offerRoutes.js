@@ -5,6 +5,7 @@ const { authenticateToken } = require('../middleware/authMiddleware');
 const { uploadOffer } = require('../middleware/uploadMiddleware');
 
 router.get('/', offerController.getOffers);
+router.get('/:offerId', offerController.getOfferById);
 router.get('/vendor/:vendorId', offerController.getVendorOffers);
 router.post('/add', authenticateToken, uploadOffer.single('image'), offerController.addOffer);
 router.put('/edit/:offerId', authenticateToken, uploadOffer.single('image'), offerController.editOffer);

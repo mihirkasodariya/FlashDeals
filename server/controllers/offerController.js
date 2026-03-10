@@ -186,6 +186,21 @@ const editOffer = async (req, res) => {
     }
 };
 
+const getOfferById = async (req, res) => {
+    try {
+        const { offerId } = req.params;
+        const offer = await Offer.findById(offerId).populate('vendorId', 'storeName name location profileImage storeImage storeAddress');
+
+        if (!offer) {
+            return res.status(404).json({ success: false, message: 'Offer not found' });
+        }
+
+        res.json({ success: true, offer });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 const deleteOffer = async (req, res) => {
     try {
         if (req.user.role !== 'vendor') {
@@ -209,6 +224,7 @@ module.exports = {
     addOffer,
     getOffers,
     getVendorOffers,
+    getOfferById,
     incrementOfferVisits,
     editOffer,
     deleteOffer

@@ -15,9 +15,11 @@ const OfferDetailsScreen = ({ route, navigation }) => {
     const insets = useSafeAreaInsets();
     const { colors, isDarkMode } = useTheme();
     const { t, i18n } = useTranslation();
-    const { offer } = route.params || {};
+    const { offer: initialOffer, offerId } = route.params || {};
+    const [offer, setOffer] = useState(initialOffer);
+    const [loading, setLoading] = useState(!initialOffer);
 
-    if (!offer) {
+    if (!offer && !offerId && !loading) {
         return (
             <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} className="items-center justify-center">
                 <Text style={{ color: colors.text }} className="font-black">{t('offer_details.offer_not_found')}</Text>
@@ -30,8 +32,36 @@ const OfferDetailsScreen = ({ route, navigation }) => {
     const [isRedeeming, setIsRedeeming] = useState(false);
     const [isImageModalVisible, setIsImageModalVisible] = useState(false);
 
+    // Fetch offer details if only offerId is provided
+    React.useEffect(() => {
+        const fetchOfferDetails = async () => {
+            if (!offer && offerId) {
+                try {
+                    setLoading(true);
+                    const response = await fetch(`${API_BASE_URL}/offers/${offerId}`);
+                    const data = await response.json();
+                    if (data.success) {
+                        setOffer(data.offer);
+                    } else {
+                        Alert.alert(t('common.error'), t('offer_details.offer_not_found'));
+                        navigation.goBack();
+                    }
+                } catch (error) {
+                    console.error('Error fetching offer details:', error);
+                    Alert.alert(t('common.error'), t('register.server_error'));
+                    navigation.goBack();
+                } finally {
+                    setLoading(false);
+                }
+            }
+        };
+        fetchOfferDetails();
+    }, [offerId, offer]);
+
     // Initial check for wishlist status
     React.useEffect(() => {
+        if (!offer?._id) return;
+
         const checkWishlistStatus = async () => {
             try {
                 const token = await AsyncStorage.getItem('userToken');
@@ -58,7 +88,7 @@ const OfferDetailsScreen = ({ route, navigation }) => {
             }
         };
         recordVisit();
-    }, [offer._id]);
+    }, [offer?._id]);
 
     const handleToggleWishlist = async () => {
         try {
@@ -123,8 +153,16 @@ const OfferDetailsScreen = ({ route, navigation }) => {
 
     const handleShare = async () => {
         try {
+            // Use the server URL for sharing to enable redirection to app/store
+            const shareUrl = `${STATIC_BASE_URL}/share/offer/${offer._id}`;
+            const shareMessage = t('offer_details.share_msg', { title: offer.title, store: storeName });
+
             await Share.share({
-                message: t('offer_details.share_msg', { title: offer.title, store: storeName }),
+                title: offer.title,
+                // On Android, we append the URL to the message.
+                // On iOS, the 'url' field is shared as a separate item, so we don't include it in message.
+                message: Platform.OS === 'android' ? `${shareMessage}\n\nView Deal: ${shareUrl}` : shareMessage,
+                url: shareUrl, // iOS support
             });
         } catch (error) {
             console.log(error.message);
@@ -157,6 +195,14 @@ const OfferDetailsScreen = ({ route, navigation }) => {
             Alert.alert(t('common.error'), t('register.server_error'));
         });
     };
+
+    if (loading) {
+        return (
+            <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} className="items-center justify-center">
+                <ActivityIndicator size="large" color={colors.primary} />
+            </SafeAreaView>
+        );
+    }
 
     return (
         <View style={{ flex: 1, backgroundColor: colors.background }}>

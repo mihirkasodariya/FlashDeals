@@ -215,8 +215,17 @@ function AppContent() {
     initNotifications();
   }, []);
 
+  const linking = {
+    prefixes: ['flashdeals://', 'http://192.168.1.11:5000'],
+    config: {
+      screens: {
+        OfferDetails: 'offer/:offerId',
+      },
+    },
+  };
+
   return (
-    <NavigationContainer>
+    <NavigationContainer linking={linking}>
       <StatusBar style={isDarkMode ? "light" : "dark"} />
       <RootStack />
     </NavigationContainer>
