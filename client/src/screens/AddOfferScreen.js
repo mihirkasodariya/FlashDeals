@@ -9,6 +9,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { ChevronLeft, Camera, Calendar, Tag, FileText, Type, Package as LucidePackage, CheckCircle2 } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../context/ThemeContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors as staticColors } from '../theme/colors';
 import { API_BASE_URL } from '../config';
 
@@ -16,6 +17,7 @@ const CATEGORY_KEYS = ['food', 'grocery', 'fashion', 'electronics', 'health', 'o
 
 const AddOfferScreen = ({ route, navigation }) => {
     const { colors, isDarkMode } = useTheme();
+    const insets = useSafeAreaInsets();
     const { t } = useTranslation();
     const { offerToEdit } = route.params || {};
     const isEditing = !!offerToEdit;
@@ -298,7 +300,7 @@ const AddOfferScreen = ({ route, navigation }) => {
                 </View>
             </ScrollView>
 
-            <View style={{ borderTopColor: colors.border, backgroundColor: colors.background }} className="px-6 py-6 border-t">
+            <View style={{ borderTopColor: colors.border, backgroundColor: colors.background, paddingBottom: insets.bottom > 0 ? insets.bottom : 20 }} className="px-6 py-6 border-t">
                 <TouchableOpacity
                     onPress={handlePublishOffer}
                     disabled={loading}

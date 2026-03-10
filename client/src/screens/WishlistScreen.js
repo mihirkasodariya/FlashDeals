@@ -146,7 +146,7 @@ const WishlistScreen = ({ navigation }) => {
             ) : (
                 <FlatList
                     data={favorites}
-                    keyExtractor={(item) => item._id}
+                    keyExtractor={(item, index) => (item?._id || index).toString() + index}
                     contentContainerStyle={{ padding: 24, paddingBottom: 100 }}
                     renderItem={({ item, index }) => (
                         <>

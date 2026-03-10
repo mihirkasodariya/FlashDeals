@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Text from '../components/CustomText';
-import { View, FlatList, TouchableOpacity, Image, ActivityIndicator, Alert, useWindowDimensions, RefreshControl, Modal } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, FlatList, TouchableOpacity, Image, ActivityIndicator, Alert, useWindowDimensions, RefreshControl, Modal, Platform } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { ChevronLeft, Package as LucidePackage, Trash2, Calendar, Tag, Eye, MousePointer2, Edit2, AlertCircle, CheckCircle2 } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -107,7 +107,7 @@ const VendorOffersScreen = ({ navigation }) => {
 
     useEffect(() => {
         // Initial fetch only - Do not re-fetch on focus to prevent flickering
-        fetchData();
+        fetchMyOffers();
     }, []);
 
     const onRefresh = () => {
@@ -226,6 +226,8 @@ const VendorOffersScreen = ({ navigation }) => {
         );
     };
 
+    const insets = useSafeAreaInsets();
+
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
             <View className="flex-row items-center px-6 py-4">
@@ -256,7 +258,7 @@ const VendorOffersScreen = ({ navigation }) => {
                             {renderOfferItem({ item })}
                         </>
                     )}
-                    keyExtractor={(item) => item._id}
+                    keyExtractor={(item, index) => item._id + index.toString()}
                     contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 100, paddingTop: 10 }}
                     showsVerticalScrollIndicator={false}
                     onEndReached={handleLoadMore}
@@ -292,7 +294,7 @@ const VendorOffersScreen = ({ navigation }) => {
                 />
             )}
 
-            <View style={{ backgroundColor: colors.background }}>
+            <View style={{ backgroundColor: colors.background, paddingBottom: insets.bottom > 0 ? insets.bottom : 12 }}>
                 <DummyBannerAd colors={colors} />
             </View>
             {/* Delete Confirmation Modal */}

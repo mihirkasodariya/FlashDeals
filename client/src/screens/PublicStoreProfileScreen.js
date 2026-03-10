@@ -235,7 +235,7 @@ const PublicStoreProfileScreen = ({ route, navigation }) => {
                         {offers.length > 0 ? (
                             <View className="flex-row flex-wrap justify-between px-1">
                                 {offers.map((item, index) => (
-                                    <React.Fragment key={item._id}>
+                                    <React.Fragment key={(item?._id || index).toString() + index}>
                                         {index > 0 && index % 4 === 0 && (
                                             <View style={{ width: '100%' }} className="mb-4">
                                                 <DummyNativeAd colors={colors} />
