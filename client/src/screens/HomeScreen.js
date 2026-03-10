@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import Text from '../components/CustomText';
-import { View, ScrollView, TouchableOpacity, TextInput, FlatList, Image, useWindowDimensions, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, ScrollView, TouchableOpacity, TextInput, FlatList, Image, useWindowDimensions, ActivityIndicator, RefreshControl, Platform, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import { Search, MapPin, SlidersHorizontal, Bell, ChevronDown, Flame, Filter, LayoutGrid, List } from 'lucide-react-native';
+import { Search, MapPin, SlidersHorizontal, Bell, ChevronDown, Flame, Filter, LayoutGrid, List, Calendar, X, ArrowRight } from 'lucide-react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { colors as staticColors } from '../theme/colors';
 import { useTheme } from '../context/ThemeContext';
 import OfferCard from '../components/OfferCard';
@@ -11,6 +12,7 @@ import LocationSelectorModal from '../components/LocationSelectorModal';
 import { API_BASE_URL } from '../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
+import { Alert } from 'react-native';
 
 const getCategories = (t) => [
     { id: '1', key: 'all', name: t('categories.all'), icon: '🛍️' },
@@ -41,6 +43,10 @@ const HomeScreen = ({ navigation }) => {
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
+    const [dateRange, setDateRange] = useState({ start: null, end: null });
+    const [pickingStep, setPickingStep] = useState(null); // 'start' or 'end'
+    const [tempStart, setTempStart] = useState(null);
+    const [showDatePicker, setShowDatePicker] = useState(false);
 
     const getUserLocation = async () => {
         try {
@@ -96,6 +102,10 @@ const HomeScreen = ({ navigation }) => {
 
             if (coordsToUse) {
                 url += `&lat=${coordsToUse.lat}&lng=${coordsToUse.lng}&radius=${radius}`;
+            }
+
+            if (dateRange.start && dateRange.end) {
+                url += `&startDate=${dateRange.start.toISOString()}&endDate=${dateRange.end.toISOString()}`;
             }
 
             const [offersRes, wishlistRes] = await Promise.all([
@@ -164,7 +174,7 @@ const HomeScreen = ({ navigation }) => {
             onRefresh();
         }, 500);
         return () => clearTimeout(delayDebounceFn);
-    }, [selectedCategory, searchQuery, radius]);
+    }, [selectedCategory, searchQuery, radius, dateRange]);
 
     const onRefresh = () => {
         setRefreshing(true);
@@ -179,17 +189,104 @@ const HomeScreen = ({ navigation }) => {
         }
     };
 
-    const now = new Date();
+    const onDateChange = (event, date) => {
+        if (Platform.OS === 'android') {
+            setShowDatePicker(false);
+        }
+        if (date) {
+            if (pickingStep === 'start') {
+                setTempStart(date);
+                setPickingStep('end');
+                if (Platform.OS === 'android') {
+                    setTimeout(() => setShowDatePicker(true), 200);
+                }
+            } else if (pickingStep === 'end') {
+                if (date < tempStart) {
+                    Alert.alert(t('common.error'), 'Ant ki tarikh shuru ki tarikh se pehle nahi ho sakti');
+                    setPickingStep('start');
+                    return;
+                }
+                setDateRange({ start: tempStart, end: date });
+                setPickingStep(null);
+                setTempStart(null);
+                setShowDatePicker(false);
+            }
+        } else {
+            setPickingStep(null);
+            setShowDatePicker(false);
+        }
+    };
+
+    const renderDatePicker = () => {
+        if (!showDatePicker) return null;
+
+        const currentValue = pickingStep === 'start' ? new Date() : (tempStart || new Date());
+        const minDate = pickingStep === 'end' ? tempStart : null; // No minimum date for 'start' step allows picking past/future ranges easily
+
+        if (Platform.OS === 'ios') {
+            return (
+                <Modal transparent animationType="fade" visible={showDatePicker}>
+                    <View className="flex-1 justify-end bg-black/40">
+                        <View style={{ backgroundColor: colors.card }} className="rounded-t-[40px] p-8 pb-12 shadow-2xl">
+                            <View className="flex-row justify-between items-center mb-6">
+                                <View>
+                                    <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest uppercase mb-1">
+                                        {t('home.select_range')}
+                                    </Text>
+                                    <Text style={{ color: colors.text }} className="text-xl font-black text-primary">
+                                        {pickingStep === 'start' ? t('home.select_start_date') : t('home.select_end_date')}
+                                    </Text>
+                                </View>
+                                <View className="flex-row">
+                                    <TouchableOpacity
+                                        onPress={() => { setDateRange({ start: null, end: null }); setPickingStep(null); setTempStart(null); setShowDatePicker(false); }}
+                                        style={{ backgroundColor: `${staticColors.error}10` }}
+                                        className="px-6 py-2 rounded-xl mr-2"
+                                    >
+                                        <Text style={{ color: staticColors.error }} className="font-black text-sm">{t('common.cancel')}</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                            <DateTimePicker
+                                value={currentValue}
+                                mode="date"
+                                display="inline"
+                                onChange={onDateChange}
+                                minimumDate={minDate}
+                                themeVariant={isDarkMode ? 'dark' : 'light'}
+                                accentColor={colors.primary}
+                            />
+                        </View>
+                    </View>
+                </Modal>
+            );
+        }
+
+        return (
+            <DateTimePicker
+                value={currentValue}
+                mode="date"
+                display="default"
+                onChange={onDateChange}
+                minimumDate={minDate}
+            />
+        );
+    };
+
+    const refNow = dateRange.start ? new Date(dateRange.start) : new Date();
     // In server-side pagination, activeOffers are what we get from the server
     const activeOffers = offers || [];
 
     // Filter discovery sections from the current pool of data
     const hotOffers = [...activeOffers]
-        .filter(o => now >= new Date(o.startDate) && now <= new Date(o.endDate))
+        .filter(o => refNow >= new Date(o.startDate) && refNow <= new Date(o.endDate))
         .sort((a, b) => (b.visits || 0) - (a.visits || 0))
         .slice(0, 4);
 
-    const upcomingOffers = activeOffers.filter(o => new Date(o.startDate) > now);
+    const upcomingOffers = activeOffers.filter(o => new Date(o.startDate) > refNow);
+
+    // For the main list, we already filter overlapping range from backend
+    const mainListOffers = activeOffers;
 
     const isTablet = width > 768;
 
@@ -388,10 +485,46 @@ const HomeScreen = ({ navigation }) => {
                             onChangeText={setSearchQuery}
                         />
                     </View>
-                    <TouchableOpacity style={{ backgroundColor: isDarkMode ? '#4bb2f9' : colors.primary }} className="ml-3 w-14 h-14 rounded-2xl items-center justify-center shadow-lg">
-                        <SlidersHorizontal size={22} color="white" />
+                    <TouchableOpacity
+                        onPress={() => {
+                            setPickingStep('start');
+                            setShowDatePicker(true);
+                        }}
+                        style={{ backgroundColor: colors.surface }}
+                        className={`ml-3 w-14 h-14 rounded-2xl items-center justify-center border border-surface`}
+                    >
+                        {dateRange.start ? (
+                            <View className="items-center justify-center">
+                                <Calendar size={22} color={colors.primary} strokeWidth={2.5} />
+                                <TouchableOpacity
+                                    onPress={(e) => {
+                                        e.stopPropagation();
+                                        setDateRange({ start: null, end: null });
+                                    }}
+                                    style={{ backgroundColor: colors.primary }}
+                                    className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full items-center justify-center border-2 border-white"
+                                >
+                                    <X size={10} color="white" strokeWidth={4} />
+                                </TouchableOpacity>
+                            </View>
+                        ) : (
+                            <Calendar size={22} color={colors.textSecondary} strokeWidth={2.5} />
+                        )}
                     </TouchableOpacity>
                 </View>
+                {dateRange.start && dateRange.end && (
+                    <View style={{ backgroundColor: `${colors.primary}10`, borderColor: `${colors.primary}20` }} className="flex-row items-center justify-center py-2 px-4 rounded-xl mb-3 border self-center">
+                        <Calendar size={14} color={colors.primary} strokeWidth={2.5} />
+                        <Text style={{ color: colors.primary }} className="font-black text-[10px] ml-2 tracking-widest">
+                            {dateRange.start.toLocaleDateString()}
+                        </Text>
+                        <ArrowRight size={14} color={colors.primary} className="mx-2" />
+                        <Text style={{ color: colors.primary }} className="font-black text-[10px] tracking-widest">
+                            {dateRange.end.toLocaleDateString()}
+                        </Text>
+                    </View>
+                )}
+                {renderDatePicker()}
             </View>
 
             {loading ? (
@@ -401,7 +534,7 @@ const HomeScreen = ({ navigation }) => {
             ) : (
                 <FlatList className="mt-1"
                     key={viewMode} // Force re-render when switching modes
-                    data={activeOffers}
+                    data={mainListOffers}
                     renderItem={renderOfferItem}
                     keyExtractor={(item) => item?._id || Math.random().toString()}
                     numColumns={((width > 768) || viewMode === 'grid') ? 2 : 1}

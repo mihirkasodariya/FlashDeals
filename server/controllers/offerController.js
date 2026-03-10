@@ -41,12 +41,25 @@ function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
 
 const getOffers = async (req, res) => {
     try {
-        const { lat, lng, radius, category, search } = req.query;
+        const { lat, lng, radius, category, search, startDate, endDate } = req.query;
         const now = new Date();
 
-        const query = {
-            endDate: { $gte: now }
-        };
+        const query = {};
+
+        // If range is provided, find offers that have any overlap with [startDate, endDate]
+        // or are "Upcoming" relative to the range.
+        if (startDate && endDate) {
+            const rangeStart = new Date(startDate);
+            const rangeEnd = new Date(endDate);
+            query.$and = [
+                { createdAt: { $lte: rangeEnd } }, // Must be created before range ends
+                { endDate: { $gte: rangeStart } }, // Must not have ended before range starts
+                { startDate: { $lte: rangeEnd } }  // Must have started (or start during) the range
+            ];
+        } else {
+            // Default: Only show current/future offers
+            query.endDate = { $gte: now };
+        }
 
         if (category && category !== 'all') {
             query.category = { $regex: new RegExp(`^${category}$`, 'i') };

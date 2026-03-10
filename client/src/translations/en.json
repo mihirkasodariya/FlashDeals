@@ -103,7 +103,10 @@
         "flash_sales": "Flash Sales",
         "near_your_place": "Near Your Place",
         "no_offers_found": "No Treasures Found",
-        "no_offers_desc": "We couldn't find any offers matching your current filters."
+        "no_offers_desc": "We couldn't find any offers matching your current filters.",
+        "select_range": "Select Date Range",
+        "select_start_date": "Choose Start Date",
+        "select_end_date": "Choose End Date"
     },
     "wishlist": {
         "collection": "Collection",
