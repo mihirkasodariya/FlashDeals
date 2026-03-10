@@ -423,7 +423,7 @@ const HomeScreen = ({ navigation }) => {
                                 keyExtractor={(item, index) => item?._id || index.toString()}
                                 contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 16 }}
                                 renderItem={({ item }) => (
-                                    <View style={{ width: width > 600 ? 350 : width * 0.85 }} className="mr-6">
+                                    <View style={{ width: width > 600 ? 350 : width * 0.7 }} className="mr-6">
                                         <OfferCard
                                             offer={item}
                                             isFavorite={wishlistIds.includes(item?._id)}
@@ -458,7 +458,7 @@ const HomeScreen = ({ navigation }) => {
                                 keyExtractor={(item, index) => item?._id || index.toString()}
                                 contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 16 }}
                                 renderItem={({ item }) => (
-                                    <View style={{ width: width > 600 ? 350 : width * 0.85 }} className="mr-6">
+                                    <View style={{ width: width > 600 ? 350 : width * 0.7 }} className="mr-6">
                                         <OfferCard
                                             offer={item}
                                             isFavorite={wishlistIds.includes(item?._id)}
