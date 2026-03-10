@@ -11,6 +11,53 @@ import { API_BASE_URL } from '../config';
 import OfferCard from '../components/OfferCard';
 import CustomButton from '../components/CustomButton';
 
+const DummyBannerAd = ({ colors, label = "Google Test Ad (Banner)" }) => (
+    <View
+        style={{
+            backgroundColor: '#f5f5f5',
+            height: 60,
+            width: '100%',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderTopWidth: 1,
+            borderBottomWidth: 1,
+            borderColor: '#e0e0e0'
+        }}
+    >
+        <View style={{ backgroundColor: '#4285F4', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 2, marginRight: 8 }}>
+            <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>Ad</Text>
+        </View>
+        <Text style={{ color: '#616161', fontSize: 12, fontWeight: 'bold' }}>{label}</Text>
+    </View>
+);
+
+const DummyNativeAd = ({ colors }) => (
+    <View
+        style={{
+            backgroundColor: colors.card,
+            borderRadius: 24,
+            padding: 16,
+            marginBottom: 20,
+            borderWidth: 1,
+            borderColor: colors.border,
+            borderStyle: 'dashed'
+        }}
+    >
+        <View className="flex-row items-center mb-3">
+            <View style={{ backgroundColor: '#4285F4', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 4, marginRight: 10 }}>
+                <Text style={{ color: 'white', fontSize: 10, fontWeight: 'black' }}>SPONSORED</Text>
+            </View>
+            <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black uppercase tracking-widest">Recommended Deal</Text>
+        </View>
+        <View style={{ backgroundColor: '#eeeeee', height: 150, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+            <Text style={{ color: '#9e9e9e', fontWeight: 'bold' }}>Native Ad Media Placeholder</Text>
+        </View>
+        <Text style={{ color: colors.text }} className="text-lg font-black mb-1">Premium Product Promotion</Text>
+        <Text style={{ color: colors.textSecondary }} className="text-xs font-bold leading-4 opacity-70">This is a sample layout for a Google Native Ad that fits perfectly with your app's design.</Text>
+    </View>
+);
+
 const PublicStoreProfileScreen = ({ route, navigation }) => {
     const { colors, isDarkMode } = useTheme();
     const { t } = useTranslation();
@@ -156,6 +203,11 @@ const PublicStoreProfileScreen = ({ route, navigation }) => {
                         />
                     </View>
 
+                    {/* Ad after store card */}
+                    <View className="mt-8">
+                        <DummyBannerAd colors={colors} label="Featured Sponsored Content" />
+                    </View>
+
                     <View className="mt-10 mb-20">
                         <View className="flex-row items-center justify-between mb-8 px-2">
                             <View>
@@ -182,20 +234,26 @@ const PublicStoreProfileScreen = ({ route, navigation }) => {
 
                         {offers.length > 0 ? (
                             <View className="flex-row flex-wrap justify-between px-1">
-                                {offers.map((item) => (
-                                    <View
-                                        key={item._id}
-                                        style={{
-                                            width: viewMode === 'grid' ? '48.5%' : '100%'
-                                        }}
-                                        className="mb-2"
-                                    >
-                                        <OfferCard
-                                            offer={item}
-                                            grid={viewMode === 'grid'}
-                                            onPress={() => navigation.navigate('OfferDetails', { offer: item })}
-                                        />
-                                    </View>
+                                {offers.map((item, index) => (
+                                    <React.Fragment key={item._id}>
+                                        {index > 0 && index % 4 === 0 && (
+                                            <View style={{ width: '100%' }} className="mb-4">
+                                                <DummyNativeAd colors={colors} />
+                                            </View>
+                                        )}
+                                        <View
+                                            style={{
+                                                width: viewMode === 'grid' ? '48.5%' : '100%'
+                                            }}
+                                            className="mb-2"
+                                        >
+                                            <OfferCard
+                                                offer={item}
+                                                grid={viewMode === 'grid'}
+                                                onPress={() => navigation.navigate('OfferDetails', { offer: item })}
+                                            />
+                                        </View>
+                                    </React.Fragment>
                                 ))}
                             </View>
                         ) : (
@@ -206,8 +264,12 @@ const PublicStoreProfileScreen = ({ route, navigation }) => {
                         )}
                     </View>
                 </View>
-                <View style={{ height: Math.max(insets.bottom, 40) }} />
+                <View style={{ height: 20 }} />
             </ScrollView>
+
+            <View style={{ backgroundColor: colors.background }}>
+                <DummyBannerAd colors={colors} />
+            </View>
         </View>
     );
 };

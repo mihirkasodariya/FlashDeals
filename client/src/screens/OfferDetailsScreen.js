@@ -11,6 +11,53 @@ import { colors as staticColors } from '../theme/colors';
 import { useTheme } from '../context/ThemeContext';
 import { API_BASE_URL } from '../config';
 
+const DummyBannerAd = ({ colors, label = "Google Test Ad (Banner)" }) => (
+    <View
+        style={{
+            backgroundColor: '#f5f5f5',
+            height: 60,
+            width: '100%',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderTopWidth: 1,
+            borderBottomWidth: 1,
+            borderColor: '#e0e0e0'
+        }}
+    >
+        <View style={{ backgroundColor: '#4285F4', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 2, marginRight: 8 }}>
+            <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>Ad</Text>
+        </View>
+        <Text style={{ color: '#616161', fontSize: 12, fontWeight: 'bold' }}>{label}</Text>
+    </View>
+);
+
+const DummyNativeAd = ({ colors }) => (
+    <View
+        style={{
+            backgroundColor: colors.card,
+            borderRadius: 24,
+            padding: 16,
+            marginBottom: 20,
+            borderWidth: 1,
+            borderColor: colors.border,
+            borderStyle: 'dashed'
+        }}
+    >
+        <View className="flex-row items-center mb-3">
+            <View style={{ backgroundColor: '#4285F4', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 4, marginRight: 10 }}>
+                <Text style={{ color: 'white', fontSize: 10, fontWeight: 'black' }}>SPONSORED</Text>
+            </View>
+            <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black uppercase tracking-widest">Recommended Deal</Text>
+        </View>
+        <View style={{ backgroundColor: '#eeeeee', height: 150, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+            <Text style={{ color: '#9e9e9e', fontWeight: 'bold' }}>Native Ad Media Placeholder</Text>
+        </View>
+        <Text style={{ color: colors.text }} className="text-lg font-black mb-1">Premium Product Promotion</Text>
+        <Text style={{ color: colors.textSecondary }} className="text-xs font-bold leading-4 opacity-70">This is a sample layout for a Google Native Ad that fits perfectly with your app's design.</Text>
+    </View>
+);
+
 const OfferDetailsScreen = ({ route, navigation }) => {
     const insets = useSafeAreaInsets();
     const { colors, isDarkMode } = useTheme();
@@ -311,6 +358,11 @@ const OfferDetailsScreen = ({ route, navigation }) => {
                         </View>
                     </TouchableOpacity>
 
+                    {/* Ad after store info */}
+                    <View className="mb-8">
+                        <DummyNativeAd colors={colors} />
+                    </View>
+
                     <View className="mb-10">
                         <View className="flex-row items-center mb-4">
                             <View style={{ backgroundColor: staticColors.secondary }} className="w-1.5 h-6 rounded-full mr-3" />
@@ -339,6 +391,11 @@ const OfferDetailsScreen = ({ route, navigation }) => {
 
                 <View className="h-20" />
             </ScrollView>
+
+            {/* Bottom Banner Ad */}
+            <View style={{ backgroundColor: colors.background }}>
+                <DummyBannerAd colors={colors} />
+            </View>
 
             <Modal
                 visible={isImageModalVisible}

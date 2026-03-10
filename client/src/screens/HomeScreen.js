@@ -3,7 +3,8 @@ import Text from '../components/CustomText';
 import { View, ScrollView, TouchableOpacity, TextInput, FlatList, Image, useWindowDimensions, ActivityIndicator, RefreshControl, Platform, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import { Search, MapPin, SlidersHorizontal, Bell, ChevronDown, Flame, Filter, LayoutGrid, List, Calendar, X, ArrowRight } from 'lucide-react-native';
+import { Calendar, Search, MapPin, Bell, Navigation2, X, ArrowRight, Filter, ChevronRight, ChevronDown, LayoutGrid, List } from 'lucide-react-native';
+// import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads'; // Temporarily disabled for Expo Go
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { colors as staticColors } from '../theme/colors';
 import { useTheme } from '../context/ThemeContext';
@@ -23,6 +24,53 @@ const getCategories = (t) => [
     { id: '6', key: 'health', name: t('categories.health'), icon: '💊' },
     { id: '7', key: 'other', name: t('categories.other'), icon: '📦' },
 ];
+
+const DummyBannerAd = ({ colors, label = "Google Test Ad (Banner)" }) => (
+    <View
+        style={{
+            backgroundColor: '#f5f5f5',
+            height: 60,
+            width: '100%',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderTopWidth: 1,
+            borderBottomWidth: 1,
+            borderColor: '#e0e0e0'
+        }}
+    >
+        <View style={{ backgroundColor: '#4285F4', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 2, marginRight: 8 }}>
+            <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>Ad</Text>
+        </View>
+        <Text style={{ color: '#616161', fontSize: 12, fontWeight: 'bold' }}>{label}</Text>
+    </View>
+);
+
+const DummyNativeAd = ({ colors }) => (
+    <View
+        style={{
+            backgroundColor: colors.card,
+            borderRadius: 24,
+            padding: 16,
+            marginBottom: 20,
+            borderWidth: 1,
+            borderColor: colors.border,
+            borderStyle: 'dashed'
+        }}
+    >
+        <View className="flex-row items-center mb-3">
+            <View style={{ backgroundColor: '#4285F4', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 4, marginRight: 10 }}>
+                <Text style={{ color: 'white', fontSize: 10, fontWeight: 'black' }}>SPONSORED</Text>
+            </View>
+            <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black uppercase tracking-widest">Recommended Deal</Text>
+        </View>
+        <View style={{ backgroundColor: '#eeeeee', height: 150, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+            <Text style={{ color: '#9e9e9e', fontWeight: 'bold' }}>Native Ad Media Placeholder</Text>
+        </View>
+        <Text style={{ color: colors.text }} className="text-lg font-black mb-1">Premium Product Promotion</Text>
+        <Text style={{ color: colors.textSecondary }} className="text-xs font-bold leading-4 opacity-70">This is a sample layout for a Google Native Ad that fits perfectly with your app's design.</Text>
+    </View>
+);
 
 const HomeScreen = ({ navigation }) => {
     const { width } = useWindowDimensions();
@@ -389,6 +437,10 @@ const HomeScreen = ({ navigation }) => {
                                     </View>
                                 )}
                             />
+                            {/* Ad after Hot Offers */}
+                            <View className="mt-2 mb-6 px-6">
+                                <DummyBannerAd colors={colors} label="Featured Sponsored Content" />
+                            </View>
                         </View>
                     )}
 
@@ -458,12 +510,17 @@ const HomeScreen = ({ navigation }) => {
     );
 
     const renderOfferItem = ({ item, index }) => {
+        // Show Native Ad every 5 items in the main list
+        if (index > 0 && index % 5 === 0) {
+            return <DummyNativeAd colors={colors} />;
+        }
+
         const isGrid = (width > 768) || viewMode === 'grid';
         return (
             <View
                 style={{
                     width: isGrid ? '48.5%' : '100%',
-                    marginBottom: 8, // Changed from 16 to 8 to match mb-2
+                    marginBottom: 8,
                 }}
             >
                 <OfferCard
@@ -599,11 +656,17 @@ const HomeScreen = ({ navigation }) => {
                 />
             )}
 
-            <LocationSelectorModal
-                visible={isLocationModalVisible}
-                onClose={() => setIsLocationModalVisible(false)}
-                onSelectLocation={handleLocationSelect}
-            />
+            {/* Banner Ad - Using Dummy for Expo Go Testing */}
+            <View style={{ backgroundColor: colors.background, paddingBottom: Platform.OS === 'ios' ? 0 : 0 }}>
+                <DummyBannerAd colors={colors} />
+                {/* Asli Ad - Production ke liye ise use karein:
+                <BannerAd
+                    unitId={TestIds.BANNER}
+                    size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+                    requestOptions={{ requestNonPersonalizedAdsOnly: true }}
+                /> 
+                */}
+            </View>
         </SafeAreaView>
     );
 };
