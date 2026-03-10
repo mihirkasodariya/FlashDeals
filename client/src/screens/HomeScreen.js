@@ -225,8 +225,13 @@ const HomeScreen = ({ navigation }) => {
 
         if (Platform.OS === 'ios') {
             return (
-                <Modal transparent animationType="fade" visible={showDatePicker}>
+                <Modal transparent animationType="fade" visible={showDatePicker} onRequestClose={() => setShowDatePicker(false)}>
                     <View className="flex-1 justify-end bg-black/40">
+                        <TouchableOpacity
+                            activeOpacity={1}
+                            style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+                            onPress={() => { setShowDatePicker(false); setPickingStep(null); setTempStart(null); }}
+                        />
                         <View style={{ backgroundColor: colors.card }} className="rounded-t-[40px] p-8 pb-12 shadow-2xl">
                             <View className="flex-row justify-between items-center mb-6">
                                 <View>
