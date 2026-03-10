@@ -244,9 +244,22 @@ const HomeScreen = ({ navigation }) => {
                                 </View>
                                 <View className="flex-row">
                                     <TouchableOpacity
+                                        onPress={() => {
+                                            const today = new Date();
+                                            setDateRange({ start: today, end: today });
+                                            setPickingStep(null);
+                                            setTempStart(null);
+                                            setShowDatePicker(false);
+                                        }}
+                                        style={{ backgroundColor: `${colors.primary}10` }}
+                                        className="px-6 py-2 rounded-xl mr-2"
+                                    >
+                                        <Text style={{ color: colors.primary }} className="font-black text-sm">{t('common.today')}</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
                                         onPress={() => { setDateRange({ start: null, end: null }); setPickingStep(null); setTempStart(null); setShowDatePicker(false); }}
                                         style={{ backgroundColor: `${staticColors.error}10` }}
-                                        className="px-6 py-2 rounded-xl mr-2"
+                                        className="px-6 py-2 rounded-xl"
                                     >
                                         <Text style={{ color: staticColors.error }} className="font-black text-sm">{t('common.cancel')}</Text>
                                     </TouchableOpacity>
@@ -513,7 +526,7 @@ const HomeScreen = ({ navigation }) => {
                                 </TouchableOpacity>
                             </View>
                         ) : (
-                            <Calendar size={22} color={colors.textSecondary} strokeWidth={2.5} />
+                            <Calendar size={22} color={colors.primary} strokeWidth={2.5} />
                         )}
                     </TouchableOpacity>
                 </View>

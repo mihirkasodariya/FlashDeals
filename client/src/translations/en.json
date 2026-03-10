@@ -47,7 +47,8 @@
         "account": "Account",
         "version": "Version",
         "offer_deleted_success": "The offer has been permanently deleted from your store.",
-        "cool": "COOL"
+        "cool": "COOL",
+        "today": "Today"
     },
     "language_selection": {
         "title": "Language",

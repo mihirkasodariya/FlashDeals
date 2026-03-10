@@ -47,7 +47,8 @@
         "account": "खाता",
         "version": "वर्जन",
         "offer_deleted_success": "ऑफर आपके स्टोर से स्थायी रूप से हटा दिया गया है।",
-        "cool": "ठीक है"
+        "cool": "ठीक है",
+        "today": "आज"
     },
     "language_selection": {
         "title": "भाषा",
