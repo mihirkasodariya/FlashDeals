@@ -530,6 +530,7 @@
         "select_district": "जिला चुनें",
         "select_city": "शहर चुनें",
         "select_village": "गाँव चुनें",
+        "select_society": "सोसायटी चुनें",
         "find_placeholder": "अपना {{step}} ढूंढें...",
         "detect_current": "वर्तमान स्थान का पता लगाएं",
         "using_gps": "जीपीएस परिशुद्धता का उपयोग करना",

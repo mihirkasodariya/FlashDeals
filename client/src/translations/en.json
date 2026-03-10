@@ -530,6 +530,7 @@
         "select_district": "Select District",
         "select_city": "Select City",
         "select_village": "Select Village",
+        "select_society": "Select Society",
         "find_placeholder": "Find your {{step}}...",
         "detect_current": "Detect Current",
         "using_gps": "Using GPS Precision",

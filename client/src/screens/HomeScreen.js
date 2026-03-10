@@ -30,7 +30,7 @@ const HomeScreen = ({ navigation }) => {
     const { t } = useTranslation();
     const CATEGORIES = getCategories(t);
     const [selectedCategory, setSelectedCategory] = useState('1');
-    const [location, setLocation] = useState('Ahmedabad, Gujarat');
+    const [location, setLocation] = useState(t('location_selector.detect_current') + '...');
     const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [radius, setRadius] = useState(5);
@@ -50,6 +50,32 @@ const HomeScreen = ({ navigation }) => {
 
     const getUserLocation = async () => {
         try {
+            // First, check permission
+            const { status } = await Location.requestForegroundPermissionsAsync();
+
+            if (status === 'granted') {
+                // Fresh GPS detection
+                const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+                const coords = { lat: loc.coords.latitude, lng: loc.coords.longitude };
+
+                const [geocode] = await Location.reverseGeocodeAsync({
+                    latitude: loc.coords.latitude,
+                    longitude: loc.coords.longitude
+                });
+
+                let city = 'Ahmedabad, Gujarat';
+                if (geocode) {
+                    city = `${geocode.city || geocode.subregion || 'Unknown City'}, ${geocode.region || ''}`;
+                }
+
+                // Save for future reference as fallback
+                await AsyncStorage.setItem('userLocation', JSON.stringify({ city, coords }));
+                setLocation(city);
+                setUserCoordinates(coords);
+                return coords;
+            }
+
+            // Fallback: If no permission or failed, try saved location
             const savedLoc = await AsyncStorage.getItem('userLocation');
             if (savedLoc) {
                 const parsed = JSON.parse(savedLoc);
@@ -58,28 +84,15 @@ const HomeScreen = ({ navigation }) => {
                 return parsed.coords;
             }
 
-            const { status } = await Location.requestForegroundPermissionsAsync();
-            if (status !== 'granted') return null;
-
-            const loc = await Location.getCurrentPositionAsync({});
-            const coords = { lat: loc.coords.latitude, lng: loc.coords.longitude };
-
-            const [geocode] = await Location.reverseGeocodeAsync({
-                latitude: loc.coords.latitude,
-                longitude: loc.coords.longitude
-            });
-
-            let city = 'Ahmedabad, Gujarat';
-            if (geocode) {
-                city = `${geocode.city || geocode.subregion || 'Unknown City'}, ${geocode.region || ''}`;
-            }
-
-            await AsyncStorage.setItem('userLocation', JSON.stringify({ city, coords }));
-            setLocation(city);
-            setUserCoordinates(coords);
-            return coords;
+            return null;
         } catch (error) {
             console.error("Location Error:", error);
+            // Last resort fallback
+            const savedLoc = await AsyncStorage.getItem('userLocation');
+            if (savedLoc) {
+                const parsed = JSON.parse(savedLoc);
+                return parsed.coords;
+            }
             return null;
         }
     };
