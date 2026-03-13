@@ -45,7 +45,32 @@
         "wishlist": "વિશલિસ્ટ",
         "store": "સ્ટોર",
         "account": "એકાઉન્ટ",
-        "version": "વર્ઝન"
+        "version": "વર્ઝન",
+        "today": "આજે",
+        "clear": "સાફ કરો"
+    },
+    "months": {
+        "january": "જાન્યુઆરી",
+        "february": "ફેબ્રુઆરી",
+        "march": "માર્ચ",
+        "april": "એપ્રિલ",
+        "may": "મે",
+        "june": "જૂન",
+        "july": "જુલાઈ",
+        "august": "ઓગસ્ટ",
+        "september": "સપ્ટેમ્બર",
+        "october": "ઓક્ટોબર",
+        "november": "નવેમ્બર",
+        "december": "ડિસેમ્બર"
+    },
+    "days": {
+        "sun": "રવિ",
+        "mon": "સોમ",
+        "tue": "મંગળ",
+        "wed": "બુધ",
+        "thu": "ગુરુ",
+        "fri": "શુક્ર",
+        "sat": "શનિ"
     },
     "language_selection": {
         "title": "ભાષા",

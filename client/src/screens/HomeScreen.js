@@ -5,11 +5,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { Calendar, Search, MapPin, Bell, Navigation2, X, ArrowRight, Filter, ChevronRight, ChevronDown, LayoutGrid, List } from 'lucide-react-native';
 // import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads'; // Temporarily disabled for Expo Go
-import DateTimePicker from '@react-native-community/datetimepicker';
+
 import { colors as staticColors } from '../theme/colors';
 import { useTheme } from '../context/ThemeContext';
 import OfferCard from '../components/OfferCard';
 import LocationSelectorModal from '../components/LocationSelectorModal';
+import CustomCalendar from '../components/CustomCalendar';
 import { API_BASE_URL } from '../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
@@ -84,8 +85,6 @@ const HomeScreen = ({ navigation }) => {
     const [hasMore, setHasMore] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
     const [dateRange, setDateRange] = useState({ start: null, end: null });
-    const [pickingStep, setPickingStep] = useState(null); // 'start' or 'end'
-    const [tempStart, setTempStart] = useState(null);
     const [showDatePicker, setShowDatePicker] = useState(false);
 
     const getUserLocation = async () => {
@@ -273,119 +272,42 @@ const HomeScreen = ({ navigation }) => {
         }
     };
 
-    const onDateChange = (event, date) => {
-        if (Platform.OS === 'android') {
-            setShowDatePicker(false);
-        }
-        if (date) {
-            if (pickingStep === 'start') {
-                setTempStart(date);
-                setPickingStep('end');
-                if (Platform.OS === 'android') {
-                    setTimeout(() => setShowDatePicker(true), 200);
-                }
-            } else if (pickingStep === 'end') {
-                if (date < tempStart) {
-                    Alert.alert(t('common.error'), 'Ant ki tarikh shuru ki tarikh se pehle nahi ho sakti');
-                    setPickingStep('start');
-                    return;
-                }
-                setDateRange({ start: tempStart, end: date });
-                setPickingStep(null);
-                setTempStart(null);
-                setShowDatePicker(false);
-            }
-        } else {
-            setPickingStep(null);
-            setShowDatePicker(false);
-        }
-    };
+
 
     const renderDatePicker = () => {
-        if (!showDatePicker) return null;
-
-        const currentValue = pickingStep === 'start' ? new Date() : (tempStart || new Date());
-        const minDate = pickingStep === 'end' ? tempStart : null; // No minimum date for 'start' step allows picking past/future ranges easily
-
-        if (Platform.OS === 'ios') {
-            return (
-                <Modal transparent animationType="fade" visible={showDatePicker} onRequestClose={() => setShowDatePicker(false)}>
-                    <View className="flex-1 justify-end bg-black/40">
-                        <TouchableOpacity
-                            activeOpacity={1}
-                            style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
-                            onPress={() => { setShowDatePicker(false); setPickingStep(null); setTempStart(null); }}
-                        />
-                        <View style={{ backgroundColor: colors.card }} className="rounded-t-[40px] p-8 pb-12 shadow-2xl">
-                            <View className="flex-row justify-between items-center mb-6">
-                                <View>
-                                    <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest uppercase mb-1">
-                                        {t('home.select_range')}
-                                    </Text>
-                                    <Text style={{ color: colors.text }} className="text-xl font-black text-primary">
-                                        {pickingStep === 'start' ? t('home.select_start_date') : t('home.select_end_date')}
-                                    </Text>
-                                </View>
-                                <View className="flex-row">
-                                    <TouchableOpacity
-                                        onPress={() => {
-                                            const today = new Date();
-                                            setDateRange({ start: today, end: today });
-                                            setPickingStep(null);
-                                            setTempStart(null);
-                                            setShowDatePicker(false);
-                                        }}
-                                        style={{ backgroundColor: `${colors.primary}10` }}
-                                        className="px-6 py-2 rounded-xl mr-2"
-                                    >
-                                        <Text style={{ color: colors.primary }} className="font-black text-sm">{t('common.today')}</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity
-                                        onPress={() => { setDateRange({ start: null, end: null }); setPickingStep(null); setTempStart(null); setShowDatePicker(false); }}
-                                        style={{ backgroundColor: `${staticColors.error}10` }}
-                                        className="px-6 py-2 rounded-xl"
-                                    >
-                                        <Text style={{ color: staticColors.error }} className="font-black text-sm">{t('common.cancel')}</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                            <DateTimePicker
-                                value={currentValue}
-                                mode="date"
-                                display="inline"
-                                onChange={onDateChange}
-                                minimumDate={minDate}
-                                themeVariant={isDarkMode ? 'dark' : 'light'}
-                                accentColor={colors.primary}
-                            />
-                        </View>
-                    </View>
-                </Modal>
-            );
-        }
-
         return (
-            <DateTimePicker
-                value={currentValue}
-                mode="date"
-                display="default"
-                onChange={onDateChange}
-                minimumDate={minDate}
+            <CustomCalendar
+                visible={showDatePicker}
+                onClose={() => setShowDatePicker(false)}
+                mode="range"
+                initialRange={dateRange}
+                onSelectRange={(range) => {
+                    setDateRange(range);
+                }}
             />
         );
     };
 
-    const refNow = dateRange.start ? new Date(dateRange.start) : new Date();
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+
+    const refNow = dateRange.start ? new Date(dateRange.start) : now;
     // In server-side pagination, activeOffers are what we get from the server
     const activeOffers = offers || [];
 
     // Filter discovery sections from the current pool of data
     const hotOffers = [...activeOffers]
-        .filter(o => refNow >= new Date(o.startDate) && refNow <= new Date(o.endDate))
+        .filter(o => {
+            const start = new Date(o.startDate);
+            const end = new Date(o.endDate);
+            // Active if it has started (or starts today) and not yet expired
+            return start <= endOfToday && end >= startOfToday;
+        })
         .sort((a, b) => (b.visits || 0) - (a.visits || 0))
         .slice(0, 4);
 
-    const upcomingOffers = activeOffers.filter(o => new Date(o.startDate) > refNow);
+    const upcomingOffers = activeOffers.filter(o => new Date(o.startDate) > endOfToday);
 
     // For the main list, we already filter overlapping range from backend
     const mainListOffers = activeOffers;
@@ -602,7 +524,6 @@ const HomeScreen = ({ navigation }) => {
                     </View>
                     <TouchableOpacity
                         onPress={() => {
-                            setPickingStep('start');
                             setShowDatePicker(true);
                         }}
                         style={{ backgroundColor: colors.surface }}
@@ -637,6 +558,12 @@ const HomeScreen = ({ navigation }) => {
                         <Text style={{ color: colors.primary }} className="font-black text-[10px] tracking-widest">
                             {dateRange.end.toLocaleDateString()}
                         </Text>
+                        <TouchableOpacity
+                            onPress={() => setDateRange({ start: null, end: null })}
+                            className="ml-3 pl-3 border-l border-primary/20"
+                        >
+                            <X size={14} color={colors.primary} strokeWidth={3} />
+                        </TouchableOpacity>
                     </View>
                 )}
                 {renderDatePicker()}

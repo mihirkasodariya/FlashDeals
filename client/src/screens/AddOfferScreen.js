@@ -5,9 +5,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { ChevronLeft, Camera, Calendar, Tag, FileText, Type, Package as LucidePackage, CheckCircle2 } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import CustomCalendar from '../components/CustomCalendar';
 import { useTheme } from '../context/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors as staticColors } from '../theme/colors';
@@ -65,66 +65,32 @@ const AddOfferScreen = ({ route, navigation }) => {
     const [showStartPicker, setShowStartPicker] = useState(false);
     const [showEndPicker, setShowEndPicker] = useState(false);
 
-    const onStartDateChange = (event, selectedDate) => {
-        if (Platform.OS === 'android') {
-            setShowStartPicker(false);
-        }
-        if (selectedDate) {
-            setStartDate(selectedDate);
-            if (selectedDate > endDate) {
-                setEndDate(new Date(selectedDate.getTime() + 86400000));
-            }
-        }
-    };
-
-    const onEndDateChange = (event, selectedDate) => {
-        if (Platform.OS === 'android') {
-            setShowEndPicker(false);
-        }
-        if (selectedDate) setEndDate(selectedDate);
-    };
-
-    const renderDatePicker = (show, value, onChange, minDate, onClose) => {
-        if (!show) return null;
-
-        if (Platform.OS === 'ios') {
-            return (
-                <Modal transparent animationType="fade">
-                    <View className="flex-1 justify-end bg-black/40">
-                        <View style={{ backgroundColor: colors.card }} className="rounded-t-[40px] p-8 pb-12 shadow-2xl">
-                            <View className="flex-row justify-between items-center mb-6">
-                                <Text style={{ color: colors.text }} className="text-xl font-black text-primary">{t('store.select_date')}</Text>
-                                <TouchableOpacity
-                                    onPress={onClose}
-                                    style={{ backgroundColor: `${colors.primary}10` }}
-                                    className="px-6 py-2 rounded-xl"
-                                >
-                                    <Text style={{ color: colors.primary }} className="font-black text-sm">{t('store.done')}</Text>
-                                </TouchableOpacity>
-                            </View>
-                            <DateTimePicker
-                                value={value}
-                                mode="date"
-                                display="inline"
-                                onChange={onChange}
-                                minimumDate={minDate}
-                                themeVariant={isDarkMode ? 'dark' : 'light'}
-                                accentColor={colors.primary}
-                            />
-                        </View>
-                    </View>
-                </Modal>
-            );
-        }
-
+    const renderDatePicker = () => {
         return (
-            <DateTimePicker
-                value={value}
-                mode="date"
-                display="default"
-                onChange={onChange}
-                minimumDate={minDate}
-            />
+            <>
+                <CustomCalendar
+                    visible={showStartPicker}
+                    onClose={() => setShowStartPicker(false)}
+                    mode="single"
+                    initialDate={startDate}
+                    onSelectDate={(date) => {
+                        setStartDate(date);
+                        if (date > endDate) {
+                            setEndDate(new Date(date.getTime() + 86400000));
+                        }
+                    }}
+                />
+                <CustomCalendar
+                    visible={showEndPicker}
+                    onClose={() => setShowEndPicker(false)}
+                    mode="single"
+                    minDate={startDate}
+                    initialDate={endDate}
+                    onSelectDate={(date) => {
+                        setEndDate(date);
+                    }}
+                />
+            </>
         );
     };
 
@@ -310,7 +276,6 @@ const AddOfferScreen = ({ route, navigation }) => {
                                     {startDate.toLocaleDateString()}
                                 </Text>
                             </TouchableOpacity>
-                            {renderDatePicker(showStartPicker, startDate, onStartDateChange, new Date(), () => setShowStartPicker(false))}
                         </View>
 
                         <View className="flex-1">
@@ -325,7 +290,7 @@ const AddOfferScreen = ({ route, navigation }) => {
                                     {endDate.toLocaleDateString()}
                                 </Text>
                             </TouchableOpacity>
-                            {renderDatePicker(showEndPicker, endDate, onEndDateChange, startDate, () => setShowEndPicker(false))}
+
                         </View>
                     </View>
                 </View>
@@ -364,6 +329,7 @@ const AddOfferScreen = ({ route, navigation }) => {
                     </View>
                 </View>
             </Modal>
+            {renderDatePicker()}
         </SafeAreaView>
     );
 };

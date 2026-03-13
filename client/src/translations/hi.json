@@ -48,7 +48,31 @@
         "version": "वर्जन",
         "offer_deleted_success": "ऑफर आपके स्टोर से स्थायी रूप से हटा दिया गया है।",
         "cool": "ठीक है",
-        "today": "आज"
+        "today": "आज",
+        "clear": "साफ करें"
+    },
+    "months": {
+        "january": "जनवरी",
+        "february": "फरवरी",
+        "march": "मार्च",
+        "april": "अप्रैल",
+        "may": "मई",
+        "june": "जून",
+        "july": "जुलाई",
+        "august": "अगस्त",
+        "september": "सितंबर",
+        "october": "अक्टूबर",
+        "november": "नवंबर",
+        "december": "दिसंबर"
+    },
+    "days": {
+        "sun": "रवि",
+        "mon": "सोम",
+        "tue": "मंगल",
+        "wed": "बुध",
+        "thu": "गुरु",
+        "fri": "शुक्र",
+        "sat": "शनि"
     },
     "language_selection": {
         "title": "भाषा",
