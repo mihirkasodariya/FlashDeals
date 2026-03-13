@@ -109,15 +109,23 @@ const OffersManagement = () => {
     });
     const [updating, setUpdating] = useState(false);
 
-    const categories = [
-        'Groceries', 'Electronics', 'Fashion & Lifestyle', 'Footwear',
-        'Home Appliances', 'Beauty & Personal Care', 'Sports & Fitness',
-        'Automotive Accessories', 'Kids & Toys', 'Books & Stationary'
-    ];
+    const [categories, setCategories] = useState([]);
 
     useEffect(() => {
         fetchOffers();
+        fetchCategories();
     }, [token]);
+
+    const fetchCategories = async () => {
+        try {
+            const resp = await axios.get(`${API_URL}/categories?activeOnly=true`);
+            if (resp.data.success) {
+                setCategories(resp.data.categories);
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    };
 
     const fetchOffers = async () => {
         try {
@@ -200,7 +208,7 @@ const OffersManagement = () => {
 
     const filteredOffers = offers.filter(o =>
         o.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        o.category.toLowerCase().includes(searchTerm.toLowerCase())
+        (o.category?.name || String(o.category)).toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
@@ -268,7 +276,7 @@ const OffersManagement = () => {
                                         </div>
                                     </td>
                                     <td>
-                                        <span className="badge-modern badge-info" style={{ fontWeight: '800', background: 'rgba(59, 130, 246, 0.08)' }}>{offer.category}</span>
+                                        <span className="badge-modern badge-info" style={{ fontWeight: '800', background: 'rgba(59, 130, 246, 0.08)' }}>{offer.category?.name || offer.category}</span>
                                     </td>
                                     <td>
                                         <span className={`badge-modern badge-${status.type}`}>{status.label}</span>
@@ -310,7 +318,7 @@ const OffersManagement = () => {
                                                         id: offer._id,
                                                         title: offer.title,
                                                         description: offer.description,
-                                                        category: offer.category,
+                                                        category: offer.category?._id || offer.category,
                                                         startDate: format(new Date(offer.startDate), 'yyyy-MM-dd'),
                                                         endDate: format(new Date(offer.endDate), 'yyyy-MM-dd'),
                                                         image: null,
@@ -367,7 +375,7 @@ const OffersManagement = () => {
                                 <div style={{ display: 'flex', gap: '16px' }}>
                                     <div>
                                         <p style={{ fontSize: '10px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'lowercase', marginBottom: '4px' }}>category</p>
-                                        <span className="badge-modern badge-info">{detailsModal.category}</span>
+                                        <span className="badge-modern badge-info">{detailsModal.category?.name || detailsModal.category}</span>
                                     </div>
                                     <div>
                                         <p style={{ fontSize: '10px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'lowercase', marginBottom: '4px' }}>status</p>
@@ -493,7 +501,8 @@ const OffersManagement = () => {
                                             value={editModal.category}
                                             onChange={e => setEditModal(p => ({ ...p, category: e.target.value }))}
                                         >
-                                            {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                                            <option value="">Select Category</option>
+                                            {categories.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
                                         </select>
                                     </div>
                                 </div>

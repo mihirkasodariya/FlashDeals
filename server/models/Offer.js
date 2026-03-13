@@ -4,7 +4,7 @@ const offerSchema = new mongoose.Schema({
     vendorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     title: { type: String, required: true },
     description: { type: String, required: true },
-    category: { type: String, required: true },
+    category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
     image: { type: String, required: true },
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true },

@@ -13,7 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors as staticColors } from '../theme/colors';
 import { API_BASE_URL } from '../config';
 
-const CATEGORY_KEYS = ['food', 'grocery', 'fashion', 'electronics', 'health', 'other'];
+// CATEGORY_KEYS will be fetched dynamically from the backend
 
 const AddOfferScreen = ({ route, navigation }) => {
     const { colors, isDarkMode } = useTheme();
@@ -26,7 +26,39 @@ const AddOfferScreen = ({ route, navigation }) => {
     const [image, setImage] = useState(offerToEdit?.image ? `${API_BASE_URL.replace('/api', '')}${offerToEdit.image}` : null);
     const [title, setTitle] = useState(offerToEdit?.title || '');
     const [description, setDescription] = useState(offerToEdit?.description || '');
-    const [categoryKey, setCategoryKey] = useState(offerToEdit?.category || CATEGORY_KEYS[0]);
+    const [categories, setCategories] = useState([]);
+    const [categoryKey, setCategoryKey] = useState(
+        offerToEdit?.category?._id || offerToEdit?.category || ''
+    );
+
+    const fetchCategories = async () => {
+        try {
+            const resp = await fetch(`${API_BASE_URL}/categories?activeOnly=true`);
+            const data = await resp.json();
+            if (data.success) {
+                setCategories(data.categories);
+                
+                // If editing and category is a name string, find its ID
+                if (offerToEdit && typeof offerToEdit.category === 'string') {
+                    const matchedCat = data.categories.find(c => 
+                        c.name.toLowerCase() === offerToEdit.category.toLowerCase() ||
+                        c._id === offerToEdit.category
+                    );
+                    if (matchedCat) setCategoryKey(matchedCat._id);
+                }
+
+                if (!offerToEdit && data.categories.length > 0 && !categoryKey) {
+                    setCategoryKey(data.categories[0]._id);
+                }
+            }
+        } catch (error) {
+            console.error('Fetch categories error:', error);
+        }
+    };
+
+    React.useEffect(() => {
+        fetchCategories();
+    }, []);
 
     const [startDate, setStartDate] = useState(offerToEdit ? new Date(offerToEdit.startDate) : new Date());
     const [endDate, setEndDate] = useState(offerToEdit ? new Date(offerToEdit.endDate) : new Date(Date.now() + 86400000));
@@ -125,7 +157,7 @@ const AddOfferScreen = ({ route, navigation }) => {
             const formData = new FormData();
             formData.append('title', title);
             formData.append('description', description);
-            formData.append('category', categoryKey);
+            formData.append('category', categoryKey); // This is now the categoryId
             formData.append('startDate', startDate.toISOString());
             formData.append('endDate', endDate.toISOString());
 
@@ -152,7 +184,6 @@ const AddOfferScreen = ({ route, navigation }) => {
                 method: method,
                 headers: {
                     'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'multipart/form-data',
                 },
                 body: formData,
             });
@@ -253,14 +284,14 @@ const AddOfferScreen = ({ route, navigation }) => {
                     <View className="mt-6">
                         <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-2 ml-1 uppercase">{t('support.category')}</Text>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row mt-2">
-                            {CATEGORY_KEYS.map(catKey => (
+                            {categories.map(cat => (
                                 <TouchableOpacity
-                                    key={catKey}
-                                    onPress={() => setCategoryKey(catKey)}
-                                    style={{ backgroundColor: categoryKey === catKey ? colors.primary : colors.surface }}
+                                    key={cat._id}
+                                    onPress={() => setCategoryKey(cat._id)}
+                                    style={{ backgroundColor: categoryKey === cat._id ? colors.primary : colors.surface }}
                                     className="mr-3 px-6 py-3 rounded-2xl"
                                 >
-                                    <Text style={{ color: categoryKey === catKey ? '#FFFFFF' : colors.textSecondary }} className="font-black text-xs">{t(`categories.${catKey}`)}</Text>
+                                    <Text style={{ color: categoryKey === cat._id ? '#FFFFFF' : colors.textSecondary }} className="font-black text-xs">{cat.name}</Text>
                                 </TouchableOpacity>
                             ))}
                         </ScrollView>

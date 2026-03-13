@@ -15,15 +15,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import { Alert } from 'react-native';
 
-const getCategories = (t) => [
-    { id: '1', key: 'all', name: t('categories.all'), icon: '🛍️' },
-    { id: '2', key: 'food', name: t('categories.food'), icon: '🍔' },
-    { id: '3', key: 'grocery', name: t('categories.grocery'), icon: '🛒' },
-    { id: '4', key: 'fashion', name: t('categories.fashion'), icon: '👕' },
-    { id: '5', key: 'electronics', name: t('categories.electronics'), icon: '📱' },
-    { id: '6', key: 'health', name: t('categories.health'), icon: '💊' },
-    { id: '7', key: 'other', name: t('categories.other'), icon: '📦' },
-];
+// Categories will be fetched from the backend
 
 const DummyBannerAd = ({ colors, label = "Google Test Ad (Banner)" }) => (
     <View
@@ -76,8 +68,8 @@ const HomeScreen = ({ navigation }) => {
     const { width } = useWindowDimensions();
     const { colors, isDarkMode } = useTheme();
     const { t } = useTranslation();
-    const CATEGORIES = getCategories(t);
-    const [selectedCategory, setSelectedCategory] = useState('1');
+    const [categories, setCategories] = useState([{ _id: 'all', name: t('categories.all'), isStatic: true }]);
+    const [selectedCategory, setSelectedCategory] = useState('all');
     const [location, setLocation] = useState(t('location_selector.detect_current') + '...');
     const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -158,7 +150,8 @@ const HomeScreen = ({ navigation }) => {
                 coordsToUse = await getUserLocation();
             }
 
-            const currentCategoryKey = CATEGORIES.find(c => c.id === selectedCategory)?.key || 'all';
+            const currentCategoryObj = categories.find(c => c._id === selectedCategory);
+            const currentCategoryKey = currentCategoryObj?.isStatic ? 'all' : (currentCategoryObj?._id || 'all');
             let url = `${API_BASE_URL}/offers?page=${pageNum}&limit=10&category=${currentCategoryKey}&search=${searchQuery}`;
 
             if (coordsToUse) {
@@ -176,10 +169,23 @@ const HomeScreen = ({ navigation }) => {
 
             const offersData = await offersRes.json();
             if (offersData.success) {
+                const incomingOffers = offersData.offers || [];
                 if (pageNum === 1) {
-                    setOffers(offersData.offers || []);
+                    // Filter duplicates even in first page just in case server is messy
+                    const uniqueInPage = incomingOffers.filter((item, index, self) => 
+                        item?._id && index === self.findIndex((t) => (t._id === item._id))
+                    );
+                    setOffers(uniqueInPage);
                 } else {
-                    setOffers(prev => [...prev, ...offersData.offers]);
+                    setOffers(prev => {
+                        const existingIds = new Set(prev.map(o => o._id));
+                        const uniqueNewOffers = incomingOffers.filter(o => 
+                            o?._id && !existingIds.has(o._id) && 
+                            // Avoid duplicates within the new chunk itself
+                            incomingOffers.findIndex(io => io._id === o._id) === incomingOffers.indexOf(o)
+                        );
+                        return [...prev, ...uniqueNewOffers];
+                    });
                 }
                 setHasMore(offersData.hasMore);
                 setPage(pageNum);
@@ -220,8 +226,30 @@ const HomeScreen = ({ navigation }) => {
         }
     };
 
+    const fetchCategories = async () => {
+        try {
+            const resp = await fetch(`${API_BASE_URL}/categories?activeOnly=true`);
+            const data = await resp.json();
+            if (data.success) {
+                const staticCats = [{ _id: 'all', name: t('categories.all'), isStatic: true }];
+                const dynamicCats = data.categories || [];
+                
+                // Merge and remove potential duplicates (if server ever sends 'all' id)
+                const merged = [...staticCats, ...dynamicCats];
+                const uniqueCats = merged.filter((item, index, self) => 
+                    item?._id && index === self.findIndex((t) => (t._id === item._id))
+                );
+                
+                setCategories(uniqueCats);
+            }
+        } catch (error) {
+            console.error('Fetch categories error:', error);
+        }
+    };
+
     useEffect(() => {
         // Initial fetch only - Do not re-fetch on focus to prevent flickering
+        fetchCategories();
         fetchData();
     }, []);
 
@@ -373,10 +401,10 @@ const HomeScreen = ({ navigation }) => {
                     showsHorizontalScrollIndicator={false}
                     contentContainerStyle={{ paddingHorizontal: 16 }}
                 >
-                    {CATEGORIES.map((item) => (
+                    {categories.map((item) => (
                         <TouchableOpacity
-                            key={item.id}
-                            onPress={() => setSelectedCategory(item.id)}
+                            key={item._id}
+                            onPress={() => setSelectedCategory(item._id)}
                             style={{
                                 marginRight: 16,
                                 paddingHorizontal: 24,
@@ -385,14 +413,23 @@ const HomeScreen = ({ navigation }) => {
                                 flexDirection: 'row',
                                 alignItems: 'center',
                                 borderWidth: 1,
-                                borderColor: selectedCategory === item.id ? colors.primary : colors.border,
-                                backgroundColor: selectedCategory === item.id ? colors.primary : colors.card
+                                borderColor: selectedCategory === item._id ? colors.primary : colors.border,
+                                backgroundColor: selectedCategory === item._id ? colors.primary : colors.card
                             }}
                         >
-                            <Text style={{ fontSize: 18, marginRight: 8 }}>{item.icon}</Text>
+                            {item.isStatic ? (
+                                <Text style={{ fontSize: 18, marginRight: 8 }}>🛍️</Text>
+                            ) : item.image ? (
+                                <Image
+                                    source={{ uri: `${API_BASE_URL.replace('/api', '')}${item.image}` }}
+                                    style={{ width: 20, height: 20, marginRight: 8, borderRadius: 4 }}
+                                />
+                            ) : (
+                                <Text style={{ fontSize: 18, marginRight: 8 }}>📦</Text>
+                            )}
                             <Text style={{
                                 fontWeight: 'bold',
-                                color: selectedCategory === item.id ? '#FFFFFF' : colors.primary
+                                color: selectedCategory === item._id ? '#FFFFFF' : colors.primary
                             }}>
                                 {item.name}
                             </Text>
@@ -420,7 +457,7 @@ const HomeScreen = ({ navigation }) => {
                                 horizontal
                                 showsHorizontalScrollIndicator={false}
                                 data={hotOffers}
-                                keyExtractor={(item, index) => item?._id || index.toString()}
+                                keyExtractor={(item) => item._id.toString()}
                                 contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 16 }}
                                 renderItem={({ item }) => (
                                     <View style={{ width: width > 600 ? 350 : width * 0.7 }} className="mr-6">
@@ -455,7 +492,7 @@ const HomeScreen = ({ navigation }) => {
                                 horizontal
                                 showsHorizontalScrollIndicator={false}
                                 data={upcomingOffers}
-                                keyExtractor={(item, index) => item?._id || index.toString()}
+                                keyExtractor={(item) => item._id.toString()}
                                 contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 16 }}
                                 renderItem={({ item }) => (
                                     <View style={{ width: width > 600 ? 350 : width * 0.7 }} className="mr-6">
@@ -505,19 +542,14 @@ const HomeScreen = ({ navigation }) => {
     );
 
     const renderOfferItem = ({ item, index }) => {
-        // Show Native Ad every 5 items in the main list
-        if (index > 0 && index % 5 === 0) {
-            return <DummyNativeAd colors={colors} />;
-        }
-
         const isGrid = (width > 768) || viewMode === 'grid';
         return (
-            <View
-                style={{
-                    width: isGrid ? '48.5%' : '100%',
-                    marginBottom: 8,
-                }}
-            >
+            <View style={{ width: isGrid ? '48.5%' : '100%', marginBottom: 8 }}>
+                {index > 0 && index % 5 === 0 && (
+                    <View style={{ width: isGrid ? ((width - 32) / (width > 768 ? 2 : 1)) : '100%' }}>
+                        <DummyNativeAd colors={colors} />
+                    </View>
+                )}
                 <OfferCard
                     offer={item}
                     grid={isGrid}
@@ -619,7 +651,7 @@ const HomeScreen = ({ navigation }) => {
                     key={viewMode} // Force re-render when switching modes
                     data={mainListOffers}
                     renderItem={renderOfferItem}
-                    keyExtractor={(item) => item?._id || Math.random().toString()}
+                    keyExtractor={(item) => item._id.toString()}
                     numColumns={((width > 768) || viewMode === 'grid') ? 2 : 1}
                     columnWrapperStyle={((width > 768) || viewMode === 'grid') ? { justifyContent: 'space-between', paddingHorizontal: 16 } : null}
                     contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 100 }}

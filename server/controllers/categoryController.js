@@ -25,7 +25,11 @@ const createCategory = async (req, res) => {
 
 const getCategories = async (req, res) => {
     try {
-        const categories = await Category.find().sort({ createdAt: -1 });
+        const query = {};
+        if (req.query.activeOnly === 'true') {
+            query.isActive = true;
+        }
+        const categories = await Category.find(query).sort({ createdAt: -1 });
         res.json({ success: true, categories });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -44,7 +48,7 @@ const updateCategory = async (req, res) => {
             updateData.image = `/public/categories/${req.file.filename}`;
         }
 
-        const category = await Category.findByIdAndUpdate(req.params.id, updateData, { new: true });
+        const category = await Category.findByIdAndUpdate(req.params.id, updateData, { returnDocument: 'after' });
 
         if (!category) {
             return res.status(404).json({ success: false, message: 'Category not found' });

@@ -1,4 +1,6 @@
 const Offer = require('../models/Offer');
+const Category = require('../models/Category');
+const mongoose = require('mongoose');
 
 const addOffer = async (req, res) => {
     try {
@@ -6,10 +8,12 @@ const addOffer = async (req, res) => {
             return res.status(403).json({ success: false, message: 'Only vendors can add offers' });
         }
 
-        const { title, description, category, startDate, endDate } = req.body;
+        let { title, description, category, startDate, endDate } = req.body;
 
-        if (!req.file) {
-            return res.status(400).json({ success: false, message: 'Offer image is required' });
+        if (category && !mongoose.Types.ObjectId.isValid(category)) {
+            const foundCat = await Category.findOne({ name: new RegExp(`^${category}$`, 'i') });
+            if (foundCat) category = foundCat._id;
+            else return res.status(400).json({ success: false, message: `Invalid category: ${category}` });
         }
 
         const offer = new Offer({
@@ -23,6 +27,7 @@ const addOffer = async (req, res) => {
         });
 
         await offer.save();
+        await offer.populate('category');
         res.json({ success: true, message: 'Offer added successfully', offer });
     } catch (error) {
         console.error("Add Offer Error:", error);
@@ -62,7 +67,7 @@ const getOffers = async (req, res) => {
         }
 
         if (category && category !== 'all') {
-            query.category = { $regex: new RegExp(`^${category}$`, 'i') };
+            query.category = category;
         }
 
         if (search) {
@@ -77,6 +82,7 @@ const getOffers = async (req, res) => {
 
         let offers = await Offer.find(query)
             .populate('vendorId', 'storeName name location profileImage storeImage storeAddress')
+            .populate('category')
             .sort({ createdAt: -1 })
             .lean();
 
@@ -136,22 +142,29 @@ const getVendorOffers = async (req, res) => {
         const skip = (page - 1) * limit;
 
         const now = new Date();
-        const query = {
-            vendorId,
-            endDate: { $gte: now }
-        };
+        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+        
+        const query = { vendorId };
 
-        const total = await Offer.countDocuments(query);
-        const offers = await Offer.find(query)
-            .populate('vendorId', 'storeName name location profileImage storeImage storeAddress')
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(limit);
+        const [total, active, upcoming, expired, offers] = await Promise.all([
+            Offer.countDocuments(query),
+            Offer.countDocuments({ ...query, startDate: { $lte: endOfDay }, endDate: { $gte: startOfDay } }),
+            Offer.countDocuments({ ...query, startDate: { $gt: endOfDay } }),
+            Offer.countDocuments({ ...query, endDate: { $lt: startOfDay } }),
+            Offer.find(query)
+                .populate('vendorId', 'storeName name location profileImage storeImage storeAddress')
+                .populate('category')
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
+        ]);
 
         res.json({
             success: true,
             offers,
             total,
+            stats: { active, upcoming, expired },
             page,
             hasMore: skip + offers.length < total
         });
@@ -179,15 +192,18 @@ const editOffer = async (req, res) => {
         const { offerId } = req.params;
         const updates = req.body;
 
-        if (req.file) {
-            updates.image = `/public/offers/${req.file.filename}`;
+        if (updates.category && !mongoose.Types.ObjectId.isValid(updates.category)) {
+            const foundCat = await Category.findOne({ name: new RegExp(`^${updates.category}$`, 'i') });
+            if (foundCat) updates.category = foundCat._id;
+            // if not found, we let it fall through or error. For edit, maybe let it be or error.
+            else return res.status(400).json({ success: false, message: `Invalid category: ${updates.category}` });
         }
 
         const offer = await Offer.findOneAndUpdate(
             { _id: offerId, vendorId: req.user.userId },
             updates,
-            { new: true }
-        );
+            { returnDocument: 'after' }
+        ).populate('category');
 
         if (!offer) {
             return res.status(404).json({ success: false, message: 'Offer not found or unauthorized' });
@@ -202,7 +218,9 @@ const editOffer = async (req, res) => {
 const getOfferById = async (req, res) => {
     try {
         const { offerId } = req.params;
-        const offer = await Offer.findById(offerId).populate('vendorId', 'storeName name location profileImage storeImage storeAddress');
+        const offer = await Offer.findById(offerId)
+            .populate('vendorId', 'storeName name location profileImage storeImage storeAddress')
+            .populate('category');
 
         if (!offer) {
             return res.status(404).json({ success: false, message: 'Offer not found' });

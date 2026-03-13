@@ -313,7 +313,7 @@ const OfferDetailsScreen = ({ route, navigation }) => {
                 <View className="px-6 py-8">
                     <View className="mb-8">
                         <Text style={{ color: staticColors.secondary }} className="text-[10px] font-black tracking-[2px] mb-2">
-                            {offer.category ? t(`categories.${offer.category.toLowerCase()}`) : t('common.offer')}
+                            {offer.category?.name || offer.category || t('common.offer')}
                         </Text>
                         <Text style={{ color: colors.text }} className="text-4xl font-black tracking-tighter leading-[44px]">
                             {offer.title}

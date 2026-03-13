@@ -64,7 +64,7 @@ const getAllTickets = async (req, res) => {
 const updateTicketStatus = async (req, res) => {
     try {
         const { status } = req.body;
-        const ticket = await Ticket.findByIdAndUpdate(req.params.id, { status }, { new: true });
+        const ticket = await Ticket.findByIdAndUpdate(req.params.id, { status }, { returnDocument: 'after' });
 
         if (!ticket) {
             return res.status(404).json({ success: false, message: 'Ticket not found' });

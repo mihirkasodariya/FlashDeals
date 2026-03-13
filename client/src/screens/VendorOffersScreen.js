@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Text from '../components/CustomText';
-import { View, FlatList, TouchableOpacity, Image, ActivityIndicator, Alert, useWindowDimensions, RefreshControl, Modal, Platform } from 'react-native';
+import { View, FlatList, ScrollView, TouchableOpacity, Image, ActivityIndicator, Alert, useWindowDimensions, RefreshControl, Modal, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
+import { useFocusEffect } from '@react-navigation/native';
 import { ChevronLeft, Package as LucidePackage, Trash2, Calendar, Tag, Eye, MousePointer2, Edit2, AlertCircle, CheckCircle2 } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../context/ThemeContext';
@@ -71,6 +72,8 @@ const VendorOffersScreen = ({ navigation }) => {
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
+    const [stats, setStats] = useState({ active: 0, upcoming: 0, expired: 0 });
+    const [filterStatus, setFilterStatus] = useState('All');
 
     const fetchMyOffers = async (pageNum = 1, isRefresh = false) => {
         try {
@@ -90,8 +93,13 @@ const VendorOffersScreen = ({ navigation }) => {
                     if (pageNum === 1) {
                         setOffers(data.offers);
                     } else {
-                        setOffers(prev => [...prev, ...data.offers]);
+                        setOffers(prev => {
+                            const existingIds = new Set(prev.map(o => o._id));
+                            const uniqueNewOffers = data.offers.filter(o => !existingIds.has(o._id));
+                            return [...prev, ...uniqueNewOffers];
+                        });
                     }
+                    if (data.stats) setStats(data.stats);
                     setHasMore(data.hasMore);
                     setPage(pageNum);
                 }
@@ -105,10 +113,11 @@ const VendorOffersScreen = ({ navigation }) => {
         }
     };
 
-    useEffect(() => {
-        // Initial fetch only - Do not re-fetch on focus to prevent flickering
-        fetchMyOffers();
-    }, []);
+    useFocusEffect(
+        useCallback(() => {
+            fetchMyOffers();
+        }, [])
+    );
 
     const onRefresh = () => {
         setRefreshing(true);
@@ -166,11 +175,34 @@ const VendorOffersScreen = ({ navigation }) => {
                         resizeMode="cover"
                     />
                     <View className="ml-4 flex-1">
-                        <View style={{ backgroundColor: `${colors.primary}15` }} className="self-start px-2 py-1 rounded-lg mb-1">
-                            <Text style={{ color: colors.primary }} className="text-[10px] font-black uppercase tracking-wider">{t(`categories.${item.category.toLowerCase()}`)}</Text>
+                        <View className="flex-row items-center justify-between mb-1">
+                            <View style={{ backgroundColor: `${colors.primary}15` }} className="px-2 py-1 rounded-lg">
+                                <Text style={{ color: colors.primary }} className="text-[10px] font-black uppercase tracking-wider">{item.category?.name || item.category}</Text>
+                            </View>
+                            {(() => {
+                                const now = new Date();
+                                const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                                const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+                                const start = new Date(item.startDate);
+                                const end = new Date(item.endDate);
+                                
+                                let status = { label: 'Active', color: '#10B981', bg: '#10B98115' };
+                                
+                                if (start > todayEnd) {
+                                    status = { label: 'Upcoming', color: '#F59E0B', bg: '#F59E0B15' };
+                                } else if (end < todayStart) {
+                                    status = { label: 'Expired', color: '#EF4444', bg: '#EF444415' };
+                                }
+                                
+                                return (
+                                    <View style={{ backgroundColor: status.bg }} className="px-2 py-1 rounded-lg">
+                                        <Text style={{ color: status.color }} className="text-[9px] font-black uppercase tracking-wider">{status.label}</Text>
+                                    </View>
+                                );
+                            })()}
                         </View>
                         <Text style={{ color: colors.text }} className="text-lg font-black leading-6" numberOfLines={2}>{item.title}</Text>
-
+                        
                         <View className="flex-row items-center mt-2 opacity-60">
                             <Calendar size={12} color={colors.textSecondary} />
                             <Text style={{ color: colors.textSecondary }} className="text-[10px] font-bold ml-1">
@@ -241,24 +273,67 @@ const VendorOffersScreen = ({ navigation }) => {
                 <Text style={{ color: colors.text }} className="ml-4 text-2xl font-black">{t('store.my_flash_offers')}</Text>
             </View>
 
+            {/* Quick Stats & Filters */}
+            <View className="mb-4">
+                <ScrollView 
+                    horizontal 
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={{ paddingHorizontal: 24, gap: 12 }}
+                >
+                    {[
+                        { label: 'All', count: stats.active + stats.upcoming + stats.expired, color: colors.primary },
+                        { label: 'Active', count: stats.active, color: '#10B981' },
+                        { label: 'Upcoming', count: stats.upcoming, color: '#F59E0B' },
+                        { label: 'Expired', count: stats.expired, color: '#EF4444' }
+                    ].map((item) => (
+                        <TouchableOpacity
+                            key={item.label}
+                            onPress={() => setFilterStatus(item.label)}
+                            style={{ 
+                                backgroundColor: filterStatus === item.label ? item.color : colors.card,
+                                borderColor: filterStatus === item.label ? item.color : colors.border
+                            }}
+                            className="px-5 py-3 rounded-2xl border flex-row items-center shadow-sm"
+                        >
+                            <Text style={{ color: filterStatus === item.label ? 'white' : colors.text }} className="font-black text-xs mr-2">{item.label}</Text>
+                            <View style={{ backgroundColor: filterStatus === item.label ? 'rgba(255,255,255,0.2)' : `${item.color}15` }} className="px-2 py-0.5 rounded-lg">
+                                <Text style={{ color: filterStatus === item.label ? 'white' : item.color }} className="text-[10px] font-black">{item.count}</Text>
+                            </View>
+                        </TouchableOpacity>
+                    ))}
+                </ScrollView>
+            </View>
+
             {loading && !refreshing ? (
                 <View className="flex-1 items-center justify-center">
                     <ActivityIndicator size="large" color={colors.primary} />
                 </View>
             ) : (
                 <FlatList
-                    data={offers}
+                    data={offers.filter(offer => {
+                        if (filterStatus === 'All') return true;
+                        const now = new Date();
+                        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                        const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+                        const start = new Date(offer.startDate);
+                        const end = new Date(offer.endDate);
+
+                        if (filterStatus === 'Active') return start <= todayEnd && end >= todayStart;
+                        if (filterStatus === 'Upcoming') return start > todayEnd;
+                        if (filterStatus === 'Expired') return end < todayStart;
+                        return true;
+                    })}
                     renderItem={({ item, index }) => (
-                        <>
+                        <View>
                             {index > 0 && index % 3 === 0 && (
                                 <View className="mb-6">
                                     <DummyNativeAd colors={colors} />
                                 </View>
                             )}
                             {renderOfferItem({ item })}
-                        </>
+                        </View>
                     )}
-                    keyExtractor={(item, index) => item._id + index.toString()}
+                    keyExtractor={(item) => item._id}
                     contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 100, paddingTop: 10 }}
                     showsVerticalScrollIndicator={false}
                     onEndReached={handleLoadMore}

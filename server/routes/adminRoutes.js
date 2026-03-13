@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const Offer = require('../models/Offer');
+const Category = require('../models/Category');
+const mongoose = require('mongoose');
 const { authenticateToken, isAdmin } = require('../middleware/authMiddleware');
 const { uploadOffer } = require('../middleware/uploadMiddleware');
 
@@ -134,7 +136,7 @@ router.get('/vendor/:id', authenticateToken, isAdmin, async (req, res) => {
 router.put('/status/:id', authenticateToken, isAdmin, async (req, res) => {
     try {
         const { status } = req.body;
-        const user = await User.findByIdAndUpdate(req.params.id, { status }, { new: true });
+        const user = await User.findByIdAndUpdate(req.params.id, { status }, { returnDocument: 'after' });
         res.json({ success: true, user });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Failed to update status' });
@@ -156,6 +158,7 @@ router.get('/offers', authenticateToken, isAdmin, async (req, res) => {
     try {
         const offers = await Offer.find()
             .populate('vendorId', 'storeName name')
+            .populate('category')
             .sort({ createdAt: -1 });
         res.json({ success: true, offers });
     } catch (err) {
@@ -170,14 +173,22 @@ router.put('/offer/:id', authenticateToken, isAdmin, uploadOffer.single('image')
         const updateData = {};
         if (title) updateData.title = title;
         if (description) updateData.description = description;
-        if (category) updateData.category = category;
+        if (category) {
+            if (!mongoose.Types.ObjectId.isValid(category)) {
+                const foundCat = await Category.findOne({ name: new RegExp(`^${category}$`, 'i') });
+                if (foundCat) updateData.category = foundCat._id;
+                else return res.status(400).json({ success: false, message: `Invalid category: ${category}` });
+            } else {
+                updateData.category = category;
+            }
+        }
         if (startDate) updateData.startDate = startDate;
         if (endDate) updateData.endDate = endDate;
         if (req.file) {
             updateData.image = `/public/offers/${req.file.filename}`;
         }
 
-        const offer = await Offer.findByIdAndUpdate(req.params.id, updateData, { new: true });
+        const offer = await Offer.findByIdAndUpdate(req.params.id, updateData, { returnDocument: 'after' }).populate('category');
         if (!offer) return res.status(404).json({ success: false, message: 'Offer not found' });
 
         res.json({ success: true, message: 'Offer updated by administrator', offer });
@@ -197,17 +208,25 @@ router.post('/vendor/:vendorId/offer', authenticateToken, isAdmin, uploadOffer.s
             return res.status(400).json({ success: false, message: 'Offer image is required' });
         }
 
+        let categoryId = category;
+        if (category && !mongoose.Types.ObjectId.isValid(category)) {
+            const foundCat = await Category.findOne({ name: new RegExp(`^${category}$`, 'i') });
+            if (foundCat) categoryId = foundCat._id;
+            else return res.status(400).json({ success: false, message: `Invalid category: ${category}` });
+        }
+
         const offer = new Offer({
             vendorId,
             title,
             description,
-            category,
+            category: categoryId,
             image: `/public/offers/${req.file.filename}`,
             startDate,
             endDate
         });
 
         await offer.save();
+        await offer.populate('category');
         res.json({ success: true, message: 'Offer created by administrator', offer });
     } catch (err) {
         console.error(err);
@@ -246,7 +265,7 @@ router.put('/user/:id', authenticateToken, isAdmin, async (req, res) => {
         if (storeAddress !== undefined) updateData.storeAddress = storeAddress;
         if (role) updateData.role = role;
 
-        const user = await User.findByIdAndUpdate(req.params.id, updateData, { new: true });
+        const user = await User.findByIdAndUpdate(req.params.id, updateData, { returnDocument: 'after' });
         res.json({ success: true, user });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Failed to update user' });
@@ -262,6 +281,7 @@ router.get('/stats', authenticateToken, isAdmin, async (req, res) => {
 
         const recentOffers = await Offer.find()
             .populate('vendorId', 'storeName')
+            .populate('category')
             .sort({ createdAt: -1 })
             .limit(5);
 
@@ -271,11 +291,13 @@ router.get('/stats', authenticateToken, isAdmin, async (req, res) => {
 
         const topImpressionOffers = await Offer.find()
             .populate('vendorId', 'storeName')
+            .populate('category')
             .sort({ impressions: -1 })
             .limit(5);
 
         const topVisitOffers = await Offer.find()
             .populate('vendorId', 'storeName')
+            .populate('category')
             .sort({ visits: -1 })
             .limit(5);
 
