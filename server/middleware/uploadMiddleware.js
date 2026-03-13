@@ -39,10 +39,12 @@ const upload = multer({ storage: uploadStorage });
 const uploadOffer = multer({ storage: createStorage('offers', 'offer') });
 const uploadProfile = multer({ storage: createStorage('storelogo', 'logo') });
 const uploadHelp = multer({ storage: createStorage('help', 'ticket') });
+const uploadCategory = multer({ storage: createStorage('categories', 'category') });
 
 module.exports = {
     upload,
     uploadOffer,
     uploadProfile,
-    uploadHelp
+    uploadHelp,
+    uploadCategory
 };

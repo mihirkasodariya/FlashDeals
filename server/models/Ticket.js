@@ -36,7 +36,13 @@ const ticketSchema = new mongoose.Schema({
     },
     attachment: {
         type: String
-    }
+    },
+    messages: [{
+        senderId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        senderRole: { type: String, enum: ['user', 'admin'] },
+        message: { type: String, required: true },
+        createdAt: { type: Date, default: Date.now }
+    }]
 }, { timestamps: true });
 
 module.exports = mongoose.model('Ticket', ticketSchema);

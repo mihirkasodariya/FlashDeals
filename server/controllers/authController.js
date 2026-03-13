@@ -7,8 +7,10 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_key_flashdeals';
 const login = async (req, res) => {
     try {
         const { mobile, password } = req.body;
+        console.log('mobile', mobile)
+        console.log('password', password)
         const user = await User.findOne({ mobile, password });
-
+        console.log('user', user)
         if (!user) {
             return res.status(401).json({ success: false, message: 'Invalid mobile or password' });
         }
@@ -53,7 +55,8 @@ const login = async (req, res) => {
                 storeName: user.storeName,
                 storeAddress: user.storeAddress,
                 storeImage: user.storeImage,
-                location: user.location
+                location: user.location,
+                permissions: user.permissions || []
             }
         });
     } catch (error) {
@@ -104,7 +107,8 @@ const getMe = async (req, res) => {
                 storeName: user.storeName,
                 storeAddress: user.storeAddress,
                 storeImage: user.storeImage,
-                location: user.location
+                location: user.location,
+                permissions: user.permissions || []
             }
         });
     } catch (error) {
@@ -307,7 +311,8 @@ const loginWithOTP = async (req, res) => {
                 mobile: user.mobile,
                 role: user.role,
                 isVerified: user.isVerified,
-                profileImage: user.profileImage
+                profileImage: user.profileImage,
+                permissions: user.permissions || []
             }
         });
     } catch (error) {

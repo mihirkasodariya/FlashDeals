@@ -5,7 +5,7 @@ const userSchema = new mongoose.Schema({
     mobile: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     profileImage: { type: String },
-    role: { type: String, enum: ['user', 'vendor'], default: 'user' },
+    role: { type: String, enum: ['user', 'vendor', 'admin'], default: 'user' },
     isVerified: { type: Boolean, default: false },
     // Vendor specific fields
     storeName: { type: String },
@@ -31,7 +31,8 @@ const userSchema = new mongoose.Schema({
         location: { type: String },
         lastLogin: { type: Date, default: Date.now },
         isActive: { type: Boolean, default: true }
-    }]
+    }],
+    isDeleted: { type: Boolean, default: false }
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

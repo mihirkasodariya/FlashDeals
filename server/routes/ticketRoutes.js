@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const ticketController = require('../controllers/ticketController');
-const { authenticateToken } = require('../middleware/authMiddleware');
+const { authenticateToken, isAdmin } = require('../middleware/authMiddleware');
 const { uploadHelp } = require('../middleware/uploadMiddleware');
 
 // All ticket routes require authentication
@@ -9,6 +9,11 @@ router.use(authenticateToken);
 
 router.post('/create', uploadHelp.single('attachment'), ticketController.createTicket);
 router.get('/my-tickets', ticketController.getMyTickets);
-router.get('/all-tickets', ticketController.getAllTickets); // Simplified for now, usually needs admin check
+
+// Admin-only ticket routes
+router.get('/all-tickets', isAdmin, ticketController.getAllTickets);
+router.put('/update-status/:id', isAdmin, ticketController.updateTicketStatus);
+router.post('/reply/:id', isAdmin, ticketController.replyToTicket);
+router.delete('/:id', isAdmin, ticketController.deleteTicket);
 
 module.exports = router;

@@ -34,4 +34,18 @@ const authenticateToken = async (req, res, next) => {
     }
 };
 
-module.exports = { authenticateToken };
+const isAdmin = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.user.userId);
+        if (!user || user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: 'Access denied: Administrative privileges required' });
+        }
+        req.adminUser = user;
+        next();
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+module.exports = { authenticateToken, isAdmin };
+
