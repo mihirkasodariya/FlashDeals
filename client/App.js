@@ -42,6 +42,8 @@ import NotificationScreen from './src/screens/NotificationScreen';
 import AppSettingsScreen from './src/screens/AppSettingsScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import LanguageSelectionScreen from './src/screens/LanguageSelectionScreen';
+import NoInternetModal from './src/components/NoInternetModal';
+import { deactivateKeepAwake } from 'expo-keep-awake';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -213,6 +215,9 @@ function AppContent() {
       }
     };
     initNotifications();
+    
+    // Deactivate any keep-awake signal to respect system auto-lock settings
+    deactivateKeepAwake();
   }, []);
 
   const linking = {
@@ -228,6 +233,7 @@ function AppContent() {
     <NavigationContainer linking={linking}>
       <StatusBar style={isDarkMode ? "light" : "dark"} />
       <RootStack />
+      <NoInternetModal />
     </NavigationContainer>
   );
 }
