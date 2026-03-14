@@ -348,7 +348,7 @@
         "gps_synced": "GPS Precision Synced",
         "detect_gps": "Detect Live GPS Location",
         "proof_existence": "Proof of Existence (Optional)",
-        "upload_id": "Upload ID Card",
+        "upload_id": "Upload GSTN certificate",
         "update_image": "Update Image",
         "png_jpg_max": "PNG, JPG • Max 5MB",
         "ai_core_status": "AI Core Status",

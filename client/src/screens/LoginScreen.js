@@ -136,11 +136,7 @@ const LoginScreen = ({ navigation }) => {
                     }
                 }
 
-                if (data.user.role === 'vendor' && !data.user.isVerified) {
-                    navigation.navigate('ActivationStatus');
-                } else {
-                    navigation.navigate('Main');
-                }
+                navigation.navigate('Main');
             } else {
                 Alert.alert(t('common.error'), data.message || t('login.failed'));
             }

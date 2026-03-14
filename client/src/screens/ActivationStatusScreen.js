@@ -23,8 +23,8 @@ const ActivationStatusScreen = ({ navigation }) => {
         <SafeAreaView style={{ flex: 1, backgroundColor: colors.background, paddingHorizontal: 24 }}>
             <View className="items-center mt-14 mb-10">
                 <ShieldCheck size={40} color={colors.primary} />
-                <Text style={{ color: colors.text }} className="text-2xl font-bold mt-4 mb-2">{t('activation_status.reg_pending')}</Text>
-                <Text style={{ color: colors.textSecondary }} className="text-sm text-center leading-tight">{t('activation_status.thank_you')}</Text>
+                <Text style={{ color: colors.text }} className="text-2xl font-bold mt-4 mb-2">Registration Pending</Text>
+                <Text style={{ color: colors.textSecondary }} className="text-sm text-center leading-tight">Thank you for joining Flash Deals</Text>
             </View>
 
             <View className="pl-2.5">
@@ -62,8 +62,8 @@ const ActivationStatusScreen = ({ navigation }) => {
 
             <View className="mt-auto mb-10">
                 <CustomButton
-                    title={t('activation_status.return_home')}
-                    onPress={() => navigation.navigate('Login')}
+                    title="Return Home"
+                    onPress={() => navigation.navigate('Main')}
                     variant="outline"
                 />
                 <TouchableOpacity className="items-center mt-4" onPress={() => navigation.navigate('SupportCenter')}>

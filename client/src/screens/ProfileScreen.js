@@ -53,6 +53,7 @@ const ProfileScreen = ({ navigation }) => {
                     setEditMobile(data.user.mobile);
                 }
             } else {
+                await AsyncStorage.removeItem('userToken');
                 if (isMounted.current) setUser(null);
             }
         } catch (error) {
@@ -206,7 +207,8 @@ const ProfileScreen = ({ navigation }) => {
     const menuItems = [
         ...(user && isVendor ? [
             { icon: LucidePackage, label: t('profile.add_new_offer'), color: colors.secondary, onPress: () => navigation.navigate('AddOffer') },
-            { icon: Store, label: t('profile.manage_store'), color: colors.primary, onPress: () => navigation.navigate('EditStore', { vendorData: user }) }
+            { icon: Store, label: t('profile.manage_store'), color: colors.primary, onPress: () => navigation.navigate('EditStore', { vendorData: user }) },
+            { icon: CheckCircle2, label: t('profile.account_status') || 'Account Status', color: colors.success || '#10B981', onPress: () => navigation.navigate('ActivationStatus') }
         ] : []),
         { icon: Bell, label: t('profile.notifications'), color: colors.warning, onPress: () => navigation.navigate('Notifications') },
         { icon: Shield, label: t('profile.privacy_center'), color: colors.primary, onPress: () => navigation.navigate('PrivacyCenter') },
@@ -264,7 +266,10 @@ const ProfileScreen = ({ navigation }) => {
                             <Text style={{ color: colors.text }} className="text-2xl font-black text-center">{t('profile.guest_access')}</Text>
                             <Text style={{ color: colors.textSecondary }} className="text-sm font-bold opacity-60 mt-1 mb-8">{t('profile.sign_in_unlock')}</Text>
                             <TouchableOpacity
-                                onPress={() => navigation.navigate('Login')}
+                                onPress={async () => {
+                                    await AsyncStorage.removeItem('userToken');
+                                    navigation.navigate('Login');
+                                }}
                                 style={{ backgroundColor: colors.primary }}
                                 className="flex-row items-center px-10 py-4 rounded-[24px] shadow-lg shadow-primary/20"
                             >
@@ -299,7 +304,10 @@ const ProfileScreen = ({ navigation }) => {
                     {!user ? (
                         <TouchableOpacity
                             className="flex-row items-center justify-center py-5 mt-8 bg-primary rounded-[28px] shadow-lg shadow-primary/40 px-8"
-                            onPress={() => navigation.navigate('Login')}
+                            onPress={async () => {
+                                await AsyncStorage.removeItem('userToken');
+                                navigation.navigate('Login');
+                            }}
                         >
                             <Store size={20} color="white" />
                             <Text style={{ color: '#FFFFFF' }} className="ml-3 font-black text-sm tracking-widest">

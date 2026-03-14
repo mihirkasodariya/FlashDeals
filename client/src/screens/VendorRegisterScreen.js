@@ -246,7 +246,7 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                 if (data.success) {
                     setRegistrationFinished(true); // Mark as done to prevent reversal
                     DeviceEventEmitter.emit('roleChanged');
-                    navigation.navigate('ActivationStatus');
+                    navigation.navigate('Main');
                 } else {
                     Alert.alert(t('common.error'), data.message || t('vendor_register.failed_submit_docs'));
                 }
@@ -351,29 +351,7 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                                     <Text style={{ color: colors.text }} className="mt-4 font-black text-xl tracking-tight">{t('vendor_register.enterprise_verification')}</Text>
                                 </View>
 
-                                <View style={{ backgroundColor: isDarkMode ? `${colors.primary}33` : 'rgba(245, 247, 248, 0.5)', borderColor: colors.border }} className="flex-row mb-10 p-1.5 rounded-2xl border">
-                                    {['GSTIN', 'Aadhaar'].map((type) => (
-                                        <TouchableOpacity
-                                            key={type}
-                                            activeOpacity={0.9}
-                                            style={{
-                                                flex: 1,
-                                                paddingVertical: 14,
-                                                alignItems: 'center',
-                                                borderRadius: 12,
-                                                backgroundColor: activeIdType === type ? colors.card : 'transparent',
-                                                shadowColor: activeIdType === type ? '#000' : 'transparent',
-                                                shadowOffset: { width: 0, height: 2 },
-                                                shadowOpacity: 0.1,
-                                                shadowRadius: 4,
-                                                elevation: activeIdType === type ? 3 : 0
-                                            }}
-                                            onPress={() => setActiveIdType(type)}
-                                        >
-                                            <Text style={{ color: activeIdType === type ? colors.text : colors.textSecondary }} className={`text-[10px] font-black tracking-widest`}>{type}</Text>
-                                        </TouchableOpacity>
-                                    ))}
-                                </View>
+                                {/* Removed ID Type Switcher as only GSTIN is needed now */}
 
                                 <View className="space-y-6">
                                     <View>
@@ -386,9 +364,12 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                                     </View>
 
                                     <View className="mt-6">
-                                        <Text className="text-[10px] font-black text-textSecondary tracking-widest mb-3 ml-1 opacity-50">{t('vendor_register.tax_identity')}</Text>
+                                        <View className="flex-row justify-between items-center mb-3">
+                                            <Text className="text-[10px] font-black text-textSecondary tracking-widest ml-1 opacity-50">{t('vendor_register.tax_identity')}</Text>
+                                            <Text style={{ color: colors.textSecondary }} className="text-[9px] font-bold opacity-40">OPTIONAL</Text>
+                                        </View>
                                         <FloatingInput
-                                            label={t('vendor_register.id_reference', { type: activeIdType })}
+                                            label="GSTIN Number (Optional)"
                                             value={formData.idNumber}
                                             onChangeText={(val) => setFormData(prev => ({ ...prev, idNumber: val }))}
                                         />
@@ -417,7 +398,10 @@ const VendorRegisterScreen = ({ navigation, route }) => {
 
                                     {/* Document Upload Zone */}
                                     <View className="mt-10">
-                                        <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-4 ml-1 opacity-50">{t('vendor_register.proof_existence')}</Text>
+                                        <View className="flex-row justify-between items-center mb-4">
+                                            <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest ml-1 opacity-50">{t('vendor_register.proof_existence')}</Text>
+                                            <Text style={{ color: colors.textSecondary }} className="text-[9px] font-bold opacity-40">OPTIONAL</Text>
+                                        </View>
                                         <TouchableOpacity style={{ borderColor: colors.border, backgroundColor: colors.surface }} className="h-[220px] border-2 border-dashed rounded-[32px] justify-center items-center overflow-hidden" onPress={pickDocument}>
                                             {docImage ? (
                                                 <View className="w-full h-full">
