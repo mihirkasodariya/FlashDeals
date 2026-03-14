@@ -278,7 +278,14 @@
         "status_review": "समीक्षा की जा रही है",
         "status_resolved": "समाधान हो गया",
         "status_closed": "बंद",
-        "status_pending": "लंबित"
+        "status_pending": "लंबित",
+        "conversation": "बातचीत",
+        "reply_placeholder": "अपना संदेश यहाँ टाइप करें...",
+        "send_reply": "जवाब भेजें",
+        "admin_reply": "टीम",
+        "you": "आप",
+        "reply_success": "जवाब सफलतापूर्वक भेजा गया",
+        "reply_failed": "जवाब भेजने में विफल"
     },
     "notifications": {
         "title": "सूचनाएं",

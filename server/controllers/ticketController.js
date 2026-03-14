@@ -108,6 +108,15 @@ const replyToTicket = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Ticket not found' });
         }
 
+        // Check if user is admin OR the owner of the ticket
+        if (userRole !== 'admin' && ticket.userId.toString() !== userId) {
+            return res.status(403).json({ success: false, message: 'Access denied: You can only reply to your own tickets' });
+        }
+
+        if (ticket.status === 'Closed' || ticket.status === 'Resolved') {
+            return res.status(400).json({ success: false, message: 'This ticket is settled and cannot be replied to' });
+        }
+
         ticket.messages.push({
             senderId: userId,
             senderRole: userRole === 'admin' ? 'admin' : 'user',

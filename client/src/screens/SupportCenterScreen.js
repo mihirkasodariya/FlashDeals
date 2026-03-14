@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useFocusEffect } from '@react-navigation/native';
 import Text from '../components/CustomText';
 import {
     View,
@@ -61,6 +62,12 @@ const SupportCenterScreen = ({ navigation }) => {
         category: 'General'
     });
     const [image, setImage] = useState(null);
+
+    useFocusEffect(
+        useCallback(() => {
+            fetchTickets();
+        }, [])
+    );
 
     useEffect(() => {
         fetchTickets();
@@ -179,7 +186,7 @@ const SupportCenterScreen = ({ navigation }) => {
                     <ChevronLeft size={24} color={colors.primary} />
                 </TouchableOpacity>
                 <View className="items-center">
-                    <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-[2px] uppercase opacity-60">{t('support.help_center')}</Text>
+                    <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-[2px] capitalize opacity-60">{t('support.help_center')}</Text>
                     <Text style={{ color: colors.text }} className="text-sm font-black mt-0.5">{t('support.title')}</Text>
                 </View>
                 <TouchableOpacity
@@ -232,7 +239,7 @@ const SupportCenterScreen = ({ navigation }) => {
                         <View style={{ backgroundColor: '#3B82F615' }} className="w-12 h-12 rounded-2xl items-center justify-center mb-3">
                             <Mail size={22} color="#3B82F6" strokeWidth={2.5} />
                         </View>
-                        <Text style={{ color: colors.text }} className="text-[11px] font-black uppercase">{t('support.email_support')}</Text>
+                        <Text style={{ color: colors.text }} className="text-[11px] font-black capitalize">{t('support.email_support')}</Text>
                         <Text style={{ color: colors.textSecondary }} className="text-[9px] font-bold mt-1 opacity-50">{t('support.email_desc')}</Text>
                     </TouchableOpacity>
 
@@ -244,7 +251,7 @@ const SupportCenterScreen = ({ navigation }) => {
                         <View style={{ backgroundColor: '#8B5CF615' }} className="w-12 h-12 rounded-2xl items-center justify-center mb-3">
                             <Shield size={22} color="#8B5CF6" strokeWidth={2.5} />
                         </View>
-                        <Text style={{ color: colors.text }} className="text-[11px] font-black uppercase">{t('support.policy_support')}</Text>
+                        <Text style={{ color: colors.text }} className="text-[11px] font-black capitalize">{t('support.policy_support')}</Text>
                         <Text style={{ color: colors.textSecondary }} className="text-[9px] font-bold mt-1 opacity-50">{t('support.policy_desc')}</Text>
                     </TouchableOpacity>
                 </View>
@@ -253,7 +260,7 @@ const SupportCenterScreen = ({ navigation }) => {
                 <View className="px-8 mt-12">
                     <View className="flex-row items-center justify-between mb-8">
                         <View>
-                            <Text style={{ color: colors.secondary }} className="text-[11px] font-black tracking-[3px] mb-1 uppercase">{t('support.ticket_history')}</Text>
+                            <Text style={{ color: colors.secondary }} className="text-[11px] font-black tracking-[3px] mb-1 capitalize">{t('support.ticket_history')}</Text>
                             <Text style={{ color: colors.text }} className="text-base font-black">{t('support.active_requests')}</Text>
                         </View>
                         <View style={{ backgroundColor: colors.surface, borderColor: colors.border }} className="px-3 py-1.5 rounded-xl border">
@@ -281,8 +288,8 @@ const SupportCenterScreen = ({ navigation }) => {
                                     style={{ backgroundColor: `${getStatusColor(ticket.status)}15` }}
                                     className="px-3 py-1.5 rounded-full"
                                 >
-                                    <Text style={{ color: getStatusColor(ticket.status) }} className="text-[9px] font-black tracking-widest uppercase">
-                                        {t(`support.status_${ticket.status.toLowerCase().replace(' ', '_')}`)}
+                                    <Text style={{ color: getStatusColor(ticket.status) }} className="text-[9px] font-black tracking-widest capitalize">
+                                        {ticket.status}
                                     </Text>
                                 </View>
                             </View>
@@ -301,7 +308,7 @@ const SupportCenterScreen = ({ navigation }) => {
                                     </Text>
                                 </View>
                                 <View className="flex-row items-center">
-                                    <Text style={{ color: colors.secondary }} className="text-[10px] font-black mr-2 italic uppercase">{t(`support.cat_${ticket.category.toLowerCase()}`)}</Text>
+                                    <Text style={{ color: colors.secondary }} className="text-[10px] font-black mr-2 italic capitalize">{t(`support.cat_${ticket.category.toLowerCase()}`)}</Text>
                                     <ChevronRight size={14} color={colors.textSecondary} opacity={0.3} />
                                 </View>
                             </View>
@@ -343,7 +350,7 @@ const SupportCenterScreen = ({ navigation }) => {
                             >
                                 <View className="flex-row items-center justify-between mb-8">
                                     <View>
-                                        <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-[2px] uppercase opacity-60">{t('support.request_title')}</Text>
+                                        <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-[2px] capitalize opacity-60">{t('support.request_title')}</Text>
                                         <Text style={{ color: colors.text }} className="text-2xl font-black">{t('support.new_ticket')}</Text>
                                     </View>
                                     <TouchableOpacity
@@ -355,7 +362,7 @@ const SupportCenterScreen = ({ navigation }) => {
                                     </TouchableOpacity>
                                 </View>
 
-                                <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-3 ml-2 uppercase opacity-60">{t('support.category')}</Text>
+                                <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-3 ml-2 capitalize opacity-60">{t('support.category')}</Text>
                                 <ScrollView
                                     horizontal
                                     showsHorizontalScrollIndicator={false}
@@ -377,7 +384,7 @@ const SupportCenterScreen = ({ navigation }) => {
                                     })}
                                 </ScrollView>
 
-                                <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-3 ml-2 uppercase opacity-60">{t('support.subject')}</Text>
+                                <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-3 ml-2 capitalize opacity-60">{t('support.subject')}</Text>
                                 <TextInput
                                     style={{ backgroundColor: colors.surface, color: colors.text, borderColor: colors.border }}
                                     className="rounded-2xl px-6 py-5 mb-8 font-bold border"
@@ -387,7 +394,7 @@ const SupportCenterScreen = ({ navigation }) => {
                                     onChangeText={(text) => setForm(prev => ({ ...prev, subject: text }))}
                                 />
 
-                                <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-3 ml-2 uppercase opacity-60">{t('support.description')}</Text>
+                                <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-3 ml-2 capitalize opacity-60">{t('support.description')}</Text>
                                 <TextInput
                                     style={{ backgroundColor: colors.surface, color: colors.text, borderColor: colors.border }}
                                     className="rounded-[32px] px-6 py-6 mb-8 font-bold border h-40"
@@ -400,7 +407,7 @@ const SupportCenterScreen = ({ navigation }) => {
                                 />
 
                                 <View className="flex-row items-center justify-between mb-4 ml-2">
-                                    <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest uppercase opacity-60">{t('support.attachment')}</Text>
+                                    <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest capitalize opacity-60">{t('support.attachment')}</Text>
                                     <Text style={{ color: colors.textSecondary }} className="text-[9px] font-bold tracking-tight opacity-40">{t('support.optional')}</Text>
                                 </View>
                                 <View className="mb-10">

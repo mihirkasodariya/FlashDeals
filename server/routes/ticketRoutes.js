@@ -13,7 +13,7 @@ router.get('/my-tickets', ticketController.getMyTickets);
 // Admin-only ticket routes
 router.get('/all-tickets', isAdmin, ticketController.getAllTickets);
 router.put('/update-status/:id', isAdmin, ticketController.updateTicketStatus);
-router.post('/reply/:id', isAdmin, ticketController.replyToTicket);
+router.post('/reply/:id', ticketController.replyToTicket);
 router.delete('/:id', isAdmin, ticketController.deleteTicket);
 
 module.exports = router;

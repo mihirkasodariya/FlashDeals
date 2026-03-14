@@ -278,7 +278,14 @@
         "status_review": "Being Reviewed",
         "status_resolved": "Resolved",
         "status_closed": "Closed",
-        "status_pending": "Pending"
+        "status_pending": "Pending",
+        "conversation": "Conversation",
+        "reply_placeholder": "Type your message here...",
+        "send_reply": "Send Reply",
+        "admin_reply": "Team",
+        "you": "You",
+        "reply_success": "Reply sent successfully",
+        "reply_failed": "Failed to send reply"
     },
     "notifications": {
         "title": "Notifications",

@@ -273,7 +273,14 @@
         "status_review": "સમીક્ષા હેઠળ છે",
         "status_resolved": "ઉકેલાઈ ગયું",
         "status_closed": "બંધ",
-        "status_pending": "બાકી"
+        "status_pending": "બાકી",
+        "conversation": "વાતચીત",
+        "reply_placeholder": "તમારો સંદેશ અહીં લખો...",
+        "send_reply": "જવાબ મોકલો",
+        "admin_reply": "ટીમ",
+        "you": "તમે",
+        "reply_success": "જવાબ સફળતાપૂર્વક મોકલવામાં આવ્યો",
+        "reply_failed": "જવાબ મોકલવામાં નિષ્ફળ"
     },
     "notifications": {
         "title": "સૂચનાઓ",
