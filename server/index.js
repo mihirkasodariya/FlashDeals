@@ -36,15 +36,15 @@ app.get('/share/offer/:id', (req, res) => {
     const offerId = req.params.id;
 
     // Replace these with your actual Store URLs
-    const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.flashdeals.app';
-    const appStoreUrl = 'https://apps.apple.com/app/flashdeals/id123456789';
-    const appSchemeUrl = `flashdeals://offer/${offerId}`;
+    const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.mihirkasodariya.Offerz';
+    const appStoreUrl = 'https://apps.apple.com/app/offerz/id123456789';
+    const appSchemeUrl = `offerz://offer/${offerId}`;
 
     res.send(`
         <!DOCTYPE html>
         <html>
         <head>
-            <title>FlashDeals - View Offer</title>
+            <title>Offerz - View Offer</title>
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <style>
@@ -79,7 +79,7 @@ app.get('/share/offer/:id', (req, res) => {
         <body>
             <div class="container">
                 <div class="loader"></div>
-                <h1>Opening FlashDeals...</h1>
+                <h1>Opening Offerz...</h1>
                 <p>We're taking you to the offer details.</p>
             </div>
         </body>

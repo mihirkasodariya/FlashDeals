@@ -161,12 +161,12 @@
     "push_notifications_desc": "Vibración y alertas",
     "show_intro": "Ver Intro de nuevo",
     "show_intro_desc": "Repetir pantallas de bienvenida",
-    "about": "Sobre FlashDeals",
+    "about": "Sobre Offerz",
     "rate_app": "Calificar App",
     "rate_app_desc": "Apóyanos en la tienda",
     "share_app": "Compartir App",
     "share_app_desc": "Invita a tus amigos",
-    "share_message": "¡Mira FlashDeals! Ofertas locales en tiempo real. Descarga ahora.",
+    "share_message": "¡Mira Offerz! Ofertas locales en tiempo real. Descarga ahora.",
     "rate_us": "Califícanos",
     "rate_us_desc": "¡Gracias! Los enlaces estarán activos pronto.",
     "reset_intro_title": "Introducción",
@@ -419,7 +419,7 @@
     "verified_offer": "Verificado",
     "valid_msg": "Válida {{start}} - {{end}}.",
     "pinch_zoom": "Zoom para explorar",
-    "share_msg": "Oferta: {{title}} en {{store}} ! Baja FlashDeals."
+    "share_msg": "Oferta: {{title}} en {{store}} ! Baja Offerz."
   },
   "store": {
     "manage": "Gestionar",
@@ -443,7 +443,7 @@
     "gps_updated": "GPS OK",
     "failed_gps": "Error GPS",
     "allow_location": "Permitir loc.",
-    "my_flash_offers": "Mis Flash Deals",
+    "my_flash_offers": "Mis Offerz",
     "no_active_offers": "Nada",
     "no_offers_desc": "¡Empeza ya !",
     "create_first_offer": "Crear primero",

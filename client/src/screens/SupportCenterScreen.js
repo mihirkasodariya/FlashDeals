@@ -232,7 +232,7 @@ const SupportCenterScreen = ({ navigation }) => {
                 {/* Main Contact Actions */}
                 <View className="px-6 mt-8 flex-row justify-between">
                     <TouchableOpacity
-                        onPress={() => Linking.openURL('mailto:support@flashdeals.com')}
+                        onPress={() => Linking.openURL('mailto:support@offerz.com')}
                         style={{ backgroundColor: colors.card, borderColor: colors.border }}
                         className="w-[48%] p-6 rounded-[32px] items-center justify-center border"
                     >

@@ -132,7 +132,7 @@ const AppSettingsScreen = ({ navigation }) => {
         try {
             await Share.share({
                 message: t('settings.share_message'),
-                url: 'https://flashdeals.com'
+                url: 'https://offerz.com'
             });
         } catch (error) {
             console.error(error);
@@ -142,7 +142,7 @@ const AppSettingsScreen = ({ navigation }) => {
     const handleRateApp = () => {
         const storeUrl = Platform.OS === 'ios'
             ? 'itms-apps://itunes.apple.com/app/id123456789'
-            : 'market://details?id=com.flashdeals.app';
+            : 'market://details?id=com.mihirkasodariya.Offerz';
 
         Linking.canOpenURL(storeUrl).then(supported => {
             if (supported) {

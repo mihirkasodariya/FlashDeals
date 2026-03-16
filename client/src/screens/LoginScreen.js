@@ -167,7 +167,7 @@ const LoginScreen = ({ navigation }) => {
                     <View className="mb-8 items-center">
                         <View className="mb-4">
                             <Text style={{ color: colors.text }} className="text-4xl font-black tracking-tighter">
-                                Flash<Text style={{ color: colors.secondary }}>Deals</Text>
+                                Offerz
                             </Text>
                         </View>
                         <Text style={{ color: colors.text }} className="text-2xl font-bold mb-2">{t('login.welcome_back')}</Text>

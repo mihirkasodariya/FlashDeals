@@ -221,7 +221,7 @@ function AppContent() {
   }, []);
 
   const linking = {
-    prefixes: ['flashdeals://', 'http://192.168.1.21:5000'],
+    prefixes: ['offerz://', 'http://192.168.1.21:5000'],
     config: {
       screens: {
         OfferDetails: 'offer/:offerId',

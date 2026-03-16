@@ -158,7 +158,7 @@ const Dashboard = () => {
                 />
                 <StatCard
                     icon={<Tag size={24} color="#f59e0b" />}
-                    label="flash deals"
+                    label="Offerz"
                     value={stats.totalOffers}
                     trend="0"
                     positive={true}

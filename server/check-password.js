@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const User = require('./models/User');
 require('dotenv').config();
 
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/flashdeals')
+mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/offerz')
     .then(async () => {
         const user = await User.findOne({ mobile: '9876543210' });
         if (user) {

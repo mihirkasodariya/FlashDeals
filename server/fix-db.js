@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 require('dotenv').config();
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/flashdeals';
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/offerz';
 
 async function fixIndexes() {
     try {

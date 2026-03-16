@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "FlashDeals",
-    "slug": "FlashDeals",
-    "scheme": "flashdeals",
+    "name": "Offerz",
+    "slug": "Offerz",
+    "scheme": "offerz",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -20,7 +20,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": false,
-      "package": "com.mihirkasodariya.FlashDeals"
+      "package": "com.mihirkasodariya.Offerz"
     },
     "web": {
       "favicon": "./assets/favicon.png"

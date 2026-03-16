@@ -161,12 +161,12 @@
     "push_notifications_desc": "Вибро и звуковые сигналы",
     "show_intro": "Показать интро",
     "show_intro_desc": "Повторить экраны приветствия",
-    "about": "О FlashDeals",
+    "about": "О Offerz",
     "rate_app": "Оценить приложение",
     "rate_app_desc": "Поддержите нас в магазине",
     "share_app": "Поделиться",
     "share_app_desc": "Пригласите друзей",
-    "share_message": "Посмотри FlashDeals ! Лучшие местные предложения. Скачай сейчас.",
+    "share_message": "Посмотри Offerz ! Лучшие местные предложения. Скачай сейчас.",
     "rate_us": "Оцените нас",
     "rate_us_desc": "Спасибо за поддержку! Ссылки будут доступны скоро.",
     "reset_intro_title": "Вступление",
@@ -266,7 +266,7 @@
     "notif_deal_desc": "50% СКИДКА в Burger King на 2 часа.",
     "notif_deal_time": "5 мин назад",
     "notif_store_title": "Новый магазин 🏪",
-    "notif_store_desc": "Магазин Tech Hub открылся в FlashDeals.",
+    "notif_store_desc": "Магазин Tech Hub открылся в Offerz.",
     "notif_store_time": "2 часа назад",
     "notif_system_title": "Подтверждено ✅",
     "notif_system_desc": "Купон успешно создан.",
@@ -419,7 +419,7 @@
     "verified_offer": "Проверено",
     "valid_msg": "Акция {{start}} - {{end}}.",
     "pinch_zoom": "Масштабируйте для деталей",
-    "share_msg": "Классная акция: {{title}} в {{store}} ! Качай FlashDeals."
+    "share_msg": "Классная акция: {{title}} в {{store}} ! Качай Offerz."
   },
   "store": {
     "manage": "Управлять",

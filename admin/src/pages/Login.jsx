@@ -45,7 +45,7 @@ const Login = () => {
                         <ShieldCheck size={40} color="white" strokeWidth={2.5} />
                     </div>
                     <h1 style={{ fontSize: '32px', fontWeight: '900', letterSpacing: '-1.5px', color: 'var(--primary)', marginBottom: '8px' }}>admin console</h1>
-                    <p style={{ color: 'var(--text-muted)', fontWeight: '700', fontSize: '15px' }}>flash deals security protocol</p>
+                    <p style={{ color: 'var(--text-muted)', fontWeight: '700', fontSize: '15px' }}>Offerz security protocol</p>
                 </div>
 
                 {error && (

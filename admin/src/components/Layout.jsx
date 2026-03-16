@@ -45,7 +45,7 @@ const Layout = ({ children }) => {
             <ShieldCheck size={26} color="white" strokeWidth={2.5} />
           </div>
           <div className="brand-text">
-            <h2 className="brand-name">flash deals</h2>
+            <h2 className="brand-name">Offerz</h2>
             <span className="brand-tagline">nexus control center</span>
           </div>
         </div>
@@ -63,7 +63,7 @@ const Layout = ({ children }) => {
             <div className="nav-group" style={{ marginTop: '24px' }}>
               <p className="nav-group-title">commercial hub</p>
               <ul className="nav-list">
-                <NavItem to="/offers" icon={<Tag size={20} />} label="flash deals" />
+                <NavItem to="/offers" icon={<Tag size={20} />} label="offer terminal" />
                 <NavItem to="/categories" icon={<Grid size={20} />} label="categories" />
               </ul>
             </div>

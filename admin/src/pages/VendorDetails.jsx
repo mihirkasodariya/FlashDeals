@@ -303,7 +303,7 @@ const VendorDetails = () => {
                     <div className="card-modern">
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                <h3 style={{ fontSize: '20px', fontWeight: '900', letterSpacing: '-0.5px' }}>associated flash deals</h3>
+                                <h3 style={{ fontSize: '20px', fontWeight: '900', letterSpacing: '-0.5px' }}>associated Offerz</h3>
                                 <span style={{ padding: '4px 10px', background: 'var(--accent-light)', color: 'var(--accent)', borderRadius: '8px', fontSize: '11px', fontWeight: '800', width: 'fit-content' }}>
                                     {offers.length} active deals
                                 </span>
