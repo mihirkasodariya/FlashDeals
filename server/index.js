@@ -11,6 +11,7 @@ const ticketRoutes = require('./routes/ticketRoutes');
 const wishlistRoutes = require('./routes/wishlistRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
+const webhookRoutes = require('./routes/webhookRoutes');
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.use('/api/tickets', ticketRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/webhooks', webhookRoutes);
 
 app.get('/share/offer/:id', (req, res) => {
     const offerId = req.params.id;

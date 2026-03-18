@@ -6,9 +6,15 @@ import {
     TouchableOpacity,
     KeyboardAvoidingView,
     Platform,
-    Alert
+    Alert,
+    Modal,
+    Animated
 } from 'react-native';
+import { CheckCircle2, AlertCircle } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { PhoneAuthProvider, signInWithCredential } from 'firebase/auth';
+import { auth } from '../lib/firebase';
+import { FirebaseRecaptchaVerifierModal } from 'expo-firebase-recaptcha';
 import { ChevronLeft } from 'lucide-react-native';
 import OTPInput from '../components/OTPInput';
 import CustomButton from '../components/CustomButton';
@@ -22,6 +28,28 @@ const OTPScreen = ({ navigation, route }) => {
     const [timer, setTimer] = useState(30);
     const [otp, setOtp] = useState('');
     const [loading, setLoading] = useState(false);
+    const [verificationId, setVerificationId] = useState(route.params?.verificationId || '');
+    const recaptchaVerifier = React.useRef(null);
+    const [modalConfig, setModalConfig] = useState({
+        visible: false,
+        type: 'success',
+        title: '',
+        message: '',
+        onConfirm: null
+    });
+    const modalFadeAnim = React.useRef(new Animated.Value(0)).current;
+
+    useEffect(() => {
+        if (modalConfig.visible) {
+            Animated.timing(modalFadeAnim, {
+                toValue: 1,
+                duration: 500,
+                useNativeDriver: true,
+            }).start();
+        } else {
+            modalFadeAnim.setValue(0);
+        }
+    }, [modalConfig.visible]);
 
     useEffect(() => {
         let interval = null;
@@ -35,19 +63,32 @@ const OTPScreen = ({ navigation, route }) => {
 
     const handleVerify = async () => {
         if (!otp || otp.length < 6) {
-            Alert.alert(t('common.error'), t('otp.enter_6_digit'));
+            setModalConfig({
+                visible: true,
+                type: 'error',
+                title: t('common.error'),
+                message: t('otp.enter_6_digit')
+            });
             return;
         }
 
         setLoading(true);
         try {
+            // Verify OTP with Firebase
+            const credential = PhoneAuthProvider.credential(
+                verificationId,
+                otp
+            );
+            await signInWithCredential(auth, credential);
+            
+            // If successful, proceed to verify on your backend
             const { userId, userType, purpose, formData } = route.params || {};
 
             const response = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    otp,
+                    otp: 'VERIFIED',
                     userId
                 })
             });
@@ -57,9 +98,13 @@ const OTPScreen = ({ navigation, route }) => {
 
             if (data.success) {
                 if (purpose === 'reset') {
-                    Alert.alert(t('common.success'), t('otp.reset_success'), [
-                        { text: t('common.yes'), onPress: () => navigation.navigate('Login') }
-                    ]);
+                    setModalConfig({
+                        visible: true,
+                        type: 'success',
+                        title: t('common.success'),
+                        message: t('otp.reset_success'),
+                        onConfirm: () => navigation.navigate('Login')
+                    });
                 } else if (userType === 'user') {
                     navigation.navigate('Main');
                 } else if (userType === 'vendor') {
@@ -68,17 +113,55 @@ const OTPScreen = ({ navigation, route }) => {
                     navigation.navigate('ActivationStatus');
                 }
             } else {
-                Alert.alert(t('otp.verification_failed'), data.message || t('otp.invalid_otp'));
+                setModalConfig({
+                    visible: true,
+                    type: 'error',
+                    title: t('otp.verification_failed'),
+                    message: data.message || t('otp.invalid_otp')
+                });
             }
         } catch (error) {
             setLoading(false);
-            Alert.alert(t('common.error'), t('register.server_error'));
+            setModalConfig({
+                visible: true,
+                type: 'error',
+                title: t('common.error'),
+                message: t('register.server_error')
+            });
             console.error(error);
         }
     };
 
-    const handleResend = () => {
-        setTimer(30);
+    const handleResend = async () => {
+        try {
+            setLoading(true);
+            const cleanedMobile = mobile.replace(/\D/g, '');
+            const finalMobile = cleanedMobile.length === 10 ? '+91' + cleanedMobile : (mobile.startsWith('+') ? mobile : '+' + mobile);
+
+            const phoneProvider = new PhoneAuthProvider(auth);
+            const vId = await phoneProvider.verifyPhoneNumber(
+                finalMobile,
+                recaptchaVerifier.current
+            );
+            
+            setVerificationId(vId);
+            setLoading(false);
+            setTimer(60);
+            setModalConfig({
+                visible: true,
+                type: 'success',
+                title: t('common.success'),
+                message: t('login.otp_sent_msg')
+            });
+        } catch (error) {
+            setLoading(false);
+            setModalConfig({
+                visible: true,
+                type: 'error',
+                title: t('common.error'),
+                message: error.message || t('common.error')
+            });
+        }
     };
 
     return (
@@ -122,8 +205,76 @@ const OTPScreen = ({ navigation, route }) => {
                     className="mt-2.5"
                 />
 
-                <Text className="text-center mt-5 text-gray-400 text-xs italic">{t('otp.demo_otp')}</Text>
             </KeyboardAvoidingView>
+
+            {/* Custom Premium Dynamic Modal - Matching Project Design System */}
+            <Modal
+                transparent
+                visible={modalConfig.visible}
+                animationType="none"
+                onRequestClose={() => {
+                    setModalConfig(prev => ({ ...prev, visible: false }));
+                    if (modalConfig.onConfirm) modalConfig.onConfirm();
+                }}
+            >
+                <View className="flex-1 items-center justify-center bg-black/60 px-6">
+                    <Animated.View 
+                        style={{ 
+                            opacity: modalFadeAnim,
+                            backgroundColor: colors.background, 
+                            borderRadius: 40,
+                            shadowColor: "#000",
+                            shadowOffset: { width: 0, height: 20 },
+                            shadowOpacity: 0.3,
+                            shadowRadius: 40,
+                            elevation: 25,
+                        }} 
+                        className="w-full p-8 items-center border border-white/5"
+                    >
+                        <View 
+                            style={{ backgroundColor: modalConfig.type === 'success' ? `${colors.success}15` : `${colors.error}15` }} 
+                            className="w-24 h-24 rounded-[32px] items-center justify-center mb-8"
+                        >
+                            {modalConfig.type === 'success' ? (
+                                <CheckCircle2 size={44} color={colors.success} strokeWidth={1.5} />
+                            ) : (
+                                <AlertCircle size={44} color={colors.error} strokeWidth={1.5} />
+                            )}
+                        </View>
+                        
+                        <Text style={{ color: colors.text }} className="text-2xl font-black text-center mb-3 tracking-tight">
+                            {modalConfig.title}
+                        </Text>
+                        
+                        <Text style={{ color: colors.textSecondary }} className="text-center font-medium mb-10 leading-6 opacity-70 px-2">
+                            {modalConfig.message}
+                        </Text>
+                        
+                        <TouchableOpacity
+                            activeOpacity={0.8}
+                            onPress={() => {
+                                setModalConfig(prev => ({ ...prev, visible: false }));
+                                if (modalConfig.onConfirm) modalConfig.onConfirm();
+                            }}
+                            style={{ 
+                                backgroundColor: colors.primary, 
+                                shadowColor: colors.primary, 
+                                shadowOffset: { width: 0, height: 10 }, 
+                                shadowOpacity: 0.3, 
+                                shadowRadius: 20 
+                            }}
+                            className="w-full py-5 rounded-[24px] items-center justify-center"
+                        >
+                            <Text style={{ color: '#FFFFFF' }} className="font-black tracking-widest text-sm uppercase">{t('common.continue')}</Text>
+                        </TouchableOpacity>
+                    </Animated.View>
+                </View>
+            </Modal>
+
+            <FirebaseRecaptchaVerifierModal
+                ref={recaptchaVerifier}
+                firebaseConfig={auth.app.options}
+            />
         </SafeAreaView>
     );
 };

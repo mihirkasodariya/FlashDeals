@@ -3,6 +3,11 @@ const Offer = require('../models/Offer');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_key_offerz';
+const axios = require('axios');
+
+// Firebase will handle OTP on the client-side.
+// The backend will trust the 'VERIFIED' status sent after successful Firebase Auth.
+
 
 const login = async (req, res) => {
     try {
@@ -78,11 +83,17 @@ const register = async (req, res) => {
             mobile,
             password,
             role: role || 'user',
-            profileImage: req.file ? `/public/uploads/${req.file.filename}` : null
+            profileImage: req.file ? `/public/uploads/${req.file.filename}` : null,
+            isVerified: false // Will be verified via OTP screen
         });
 
         await user.save();
-        res.status(201).json({ success: true, message: 'User registered successfully', userId: user._id });
+
+        res.status(201).json({ 
+            success: true, 
+            message: 'User registered successfully. Finalize verification on screen.', 
+            userId: user._id 
+        });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -145,12 +156,20 @@ const verifyOTP = async (req, res) => {
     try {
         const { userId, otp } = req.body;
 
-        // Demo OTP check
-        if (otp === '123456') {
-            const user = await User.findByIdAndUpdate(userId, { isVerified: true }, { returnDocument: 'after' });
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        // 'VERIFIED' indicates verification was successful via MSG91 SDK on client
+        if (otp === 'VERIFIED' || (user.otp === otp && user.otpExpires > Date.now())) {
+            user.isVerified = true;
+            user.otp = undefined;
+            user.otpExpires = undefined;
+            await user.save();
             return res.json({ success: true, message: 'OTP verified successfully' });
         } else {
-            return res.status(400).json({ success: false, message: 'Invalid OTP' });
+            return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
         }
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -263,8 +282,14 @@ const sendOTP = async (req, res) => {
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
-        // Simulation: No actual SMS sent, just returning success for demo
-        res.json({ success: true, message: 'OTP sent successfully', mobile });
+
+        // Since switching to Firebase, OTP sending is handled on the client-side.
+        // This endpoint is kept for legacy compatibility but now just returns instructions.
+        res.json({ 
+            success: true, 
+            message: 'OTP sending is now handled on the client-side via Firebase.', 
+            mobile
+        });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -274,15 +299,20 @@ const loginWithOTP = async (req, res) => {
     try {
         const { mobile, otp, deviceInfo, os } = req.body;
 
-        // Demo OTP check
-        if (otp !== '123456') {
-            return res.status(400).json({ success: false, message: 'Invalid OTP' });
-        }
-
         const user = await User.findOne({ mobile });
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
+
+        // Verify OTP and Expiry
+        // 'VERIFIED' bypass for MSG91 Client SDK
+        if (otp !== 'VERIFIED' && (user.otp !== otp || user.otpExpires < Date.now())) {
+            return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
+        }
+
+        // Clear OTP after successful use
+        user.otp = undefined;
+        user.otpExpires = undefined;
 
         const deviceId = new mongoose.Types.ObjectId();
         const token = jwt.sign(
@@ -319,6 +349,18 @@ const loginWithOTP = async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 };
+const checkMobile = async (req, res) => {
+    try {
+        const { mobile } = req.body;
+        const user = await User.findOne({ mobile });
+        if (user) {
+            return res.json({ success: true, exists: true, message: 'Mobile number is already registered' });
+        }
+        res.json({ success: true, exists: false, message: 'Mobile number not found' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
 
 module.exports = {
     login,
@@ -332,5 +374,6 @@ module.exports = {
     switchToVendor,
     switchToUser,
     sendOTP,
-    loginWithOTP
+    loginWithOTP,
+    checkMobile
 };

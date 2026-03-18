@@ -8,12 +8,17 @@ import {
     KeyboardAvoidingView,
     Platform,
     Image,
-    Alert
+    Alert,
+    Modal,
+    Animated
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, Camera, Check } from 'lucide-react-native';
+import { ChevronLeft, Camera, Check, AlertCircle, CheckCircle2 } from 'lucide-react-native';
 import FloatingInput from '../components/FloatingInput';
 import CustomButton from '../components/CustomButton';
+import { PhoneAuthProvider } from 'firebase/auth';
+import { auth } from '../lib/firebase';
+import { FirebaseRecaptchaVerifierModal } from 'expo-firebase-recaptcha';
 import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '../context/ThemeContext';
 import { API_BASE_URL } from '../config';
@@ -28,6 +33,26 @@ const RegisterScreen = ({ navigation }) => {
     const [image, setImage] = useState(null);
     const [agreed, setAgreed] = useState(false);
     const [loading, setLoading] = useState(false);
+    const recaptchaVerifier = React.useRef(null);
+    const [modalConfig, setModalConfig] = useState({
+        visible: false,
+        type: 'success',
+        title: '',
+        message: ''
+    });
+    const modalFadeAnim = React.useRef(new Animated.Value(0)).current;
+
+    React.useEffect(() => {
+        if (modalConfig.visible) {
+            Animated.timing(modalFadeAnim, {
+                toValue: 1,
+                duration: 500,
+                useNativeDriver: true,
+            }).start();
+        } else {
+            modalFadeAnim.setValue(0);
+        }
+    }, [modalConfig.visible]);
 
     const pickImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
@@ -44,15 +69,30 @@ const RegisterScreen = ({ navigation }) => {
 
     const handleRegister = async () => {
         if (!name || !mobile || !password || !confirmPassword) {
-            Alert.alert(t('common.error'), t('register.fill_all_fields'));
+            setModalConfig({
+                visible: true,
+                type: 'error',
+                title: t('common.error'),
+                message: t('register.fill_all_fields')
+            });
             return;
         }
         if (password !== confirmPassword) {
-            Alert.alert(t('common.error'), t('register.passwords_mismatch'));
+            setModalConfig({
+                visible: true,
+                type: 'error',
+                title: t('common.error'),
+                message: t('register.passwords_mismatch')
+            });
             return;
         }
         if (!agreed) {
-            Alert.alert(t('common.error'), t('register.agree_to_terms'));
+            setModalConfig({
+                visible: true,
+                type: 'error',
+                title: t('common.error'),
+                message: t('register.agree_to_terms')
+            });
             return;
         }
 
@@ -84,17 +124,48 @@ const RegisterScreen = ({ navigation }) => {
             setLoading(false);
 
             if (data.success) {
-                navigation.navigate('OTP', {
-                    mobile,
-                    userType: 'user',
-                    userId: data.userId
-                });
+                // Send OTP via Firebase before navigating
+                try {
+                    const cleanedMobile = mobile.replace(/\D/g, '');
+                    const finalMobile = cleanedMobile.length === 10 ? '+91' + cleanedMobile : (mobile.startsWith('+') ? mobile : '+' + mobile);
+                    
+                    const phoneProvider = new PhoneAuthProvider(auth);
+                    const vId = await phoneProvider.verifyPhoneNumber(
+                        finalMobile,
+                        recaptchaVerifier.current
+                    );
+                    
+                    navigation.navigate('OTP', {
+                        mobile,
+                        userType: 'user',
+                        userId: data.userId,
+                        verificationId: vId
+                    });
+                } catch (otpErr) {
+                    console.error("Firebase Auth Error:", otpErr);
+                    setModalConfig({
+                        visible: true,
+                        type: 'error',
+                        title: t('common.error'),
+                        message: otpErr.message || t('login.failed')
+                    });
+                }
             } else {
-                Alert.alert(t('register.failed'), data.message || t('common.error'));
+                setModalConfig({
+                    visible: true,
+                    type: 'error',
+                    title: t('register.failed'),
+                    message: data.message || t('common.error')
+                });
             }
         } catch (error) {
             setLoading(false);
-            Alert.alert(t('common.error'), t('register.server_error'));
+            setModalConfig({
+                visible: true,
+                type: 'error',
+                title: t('common.error'),
+                message: t('register.server_error')
+            });
             console.error(error);
         }
     };
@@ -203,6 +274,69 @@ const RegisterScreen = ({ navigation }) => {
 
                 </ScrollView>
             </KeyboardAvoidingView>
+
+            {/* Custom Premium Dynamic Modal - Matching Project Design System */}
+            <Modal
+                transparent
+                visible={modalConfig.visible}
+                animationType="none"
+                onRequestClose={() => setModalConfig(prev => ({ ...prev, visible: false }))}
+            >
+                <View className="flex-1 items-center justify-center bg-black/60 px-6">
+                    <Animated.View 
+                        style={{ 
+                            opacity: modalFadeAnim,
+                            backgroundColor: colors.background, 
+                            borderRadius: 40,
+                            shadowColor: "#000",
+                            shadowOffset: { width: 0, height: 20 },
+                            shadowOpacity: 0.3,
+                            shadowRadius: 40,
+                            elevation: 25,
+                        }} 
+                        className="w-full p-8 items-center border border-white/5"
+                    >
+                        <View 
+                            style={{ backgroundColor: modalConfig.type === 'success' ? `${colors.success}15` : `${colors.error}15` }} 
+                            className="w-24 h-24 rounded-[32px] items-center justify-center mb-8"
+                        >
+                            {modalConfig.type === 'success' ? (
+                                <CheckCircle2 size={44} color={colors.success} strokeWidth={1.5} />
+                            ) : (
+                                <AlertCircle size={44} color={colors.error} strokeWidth={1.5} />
+                            )}
+                        </View>
+                        
+                        <Text style={{ color: colors.text }} className="text-2xl font-black text-center mb-3 tracking-tight">
+                            {modalConfig.title}
+                        </Text>
+                        
+                        <Text style={{ color: colors.textSecondary }} className="text-center font-medium mb-10 leading-6 opacity-70 px-2">
+                            {modalConfig.message}
+                        </Text>
+                        
+                        <TouchableOpacity
+                            activeOpacity={0.8}
+                            onPress={() => setModalConfig(prev => ({ ...prev, visible: false }))}
+                            style={{ 
+                                backgroundColor: colors.primary, 
+                                shadowColor: colors.primary, 
+                                shadowOffset: { width: 0, height: 10 }, 
+                                shadowOpacity: 0.3, 
+                                shadowRadius: 20 
+                            }}
+                            className="w-full py-5 rounded-[24px] items-center justify-center"
+                        >
+                            <Text style={{ color: '#FFFFFF' }} className="font-black tracking-widest text-sm uppercase">{t('common.continue')}</Text>
+                        </TouchableOpacity>
+                    </Animated.View>
+                </View>
+            </Modal>
+
+            <FirebaseRecaptchaVerifierModal
+                ref={recaptchaVerifier}
+                firebaseConfig={auth.app.options}
+            />
         </SafeAreaView>
     );
 };

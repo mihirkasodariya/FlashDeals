@@ -101,7 +101,9 @@
         "change": "Change",
         "resend_in": "Resend OTP in {{seconds}}s",
         "resend_code": "Resend code",
-        "skip_login": "Skip Login"
+        "skip_login": "Skip Login",
+        "otp_sent_msg": "Security code dispatched! 🚀\n\nA 6-digit verification code has been sent to your WhatsApp for secure access.",
+        "not_registered": "Mobile number is not registered. Please register first to login."
     },
     "register": {
         "create_account": "Create Account",
@@ -116,7 +118,8 @@
         "passwords_mismatch": "Passwords do not match",
         "agree_to_terms": "Please agree to Terms & Conditions",
         "failed": "Registration Failed",
-        "server_error": "Cannot connect to server. Please check if server is running."
+        "server_error": "Cannot connect to server. Please check if server is running.",
+        "already_registered": "This mobile number is already registered. Please login instead."
     },
     "home": {
         "your_location": "Your Location",
@@ -316,7 +319,7 @@
         "resend_in": "Resend code in {{seconds}}s",
         "resend_otp": "Resend OTP",
         "verify_proceed": "Verify & Proceed",
-        "demo_otp": "Demo OTP: 123456",
+        "demo_otp": "Verification code will expire in 10 minutes.",
         "enter_6_digit": "Please enter 6-digit OTP",
         "reset_success": "Password reset successful! Please login with your new password.",
         "verification_failed": "Verification Failed",

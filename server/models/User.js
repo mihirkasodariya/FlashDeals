@@ -32,7 +32,9 @@ const userSchema = new mongoose.Schema({
         lastLogin: { type: Date, default: Date.now },
         isActive: { type: Boolean, default: true }
     }],
-    isDeleted: { type: Boolean, default: false }
+    isDeleted: { type: Boolean, default: false },
+    otp: { type: String },
+    otpExpires: { type: Date }
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);
