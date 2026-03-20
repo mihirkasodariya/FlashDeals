@@ -22,3 +22,5 @@ Thumbs.db
 
 # Project specific
 server/public/uploads/
+server/config/*.json
+serviceAccountKey.json

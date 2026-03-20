@@ -34,6 +34,7 @@ const Layout = ({ children }) => {
     if (path === '/offers') return 'offer terminal';
     if (path === '/tickets') return 'support console';
     if (path === '/categories') return 'category management';
+    if (path === '/notifications') return 'broadcast center';
     return 'admin console';
   };
 
@@ -72,6 +73,7 @@ const Layout = ({ children }) => {
               <p className="nav-group-title">support grid</p>
               <ul className="nav-list">
                 <NavItem to="/tickets" icon={<LifeBuoy size={20} />} label="support tickets" />
+                <NavItem to="/notifications" icon={<Bell size={20} />} label="push broadcast" />
               </ul>
             </div>
         </nav>

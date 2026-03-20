@@ -248,11 +248,25 @@ const switchToVendor = async (req, res) => {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
 
-        user.role = 'vendor_pending'; // Intermediate state
-        user.status = 'submitted';
+        user.role = 'vendor';
+        user.status = 'approved';
         await user.save();
 
         res.json({ success: true, message: 'Role changed to vendor successfully', user });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+const updateFCMToken = async (req, res) => {
+    try {
+        const { fcmToken } = req.body;
+        if (!fcmToken) {
+            return res.status(400).json({ success: false, message: 'FCM token is required' });
+        }
+
+        await User.findByIdAndUpdate(req.user.userId, { fcmToken });
+        res.json({ success: true, message: 'FCM token updated successfully' });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -392,5 +406,6 @@ module.exports = {
     switchToUser,
     sendOTP,
     loginWithOTP,
-    checkMobile
+    checkMobile,
+    updateFCMToken
 };

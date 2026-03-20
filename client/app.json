@@ -2,6 +2,11 @@
   "expo": {
     "name": "Offerz",
     "slug": "Offerz",
+    "extra": {
+      "eas": {
+        "projectId": "20a5b665-ba67-493a-92a2-71ab24a614f2"
+      }
+    },
     "scheme": "offerz",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

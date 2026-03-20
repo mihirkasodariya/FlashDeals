@@ -14,9 +14,11 @@ import { CheckCircle2, AlertCircle } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FirebaseRecaptchaVerifierModal } from 'expo-firebase-recaptcha';
 import { auth } from '../lib/firebase';
-import { PhoneAuthProvider, signInWithCredential } from 'firebase/auth';
-import firebase from 'firebase/app';
 import * as Device from 'expo-device';
+import { PhoneAuthProvider, signInWithCredential } from 'firebase/auth';
+import { colors } from '../theme/colors';
+import { API_BASE_URL } from '../config';
+import { syncFCMToken } from '../utils/notificationService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
 import FloatingInput from '../components/FloatingInput';
@@ -26,7 +28,7 @@ import TabSwitcher from '../components/TabSwitcher';
 import { useTheme } from '../context/ThemeContext';
 import { } from '@react-navigation/native';
 import { Chrome as Google, Facebook } from 'lucide-react-native';
-import { API_BASE_URL } from '../config';
+
 
 const LoginScreen = ({ navigation }) => {
     const { colors, isDarkMode } = useTheme();
@@ -207,6 +209,7 @@ const LoginScreen = ({ navigation }) => {
 
             if (data.success) {
                 await AsyncStorage.setItem('userToken', data.token);
+                syncFCMToken(API_BASE_URL);
 
                 // Auto-fulfill pending wishlist if any
                 const pendingId = await AsyncStorage.getItem('pendingWishlistOfferId');

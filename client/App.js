@@ -15,7 +15,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform, View, Text, DeviceEventEmitter, ActivityIndicator } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
-import { registerForPushNotificationsAsync } from './src/utils/notificationService';
+import { registerForPushNotificationsAsync, syncFCMToken } from './src/utils/notificationService';
 
 // Import Screens
 import LoginScreen from './src/screens/LoginScreen';
@@ -213,6 +213,8 @@ function AppContent() {
         await registerForPushNotificationsAsync();
         await AsyncStorage.setItem('notificationsPermissionAsked', 'true');
       }
+      // Always try to sync token if user is logged in
+      syncFCMToken(API_BASE_URL);
     };
     initNotifications();
     

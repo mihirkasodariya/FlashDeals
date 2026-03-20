@@ -10,6 +10,7 @@ import OffersManagement from './pages/OffersManagement';
 import VendorDetails from './pages/VendorDetails';
 import TicketsManagement from './pages/TicketsManagement';
 import CategoriesManagement from './pages/CategoriesManagement';
+import NotificationsManagement from './pages/NotificationsManagement';
 import './App.css';
 
 const ProtectedRoute = ({ children }) => {
@@ -42,6 +43,7 @@ function App() {
           <Route path="/offers" element={<ProtectedRoute><OffersManagement /></ProtectedRoute>} />
           <Route path="/tickets" element={<ProtectedRoute><TicketsManagement /></ProtectedRoute>} />
           <Route path="/categories" element={<ProtectedRoute><CategoriesManagement /></ProtectedRoute>} />
+          <Route path="/notifications" element={<ProtectedRoute><NotificationsManagement /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </AuthProvider>
