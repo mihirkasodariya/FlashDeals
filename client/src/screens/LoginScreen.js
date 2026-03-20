@@ -228,20 +228,34 @@ const LoginScreen = ({ navigation }) => {
 
                 navigation.navigate('Main');
             } else {
+                let msg = data.message || t('login.failed');
+                if (msg === 'Invalid OTP') msg = t('otp.invalid_otp');
+                else if (msg === 'OTP has expired') msg = t('otp.expired_otp');
+
                 setModalConfig({
                     visible: true,
                     type: 'error',
                     title: t('common.error'),
-                    message: data.message || t('login.failed')
+                    message: msg
                 });
             }
         } catch (error) {
             setLoading(false);
+            let errorMessage = t('register.server_error');
+            
+            if (error.code === 'auth/invalid-verification-code' || error.message?.includes('Invalid OTP')) {
+                errorMessage = t('otp.invalid_otp');
+            } else if (error.code === 'auth/code-expired' || error.message?.includes('expired')) {
+                errorMessage = t('otp.expired_otp');
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+
             setModalConfig({
                 visible: true,
                 type: 'error',
                 title: t('common.error'),
-                message: t('register.server_error')
+                message: errorMessage
             });
         }
     };

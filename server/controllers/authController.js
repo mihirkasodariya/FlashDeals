@@ -162,15 +162,27 @@ const verifyOTP = async (req, res) => {
         }
 
         // 'VERIFIED' indicates verification was successful via MSG91 SDK on client
-        if (otp === 'VERIFIED' || (user.otp === otp && user.otpExpires > Date.now())) {
+        if (otp === 'VERIFIED') {
             user.isVerified = true;
             user.otp = undefined;
             user.otpExpires = undefined;
             await user.save();
             return res.json({ success: true, message: 'OTP verified successfully' });
-        } else {
-            return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
         }
+
+        if (user.otp !== otp) {
+            return res.status(400).json({ success: false, message: 'Invalid OTP' });
+        }
+
+        if (user.otpExpires < Date.now()) {
+            return res.status(400).json({ success: false, message: 'OTP has expired' });
+        }
+
+        user.isVerified = true;
+        user.otp = undefined;
+        user.otpExpires = undefined;
+        await user.save();
+        return res.json({ success: true, message: 'OTP verified successfully' });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -306,8 +318,13 @@ const loginWithOTP = async (req, res) => {
 
         // Verify OTP and Expiry
         // 'VERIFIED' bypass for MSG91 Client SDK
-        if (otp !== 'VERIFIED' && (user.otp !== otp || user.otpExpires < Date.now())) {
-            return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
+        if (otp !== 'VERIFIED') {
+            if (user.otp !== otp) {
+                return res.status(400).json({ success: false, message: 'Invalid OTP' });
+            }
+            if (user.otpExpires < Date.now()) {
+                return res.status(400).json({ success: false, message: 'OTP has expired' });
+            }
         }
 
         // Clear OTP after successful use

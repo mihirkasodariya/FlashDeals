@@ -323,7 +323,8 @@
         "enter_6_digit": "Please enter 6-digit OTP",
         "reset_success": "Password reset successful! Please login with your new password.",
         "verification_failed": "Verification Failed",
-        "invalid_otp": "Invalid OTP"
+        "invalid_otp": "Invalid OTP. Please check and try again.",
+        "expired_otp": "OTP has expired. Please request a new one."
     },
     "forgot_password": {
         "title": "Forgot Password?",
