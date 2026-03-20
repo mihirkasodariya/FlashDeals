@@ -86,6 +86,28 @@ const HomeScreen = ({ navigation }) => {
     const [loadingMore, setLoadingMore] = useState(false);
     const [dateRange, setDateRange] = useState({ start: null, end: null });
     const [showDatePicker, setShowDatePicker] = useState(false);
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    const fetchUnreadCount = async () => {
+        try {
+            console.log("[Sync] Checking unread notifications...");
+            const token = await AsyncStorage.getItem('userToken');
+            if (!token) {
+                console.warn("[Sync] No token found for unread count");
+                return;
+            }
+            const response = await fetch(`${API_BASE_URL}/auth/notifications/unread-count`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            console.log("[Sync] Unread count result:", data);
+            if (data.success) {
+                setUnreadCount(data.count);
+            }
+        } catch (error) {
+            console.error("Fetch unread count error:", error);
+        }
+    };
 
     const getUserLocation = async () => {
         try {
@@ -250,6 +272,14 @@ const HomeScreen = ({ navigation }) => {
         // Initial fetch only - Do not re-fetch on focus to prevent flickering
         fetchCategories();
         fetchData();
+        fetchUnreadCount();
+
+        // Add focus listener for unread count
+        const unsubscribe = navigation.addListener('focus', () => {
+            fetchUnreadCount();
+        });
+
+        return unsubscribe;
     }, []);
 
     useEffect(() => {
@@ -264,6 +294,7 @@ const HomeScreen = ({ navigation }) => {
         setPage(1);
         setHasMore(true);
         fetchData(1, true);
+        fetchUnreadCount();
     };
 
     const handleLoadMore = () => {
@@ -502,10 +533,17 @@ const HomeScreen = ({ navigation }) => {
                     <TouchableOpacity
                         onPress={() => navigation.navigate('Notifications')}
                         style={{ backgroundColor: colors.surface }}
-                        className="w-12 h-12 rounded-2xl items-center justify-center border border-surface"
+                        className="w-12 h-12 rounded-2xl items-center justify-center border border-surface relative"
                     >
                         <Bell size={22} color={colors.primary} strokeWidth={2.5} />
-                        <View className="absolute top-2.5 right-2.5 w-3 h-3 bg-error rounded-full border-2 border-white" />
+                        {unreadCount > 0 && (
+                            <View 
+                                style={{ backgroundColor: colors.error, borderColor: colors.card }} 
+                                className="absolute -top-1 -right-1 min-w-[20px] h-5 rounded-full border-2 items-center justify-center px-1 shadow-sm"
+                            >
+                                <Text style={{ color: 'white' }} className="text-[10px] font-black">{unreadCount > 9 ? '9+' : unreadCount}</Text>
+                            </View>
+                        )}
                     </TouchableOpacity>
                 </View>
 

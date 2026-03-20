@@ -1,5 +1,6 @@
 const admin = require('../config/firebaseAdmin');
 const User = require('../models/User');
+const Notification = require('../models/Notification');
 const axios = require('axios');
 
 exports.sendCustomNotification = async (req, res) => {
@@ -31,7 +32,7 @@ exports.sendCustomNotification = async (req, res) => {
         console.log(`[Notification] Query:`, JSON.stringify(query));
 
         const users = await User.find(query).select('fcmToken role name');
-        
+
         // Filter out obviously malformed tokens (very short ones)
         const allTokens = users
             .filter(u => u.fcmToken && u.fcmToken.length > 20) // Basic length check
@@ -66,6 +67,21 @@ exports.sendCustomNotification = async (req, res) => {
         }
 
         console.log(`[Notification] Found ${allTokens.length} valid tokens. (Expo: ${expoTokens.length}, FCM: ${fcmTokens.length})`);
+
+        // Save notification to history for all matching users
+        try {
+            const historyRecords = users.map(u => ({
+                userId: u._id,
+                title,
+                body,
+            }));
+            if (historyRecords.length > 0) {
+                await Notification.insertMany(historyRecords);
+                console.log(`[Notification] Saved ${historyRecords.length} records to user history.`);
+            }
+        } catch (dbErr) {
+            console.error('[Notification] DB History Error:', dbErr);
+        }
 
         let results = { successCount: 0, failureCount: 0, cleanedCount: 0 };
 
@@ -111,7 +127,7 @@ exports.sendCustomNotification = async (req, res) => {
                     await Promise.all(fcmResponse.responses.map(async (resp, idx) => {
                         if (!resp.success) {
                             console.error(`[Notification] FCM Error for token ${fcmTokens[idx].substring(0, 10)}... :`, resp.error);
-                            if (resp.error.code === 'messaging/invalid-argument' || 
+                            if (resp.error.code === 'messaging/invalid-argument' ||
                                 resp.error.code === 'messaging/registration-token-not-registered') {
                                 try {
                                     await User.updateOne({ fcmToken: fcmTokens[idx] }, { $set: { fcmToken: null } });

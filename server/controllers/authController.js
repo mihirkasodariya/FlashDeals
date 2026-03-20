@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const Offer = require('../models/Offer');
+const Notification = require('../models/Notification');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_key_offerz';
@@ -393,6 +394,45 @@ const checkMobile = async (req, res) => {
     }
 };
 
+const getNotifications = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const notifications = await Notification.find({ userId }).sort({ createdAt: -1 });
+        res.json({ success: true, notifications });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+const markNotificationAsRead = async (req, res) => {
+    try {
+        const { notificationId } = req.params;
+        const notification = await Notification.findOneAndUpdate(
+            { _id: notificationId, userId: req.user.userId },
+            { isRead: true },
+            { new: true }
+        );
+        res.json({ success: true, notification });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+const getUnreadNotificationCount = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        console.log(`[API] Checking unread notifications for user: ${userId}`);
+        const count = await Notification.countDocuments({ 
+            userId, 
+            isRead: false 
+        });
+        console.log(`[API] Unread count: ${count}`);
+        res.json({ success: true, count });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 module.exports = {
     login,
     register,
@@ -407,5 +447,8 @@ module.exports = {
     sendOTP,
     loginWithOTP,
     checkMobile,
-    updateFCMToken
+    updateFCMToken,
+    getNotifications,
+    markNotificationAsRead,
+    getUnreadNotificationCount
 };
