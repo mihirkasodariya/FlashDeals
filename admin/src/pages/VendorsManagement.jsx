@@ -135,7 +135,7 @@ const VendorsManagement = () => {
         <div>
             <div className="animate-fade-in">
                 <header style={{ marginBottom: '48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h1 style={{ fontSize: '28px', fontWeight: '900', letterSpacing: '-1px' }}>vendor directory</h1>
+                    <h1 style={{ fontSize: '28px', fontWeight: '900', letterSpacing: '-1px' }}>Venders</h1>
                     <div style={{ display: 'flex', gap: '16px' }}>
                         <div style={{ position: 'relative' }}>
                             <Search size={20} color="var(--text-muted)" style={{ position: 'absolute', left: '20px', top: '16px' }} />
@@ -153,7 +153,7 @@ const VendorsManagement = () => {
                             style={{ background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)', color: 'white', display: 'flex', alignItems: 'center', gap: '8px', border: 'none' }}
                         >
                             <Plus size={20} />
-                            <span>join new merchant</span>
+                            <span>Add New Vender</span>
                         </button>
                     </div>
                 </header>
@@ -213,7 +213,7 @@ const VendorsManagement = () => {
                                                 <Phone size={14} color="var(--text-muted)" />
                                                 <span style={{ fontWeight: '700', color: 'var(--primary-light)', fontSize: '14px' }}>+91 {v.mobile}</span>
                                             </div>
-                                            <p style={{ fontSize: '11px', color: 'var(--accent)', fontWeight: '800', textTransform: 'lowercase', letterSpacing: '0.5px' }}>kyc verified</p>
+                                            {/* <p style={{ fontSize: '11px', color: 'var(--accent)', fontWeight: '800', textTransform: 'lowercase', letterSpacing: '0.5px' }}>kyc verified</p> */}
                                         </div>
                                     </td>
                                     <td>

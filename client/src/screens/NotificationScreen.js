@@ -157,7 +157,20 @@ const NotificationScreen = ({ navigation }) => {
                         <TouchableOpacity
                             key={item._id}
                             activeOpacity={0.8}
-                            onPress={() => !item.isRead && markAsRead(item._id)}
+                            onPress={() => {
+                                if (!item.isRead) markAsRead(item._id);
+                                if (item.title === 'Only 24 hours left for this offer!' || 
+                                    item.title === 'Only 2 hours left for this offer!') {
+                                    navigation.navigate('ExpiringDeals');
+                                } else if (item.title === 'Hot deal nearby! Don’t miss it' || 
+                                         item.title === 'Trending Deals near you 15km') {
+                                    navigation.navigate('Home');
+                                } else if (item.title === 'Recommended offers for you') {
+                                    navigation.navigate('Wishlist');
+                                } else if (item.title === 'New offers near you') {
+                                    navigation.navigate('Home');
+                                }
+                            }}
                             style={{ 
                                 backgroundColor: item.isRead ? 'transparent' : colors.card,
                                 borderColor: colors.border

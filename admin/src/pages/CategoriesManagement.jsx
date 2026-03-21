@@ -128,7 +128,7 @@ const CategoriesManagement = () => {
         <div>
             <div className="animate-fade-in">
                 <header style={{ marginBottom: '48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h1 style={{ fontSize: '28px', fontWeight: '900', letterSpacing: '-1px' }}>category management</h1>
+                    <h1 style={{ fontSize: '28px', fontWeight: '900', letterSpacing: '-1px' }}>Categories</h1>
                     <div style={{ display: 'flex', gap: '16px' }}>
                         <div style={{ position: 'relative' }}>
                             <Search size={20} color="var(--text-muted)" style={{ position: 'absolute', left: '20px', top: '16px' }} />

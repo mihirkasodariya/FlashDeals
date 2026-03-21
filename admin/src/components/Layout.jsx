@@ -47,35 +47,35 @@ const Layout = ({ children }) => {
           </div>
           <div className="brand-text">
             <h2 className="brand-name">Offerz</h2>
-            <span className="brand-tagline">nexus control center</span>
+            <span className="brand-tagline">Offerz Control Center</span>
           </div>
         </div>
 
         <nav className="sidebar-nav">
           <div className="nav-group">
-            <p className="nav-group-title">main operations</p>
+            <p className="nav-group-title">Main Operations</p>
             <ul className="nav-list">
-              <NavItem to="/" icon={<LayoutDashboard size={20} />} label="dashboard" />
-              <NavItem to="/users" icon={<Users size={20} />} label="users" />
-              <NavItem to="/vendors" icon={<Store size={20} />} label="vendors" />
+              <NavItem to="/" icon={<LayoutDashboard size={20} />} label="Dashboard" />
+              <NavItem to="/users" icon={<Users size={20} />} label="Users" />
+              <NavItem to="/vendors" icon={<Store size={20} />} label="Venders" />
             </ul>
           </div>
 
-            <div className="nav-group" style={{ marginTop: '24px' }}>
-              <p className="nav-group-title">commercial hub</p>
-              <ul className="nav-list">
-                <NavItem to="/offers" icon={<Tag size={20} />} label="offer terminal" />
-                <NavItem to="/categories" icon={<Grid size={20} />} label="categories" />
-              </ul>
-            </div>
+          <div className="nav-group" style={{ marginTop: '24px' }}>
+            <p className="nav-group-title">Commercial Hub</p>
+            <ul className="nav-list">
+              <NavItem to="/offers" icon={<Tag size={20} />} label="Offers" />
+              <NavItem to="/categories" icon={<Grid size={20} />} label="Categories" />
+            </ul>
+          </div>
 
-            <div className="nav-group" style={{ marginTop: '24px' }}>
-              <p className="nav-group-title">support grid</p>
-              <ul className="nav-list">
-                <NavItem to="/tickets" icon={<LifeBuoy size={20} />} label="support tickets" />
-                <NavItem to="/notifications" icon={<Bell size={20} />} label="push broadcast" />
-              </ul>
-            </div>
+          <div className="nav-group" style={{ marginTop: '24px' }}>
+            <p className="nav-group-title">Support Grid</p>
+            <ul className="nav-list">
+              <NavItem to="/tickets" icon={<LifeBuoy size={20} />} label="Support Tickets" />
+              <NavItem to="/notifications" icon={<Bell size={20} />} label="Notifications" />
+            </ul>
+          </div>
         </nav>
 
         <div className="sidebar-profile-footer">
@@ -90,7 +90,7 @@ const Layout = ({ children }) => {
           </div>
           <button onClick={handleLogout} className="terminate-btn">
             <LogOut size={16} />
-            <span>terminate session</span>
+            <span>Logout</span>
           </button>
         </div>
       </aside>
@@ -160,7 +160,6 @@ const Layout = ({ children }) => {
            font-size: 10px;
           opacity: 0.5;
           fontWeight: 800;
-          text-transform: lowercase;
           letter-spacing: 1px;
           display: block;
         }
@@ -181,7 +180,6 @@ const Layout = ({ children }) => {
            font-size: 10px;
           font-weight: 800;
           color: rgba(255,255,255,0.3);
-          text-transform: lowercase;
           letter-spacing: 1.5px;
           margin: 0 0 12px 14px;
         }
@@ -272,7 +270,6 @@ const Layout = ({ children }) => {
            font-size: 10px;
           color: rgba(255,255,255,0.4);
           fontWeight: 700;
-          text-transform: lowercase;
           margin: 2px 0 0 0;
         }
 
@@ -290,7 +287,6 @@ const Layout = ({ children }) => {
            cursor: pointer;
           font-weight: 800;
           font-size: 12px;
-          text-transform: lowercase;
           letter-spacing: 1px;
           transition: all 0.2s;
         }
@@ -321,7 +317,6 @@ const Layout = ({ children }) => {
            font-weight: 700;
           margin-bottom: 6px;
           display: block;
-          text-transform: lowercase;
           letter-spacing: 0.5px;
         }
         

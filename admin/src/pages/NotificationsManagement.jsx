@@ -24,7 +24,7 @@ const NotificationsManagement = () => {
 
     const handleSendNotification = async (e) => {
         e.preventDefault();
-        
+
         if (!title || !body) {
             setStatus({ type: 'error', message: 'Please provide both title and body for the notification.' });
             return;
@@ -44,18 +44,18 @@ const NotificationsManagement = () => {
 
             if (resp.data.success) {
                 const { success, failure, total } = resp.data.stats;
-                setStatus({ 
-                    type: 'success', 
-                    message: `Dispatched to ${total} devices. (Success: ${success}, Failed: ${failure})` 
+                setStatus({
+                    type: 'success',
+                    message: `Dispatched to ${total} devices. (Success: ${success}, Failed: ${failure})`
                 });
                 setTitle('');
                 setBody('');
                 setAudience('all');
             }
         } catch (err) {
-            setStatus({ 
-                type: 'error', 
-                message: err.response?.data?.message || 'Failed to send notification. Check server logs.' 
+            setStatus({
+                type: 'error',
+                message: err.response?.data?.message || 'Failed to send notification. Check server logs.'
             });
         } finally {
             setSending(false);
@@ -65,8 +65,7 @@ const NotificationsManagement = () => {
     return (
         <div className="animate-fade-in">
             <header style={{ marginBottom: '40px' }}>
-                <h1 style={{ fontSize: '28px', fontWeight: '900', letterSpacing: '-1px', marginBottom: '8px' }}>broadcast center</h1>
-                <p style={{ color: 'var(--text-muted)', fontWeight: '600' }}>dispatch custom push notifications to your audience segments</p>
+                <h1 style={{ fontSize: '28px', fontWeight: '900', letterSpacing: '-1px', marginBottom: '8px' }}>Notifications</h1>
             </header>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '32px' }}>
@@ -125,9 +124,9 @@ const NotificationsManagement = () => {
                         </div>
 
                         {status.message && (
-                            <div style={{ 
-                                padding: '16px', 
-                                borderRadius: '16px', 
+                            <div style={{
+                                padding: '16px',
+                                borderRadius: '16px',
                                 background: status.type === 'success' ? '#f0fdf4' : '#fef2f2',
                                 border: `1px solid ${status.type === 'success' ? '#bbf7d0' : '#fee2e2'}`,
                                 color: status.type === 'success' ? '#166534' : '#991b1b',
@@ -165,7 +164,7 @@ const NotificationsManagement = () => {
                             className="btn-hover-effect"
                         >
                             <Send size={20} />
-                            {sending ? 'Dispatching Broadcast...' : 'Execute Dispatch'}
+                            {sending ? 'Sending Notifications...' : 'Send Notifications'}
                         </button>
                     </form>
                 </div>
@@ -176,10 +175,10 @@ const NotificationsManagement = () => {
                             <Bell size={24} />
                         </div>
                         <h3 style={cardTitleStyle}>Live Preview</h3>
-                        <div style={{ 
-                            marginTop: '20px', 
-                            padding: '16px', 
-                            background: '#f8fafc', 
+                        <div style={{
+                            marginTop: '20px',
+                            padding: '16px',
+                            background: '#f8fafc',
                             borderRadius: '24px',
                             border: '1px solid #e2e8f0',
                             boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)'

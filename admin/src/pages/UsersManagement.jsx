@@ -154,8 +154,8 @@ const UsersManagement = () => {
             <div className="animate-fade-in">
                 <header style={{ marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
-                        <h1 style={{ fontSize: '28px', fontWeight: '900', letterSpacing: '-1px', marginBottom: '8px' }}>identity nexus</h1>
-                        <div style={{ display: 'flex', gap: '8px' }}>
+                        <h1 style={{ fontSize: '28px', fontWeight: '900', letterSpacing: '-1px', marginBottom: '8px' }}>Users</h1>
+                        {/* <div style={{ display: 'flex', gap: '8px' }}>
                             <button
                                 onClick={() => setActiveTab('user')}
                                 style={{
@@ -188,7 +188,7 @@ const UsersManagement = () => {
                             >
                                 administrators
                             </button>
-                        </div>
+                        </div> */}
                     </div>
                     <div style={{ display: 'flex', gap: '16px' }}>
                         <div style={{ position: 'relative' }}>
@@ -202,19 +202,19 @@ const UsersManagement = () => {
                             />
                         </div>
                         <button
-                            onClick={() => setCreateModal({ 
-                                show: true, 
-                                name: '', 
-                                mobile: '', 
-                                password: '', 
-                                role: activeTab === 'admin' ? 'admin' : 'user', 
-                                permissions: [] 
+                            onClick={() => setCreateModal({
+                                show: true,
+                                name: '',
+                                mobile: '',
+                                password: '',
+                                role: activeTab === 'admin' ? 'admin' : 'user',
+                                permissions: []
                             })}
                             className="btn-modern btn-modern-primary"
                             style={{ background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)', color: 'white', display: 'flex', alignItems: 'center', gap: '8px', border: 'none' }}
                         >
                             <Plus size={20} />
-                            <span>join new {activeTab}</span>
+                            <span>Add New {activeTab}</span>
                         </button>
                     </div>
                 </header>

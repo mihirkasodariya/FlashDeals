@@ -134,7 +134,14 @@
         "no_offers_desc": "We couldn't find any offers matching your current filters.",
         "select_range": "Select Date Range",
         "select_start_date": "Choose Start Date",
-        "select_end_date": "Choose End Date"
+        "select_end_date": "Choose End Date",
+        "ending_soon_title": "Only 24 hours left for this offer!",
+        "ending_2h_title": "Only 2 hours left for this offer!",
+        "expiring_soon_title": "Only 24 hours left for this offer!",
+        "expiring_soon_desc": "You have {{count}} deals expiring in 24h.",
+        "24h_urgent": "Only 24 hours left",
+        "2h_urgent": "Only 2 hours left!",
+        "no_urgent_deals": "No urgent deals found right now. Check back soon!"
     },
     "wishlist": {
         "collection": "Collection",

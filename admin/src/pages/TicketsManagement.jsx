@@ -174,7 +174,7 @@ const TicketsManagement = () => {
         <div>
             <div className="animate-fade-in">
                 <header style={{ marginBottom: '48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h1 style={{ fontSize: '28px', fontWeight: '900', letterSpacing: '-1px' }}>support tickets</h1>
+                    <h1 style={{ fontSize: '28px', fontWeight: '900', letterSpacing: '-1px' }}>Support Tickets</h1>
                     <div style={{ display: 'flex', gap: '16px' }}>
                         <div style={{ position: 'relative' }}>
                             <Search size={20} color="var(--text-muted)" style={{ position: 'absolute', left: '20px', top: '16px' }} />
@@ -338,31 +338,31 @@ const TicketsManagement = () => {
                             </div>
                         )}
 
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '32px' }}>
-                                <p style={{ fontSize: '10px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'lowercase', letterSpacing: '0.5px' }}>status modulation</p>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
-                                    {['Open', 'In Review', 'Resolved', 'Closed'].map(status => (
-                                        <button
-                                            key={status}
-                                            onClick={() => handleUpdateStatus(viewModal._id, status)}
-                                            disabled={updating}
-                                            style={{
-                                                padding: '12px',
-                                                borderRadius: '14px',
-                                                border: viewModal.status === status ? '2px solid var(--accent)' : '1px solid #e2e8f0',
-                                                background: viewModal.status === status ? 'var(--accent-light)' : 'white',
-                                                color: viewModal.status === status ? 'var(--accent)' : 'var(--text-muted)',
-                                                fontWeight: '800',
-                                                fontSize: '12px',
-                                                cursor: 'pointer',
-                                                transition: 'all 0.2s'
-                                            }}
-                                        >
-                                            {status}
-                                        </button>
-                                    ))}
-                                </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '32px' }}>
+                            <p style={{ fontSize: '10px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'lowercase', letterSpacing: '0.5px' }}>status modulation</p>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+                                {['Open', 'In Review', 'Resolved', 'Closed'].map(status => (
+                                    <button
+                                        key={status}
+                                        onClick={() => handleUpdateStatus(viewModal._id, status)}
+                                        disabled={updating}
+                                        style={{
+                                            padding: '12px',
+                                            borderRadius: '14px',
+                                            border: viewModal.status === status ? '2px solid var(--accent)' : '1px solid #e2e8f0',
+                                            background: viewModal.status === status ? 'var(--accent-light)' : 'white',
+                                            color: viewModal.status === status ? 'var(--accent)' : 'var(--text-muted)',
+                                            fontWeight: '800',
+                                            fontSize: '12px',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s'
+                                        }}
+                                    >
+                                        {status}
+                                    </button>
+                                ))}
                             </div>
+                        </div>
 
                         {/* Chat Interface */}
                         <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '32px' }}>

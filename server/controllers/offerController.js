@@ -1,6 +1,17 @@
 const Offer = require('../models/Offer');
 const Category = require('../models/Category');
+const Notification = require('../models/Notification');
+const Wishlist = require('../models/Wishlist');
 const mongoose = require('mongoose');
+
+function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLon = (lon2 - lon1) * (Math.PI / 180);
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+}
 
 const addOffer = async (req, res) => {
     try {
@@ -35,15 +46,6 @@ const addOffer = async (req, res) => {
     }
 };
 
-function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
-    const R = 6371;
-    const dLat = (lat2 - lat1) * (Math.PI / 180);
-    const dLon = (lon2 - lon1) * (Math.PI / 180);
-    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-}
-
 const getOffers = async (req, res) => {
     try {
         const { lat, lng, radius, category, search, startDate, endDate } = req.query;
@@ -51,18 +53,15 @@ const getOffers = async (req, res) => {
 
         const query = {};
 
-        // If range is provided, find offers that have any overlap with [startDate, endDate]
-        // or are "Upcoming" relative to the range.
         if (startDate && endDate) {
             const rangeStart = new Date(startDate);
             const rangeEnd = new Date(endDate);
             query.$and = [
-                { createdAt: { $lte: rangeEnd } }, // Must be created before range ends
-                { endDate: { $gte: rangeStart } }, // Must not have ended before range starts
-                { startDate: { $lte: rangeEnd } }  // Must have started (or start during) the range
+                { createdAt: { $lte: rangeEnd } },
+                { endDate: { $gte: rangeStart } },
+                { startDate: { $lte: rangeEnd } }
             ];
         } else {
-            // Default: Only show current/future offers
             query.endDate = { $gte: now };
         }
 
@@ -73,11 +72,8 @@ const getOffers = async (req, res) => {
         if (search) {
             query.$or = [
                 { title: { $regex: search, $options: 'i' } },
-                { description: { $regex: search, $options: 'i' } },
-                { 'vendorId.storeName': { $regex: search, $options: 'i' } } // Note: Need to verify if this works with populate
+                { description: { $regex: search, $options: 'i' } }
             ];
-            // Since vendorId is populated, searching by storeName requires a different approach or search in memory. 
-            // For now, let's stick to title and description.
         }
 
         let offers = await Offer.find(query)
@@ -94,11 +90,10 @@ const getOffers = async (req, res) => {
                 const loc = offer.vendorId && offer.vendorId.location;
                 if (loc && typeof loc.latitude === 'number' && typeof loc.longitude === 'number') {
                     const dist = getDistanceFromLatLonInKm(userLat, userLng, loc.latitude, loc.longitude);
-                    offer.distance = dist; // Attach distance for UI
+                    offer.distance = dist;
                 }
             });
 
-            // Sort by distance (nearest first)
             offers.sort((a, b) => {
                 const distA = a.distance !== undefined ? a.distance : Infinity;
                 const distB = b.distance !== undefined ? b.distance : Infinity;
@@ -106,7 +101,6 @@ const getOffers = async (req, res) => {
             });
         }
 
-        // Pagination
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const startIndex = (page - 1) * limit;
@@ -114,21 +108,12 @@ const getOffers = async (req, res) => {
         const total = offers.length;
         const paginatedOffers = offers.slice(startIndex, endIndex);
 
-        // Increment impressions for the paginated set
         if (paginatedOffers.length > 0) {
             const offerIds = paginatedOffers.map(o => o._id);
-            await Offer.updateMany(
-                { _id: { $in: offerIds } },
-                { $inc: { impressions: 1 } }
-            );
+            await Offer.updateMany({ _id: { $in: offerIds } }, { $inc: { impressions: 1 } });
         }
 
-        res.json({
-            success: true,
-            offers: paginatedOffers,
-            total,
-            hasMore: endIndex < total
-        });
+        res.json({ success: true, offers: paginatedOffers, total, hasMore: endIndex < total });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -160,14 +145,20 @@ const getVendorOffers = async (req, res) => {
                 .limit(limit)
         ]);
 
-        res.json({
-            success: true,
-            offers,
-            total,
-            stats: { active, upcoming, expired },
-            page,
-            hasMore: skip + offers.length < total
-        });
+        res.json({ success: true, offers, total, stats: { active, upcoming, expired }, page, hasMore: skip + offers.length < total });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+const getOfferById = async (req, res) => {
+    try {
+        const { offerId } = req.params;
+        const offer = await Offer.findById(offerId)
+            .populate('vendorId', 'storeName name location profileImage storeImage storeAddress')
+            .populate('category');
+        if (!offer) return res.status(404).json({ success: false, message: 'Offer not found' });
+        res.json({ success: true, offer });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -185,47 +176,16 @@ const incrementOfferVisits = async (req, res) => {
 
 const editOffer = async (req, res) => {
     try {
-        if (req.user.role !== 'vendor') {
-            return res.status(403).json({ success: false, message: 'Only vendors can edit offers' });
-        }
-
+        if (req.user.role !== 'vendor') return res.status(403).json({ success: false, message: 'Only vendors can edit' });
         const { offerId } = req.params;
         const updates = req.body;
-
         if (updates.category && !mongoose.Types.ObjectId.isValid(updates.category)) {
             const foundCat = await Category.findOne({ name: new RegExp(`^${updates.category}$`, 'i') });
             if (foundCat) updates.category = foundCat._id;
-            // if not found, we let it fall through or error. For edit, maybe let it be or error.
-            else return res.status(400).json({ success: false, message: `Invalid category: ${updates.category}` });
+            else return res.status(400).json({ success: false, message: 'Invalid category' });
         }
-
-        const offer = await Offer.findOneAndUpdate(
-            { _id: offerId, vendorId: req.user.userId },
-            updates,
-            { returnDocument: 'after' }
-        ).populate('category');
-
-        if (!offer) {
-            return res.status(404).json({ success: false, message: 'Offer not found or unauthorized' });
-        }
-
-        res.json({ success: true, message: 'Offer updated successfully', offer });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-};
-
-const getOfferById = async (req, res) => {
-    try {
-        const { offerId } = req.params;
-        const offer = await Offer.findById(offerId)
-            .populate('vendorId', 'storeName name location profileImage storeImage storeAddress')
-            .populate('category');
-
-        if (!offer) {
-            return res.status(404).json({ success: false, message: 'Offer not found' });
-        }
-
+        const offer = await Offer.findOneAndUpdate({ _id: offerId, vendorId: req.user.userId }, updates, { new: true }).populate('category');
+        if (!offer) return res.status(404).json({ success: false, message: 'Not found' });
         res.json({ success: true, offer });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -234,21 +194,196 @@ const getOfferById = async (req, res) => {
 
 const deleteOffer = async (req, res) => {
     try {
-        if (req.user.role !== 'vendor') {
-            return res.status(403).json({ success: false, message: 'Only vendors can delete offers' });
-        }
-
+        if (req.user.role !== 'vendor') return res.status(403).json({ success: false, message: 'Only vendors can delete' });
         const { offerId } = req.params;
         const offer = await Offer.findOneAndDelete({ _id: offerId, vendorId: req.user.userId });
-
-        if (!offer) {
-            return res.status(404).json({ success: false, message: 'Offer not found or unauthorized' });
-        }
-
-        res.json({ success: true, message: 'Offer deleted successfully' });
+        if (!offer) return res.status(404).json({ success: false, message: 'Not found' });
+        res.json({ success: true, message: 'Deleted' });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
+};
+
+const getExpiringOffers = async (req, res) => {
+    try {
+        const { lat, lng } = req.query;
+        const radius = parseFloat(req.query.radius) || 15;
+        const now = new Date();
+        const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+        
+        let offers = await Offer.find({ endDate: { $gte: now, $lte: tomorrow } })
+            .populate('vendorId', 'storeName location profileImage')
+            .populate('category')
+            .sort({ endDate: 1 })
+            .limit(20)
+            .lean();
+
+        if (lat && lng) {
+            const userLat = parseFloat(lat);
+            const userLng = parseFloat(lng);
+            offers = offers.filter(offer => {
+                const loc = offer.vendorId && offer.vendorId.location;
+                if (loc && loc.latitude) {
+                    const dist = getDistanceFromLatLonInKm(userLat, userLng, loc.latitude, loc.longitude);
+                    offer.distance = dist;
+                    return dist <= radius;
+                }
+                return false;
+            });
+        }
+
+        offers = offers.slice(0, 10);
+
+        // Notify Logic
+        if (req.user && req.user.userId && offers.length > 0) {
+            const userId = req.user.userId;
+            const twoHoursLater = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+            const veryUrgent = offers.filter(o => new Date(o.endDate) <= twoHoursLater);
+            
+            if (veryUrgent.length > 0) {
+                const title2h = 'Only 2 hours left for this offer!';
+                const existing = await Notification.findOne({ userId, title: title2h, createdAt: { $gte: new Date(now.getTime() - 2*3600000) } });
+                if (!existing) {
+                    await Notification.create({ userId, title: title2h, body: `Quick! ${veryUrgent.length} local deals expire in under 2 hours.` });
+                }
+            } else {
+                const title24h = 'Only 24 hours left for this offer!';
+                const startOfToday = new Date(); startOfToday.setHours(0,0,0,0);
+                const existing = await Notification.findOne({ userId, title: title24h, createdAt: { $gte: startOfToday } });
+                if (!existing) {
+                    await Notification.create({ userId, title: title24h, body: `You have ${offers.length} deals ending in 24h.` });
+                }
+            }
+        }
+
+        res.json({ success: true, offers });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+const syncHotDeals = async (req, res) => {
+    try {
+        const { lat, lng } = req.query;
+        if (!req.user?.userId) return res.json({ success: true });
+        const userId = req.user.userId;
+        const title = "Hot deal nearby! Don’t miss it";
+        const startOfToday = new Date(); startOfToday.setHours(0,0,0,0);
+        const existing = await Notification.findOne({ userId, title, createdAt: { $gte: startOfToday } });
+        if (existing) return res.json({ success: true });
+
+        let offers = await Offer.find({ endDate: { $gte: new Date() } }).populate('vendorId', 'location storeName').lean();
+        if (lat && lng) {
+            const userLat = parseFloat(lat); const userLng = parseFloat(lng);
+            offers = offers.filter(o => {
+                const loc = o.vendorId?.location;
+                return loc?.latitude && getDistanceFromLatLonInKm(userLat, userLng, loc.latitude, loc.longitude) <= 15;
+            });
+        }
+        if (offers.length > 0) {
+            offers.sort((a,b) => (b.visits || 0) - (a.visits || 0));
+            const best = offers[0];
+            await Notification.create({ userId, title, body: `Trending deal at ${best.vendorId.storeName}! Grab it now.` });
+            return res.json({ success: true, created: true, offer: best });
+        }
+        res.json({ success: true, created: false });
+    } catch (error) { res.status(500).json({ success: false }); }
+};
+
+const syncTrendingDeals = async (req, res) => {
+    try {
+        const { lat, lng } = req.query;
+        if (!req.user?.userId) return res.json({ success: true });
+        const userId = req.user.userId;
+        const title = "Trending Deals near you 15km";
+        const startOfToday = new Date(); startOfToday.setHours(0,0,0,0);
+        const existing = await Notification.findOne({ userId, title, createdAt: { $gte: startOfToday } });
+        if (existing) return res.json({ success: true });
+
+        let offers = await Offer.find({ endDate: { $gte: new Date() } }).populate('vendorId', 'location').lean();
+        let count = 0;
+        if (lat && lng) {
+            const userLat = parseFloat(lat); const userLng = parseFloat(lng);
+            count = offers.filter(o => {
+                const loc = o.vendorId?.location;
+                return loc?.latitude && getDistanceFromLatLonInKm(userLat, userLng, loc.latitude, loc.longitude) <= 15;
+            }).length;
+        } else { count = offers.length; }
+
+        if (count > 0) {
+            await Notification.create({ userId, title, body: `Morning! You have ${count} trending deals near you.` });
+            return res.json({ success: true, created: true, count });
+        }
+        res.json({ success: true });
+    } catch (error) { res.status(500).json({ success: false }); }
+};
+
+const syncRecommendedDeals = async (req, res) => {
+    try {
+        if (!req.user?.userId) return res.json({ success: true });
+        const userId = req.user.userId;
+        const title = "Recommended offers for you";
+        const startOfToday = new Date(); startOfToday.setHours(0,0,0,0);
+        const existing = await Notification.findOne({ userId, title, createdAt: { $gte: startOfToday } });
+        if (existing) return res.json({ success: true });
+
+        // Get user's wishlist
+        const wishlist = await Wishlist.find({ user: userId }).populate('offer');
+        const now = new Date();
+        const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+        const expiringWishlist = wishlist.filter(item => {
+            const o = item.offer;
+            return o && o.endDate >= now && o.endDate <= tomorrow;
+        });
+
+        if (expiringWishlist.length > 0) {
+            await Notification.create({
+                userId,
+                title,
+                body: `Attention! ${expiringWishlist.length} items in your wishlist are expiring in less than 24 hours. Check them now!`,
+            });
+            console.log(`[SyncRec] Created morning wishlist-expiry alert for ${userId}`);
+            return res.json({ success: true, created: true, count: expiringWishlist.length });
+        }
+        res.json({ success: true });
+    } catch (error) { res.status(500).json({ success: false }); }
+};
+
+const syncNewOffers = async (req, res) => {
+    try {
+        const { lat, lng } = req.query;
+        if (!req.user?.userId) return res.json({ success: true });
+        const userId = req.user.userId;
+        const title = "New offers near you";
+        const startOfToday = new Date(); startOfToday.setHours(0,0,0,0);
+        const existing = await Notification.findOne({ userId, title, createdAt: { $gte: startOfToday } });
+        if (existing) return res.json({ success: true });
+
+        // Find offers created in last 24h
+        const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        let offers = await Offer.find({ createdAt: { $gte: yesterday } }).populate('vendorId', 'location').lean();
+
+        let newCount = 0;
+        if (lat && lng) {
+            const userLat = parseFloat(lat); const userLng = parseFloat(lng);
+            newCount = offers.filter(o => {
+                const loc = o.vendorId?.location;
+                return loc?.latitude && getDistanceFromLatLonInKm(userLat, userLng, loc.latitude, loc.longitude) <= 15;
+            }).length;
+        } else { newCount = offers.length; }
+
+        if (newCount > 0) {
+            await Notification.create({
+                userId,
+                title,
+                body: `Exciting! ${newCount} fresh deals were added near you in the last 24 hours. Check them out!`,
+            });
+            console.log(`[SyncNew] Created morning new-deals alert for ${userId}`);
+            return res.json({ success: true, created: true, count: newCount });
+        }
+        res.json({ success: true });
+    } catch (error) { res.status(500).json({ success: false }); }
 };
 
 module.exports = {
@@ -258,5 +393,10 @@ module.exports = {
     getOfferById,
     incrementOfferVisits,
     editOffer,
-    deleteOffer
+    deleteOffer,
+    getExpiringOffers,
+    syncHotDeals,
+    syncTrendingDeals,
+    syncRecommendedDeals,
+    syncNewOffers
 };

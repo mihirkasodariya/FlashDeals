@@ -3,7 +3,7 @@ import Text from '../components/CustomText';
 import { View, ScrollView, TouchableOpacity, TextInput, FlatList, Image, useWindowDimensions, ActivityIndicator, RefreshControl, Platform, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import { Calendar, Search, MapPin, Bell, Navigation2, X, ArrowRight, Filter, ChevronRight, ChevronDown, LayoutGrid, List } from 'lucide-react-native';
+import { Calendar, Search, MapPin, Bell, Navigation2, X, ArrowRight, Filter, ChevronRight, ChevronDown, LayoutGrid, List, Flame, Clock } from 'lucide-react-native';
 // import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads'; // Temporarily disabled for Expo Go
 
 import { colors as staticColors } from '../theme/colors';
@@ -87,6 +87,112 @@ const HomeScreen = ({ navigation }) => {
     const [dateRange, setDateRange] = useState({ start: null, end: null });
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
+    const [expiringOffers, setExpiringOffers] = useState([]);
+    const [showExpiryBanner, setShowExpiryBanner] = useState(false);
+    const [hasShownBannerThisSession, setHasShownBannerThisSession] = useState(false);
+    const [isHighUrgency, setIsHighUrgency] = useState(false);
+
+    const [showHotBanner, setShowHotBanner] = useState(false);
+    const [hotOfferData, setHotOfferData] = useState(null);
+
+    const fetchHotDealsSync = async (passedCoords = null) => {
+        try {
+            const token = await AsyncStorage.getItem('userToken');
+            const lat = passedCoords?.lat || userCoordinates?.lat;
+            const lng = passedCoords?.lng || userCoordinates?.lng;
+            
+            let url = `${API_BASE_URL}/offers/sync-hot-deals`;
+            if (lat && lng) url += `?lat=${lat}&lng=${lng}`;
+
+            const response = await fetch(url, { headers: token ? { 'Authorization': `Bearer ${token}` } : {} });
+            const data = await response.json();
+            
+            if (data.success && data.created) {
+                setHotOfferData(data.offer);
+                setShowHotBanner(true);
+                // Hide after 8s
+                setTimeout(() => setShowHotBanner(false), 8000);
+            }
+        } catch (error) {
+            console.error("Hot deals sync error:", error);
+        }
+    };
+
+    const fetchNewDealsSync = async (passedCoords = null) => {
+        try {
+            const token = await AsyncStorage.getItem('userToken');
+            const lat = passedCoords?.lat || userCoordinates?.lat;
+            const lng = passedCoords?.lng || userCoordinates?.lng;
+            let url = `${API_BASE_URL}/offers/sync-new-offers`;
+            if (lat && lng) url += `?lat=${lat}&lng=${lng}`;
+            const response = await fetch(url, { headers: token ? { 'Authorization': `Bearer ${token}` } : {} });
+            const data = await response.json();
+            if (data.success && data.created) console.log("[SyncNew] Created morning new-deals alert");
+        } catch (error) { console.error("New deals sync error:", error); }
+    };
+
+    const fetchRecommendedDealsSync = async () => {
+        try {
+            const token = await AsyncStorage.getItem('userToken');
+            const response = await fetch(`${API_BASE_URL}/offers/sync-recommended-deals`, { headers: token ? { 'Authorization': `Bearer ${token}` } : {} });
+            const data = await response.json();
+            if (data.success && data.created) console.log("[SyncRec] Created morning wishlist-expiry alert");
+        } catch (error) { console.error("Recommended sync error:", error); }
+    };
+
+    const fetchTrendingDealsSync = async (passedCoords = null) => {
+        try {
+            const token = await AsyncStorage.getItem('userToken');
+            const lat = passedCoords?.lat || userCoordinates?.lat;
+            const lng = passedCoords?.lng || userCoordinates?.lng;
+            let url = `${API_BASE_URL}/offers/sync-trending-deals`;
+            if (lat && lng) url += `?lat=${lat}&lng=${lng}`;
+            const response = await fetch(url, { headers: token ? { 'Authorization': `Bearer ${token}` } : {} });
+            const data = await response.json();
+            if (data.success && data.created) {
+                // Not showing banner for trending summary yet, just creating notif
+                console.log("[SyncTrend] Created morning summary");
+            }
+        } catch (error) { console.error("Trending sync error:", error); }
+    };
+
+    const fetchExpiringOffers = async (passedCoords = null) => {
+        try {
+            console.log("[InApp] Syncing expiring offers...");
+            const token = await AsyncStorage.getItem('userToken');
+            
+            const lat = passedCoords?.lat || userCoordinates?.latitude || userCoordinates?.lat;
+            const lng = passedCoords?.lng || userCoordinates?.longitude || userCoordinates?.lng;
+
+            let url = `${API_BASE_URL}/offers/expiring-soon?radius=15`;
+            if (lat && lng) {
+                url += `&lat=${lat}&lng=${lng}`;
+            }
+
+            const response = await fetch(url, {
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
+            const data = await response.json();
+            
+            if (data.success && data.offers && data.offers.length > 0) {
+                setExpiringOffers(data.offers);
+                
+                // Detect if any offer is ultra-urgent (< 2 hours)
+                const twoHoursLater = new Date(Date.now() + 2 * 60 * 60 * 1000);
+                const isVeryUrgent = data.offers.some(o => new Date(o.endDate) <= twoHoursLater);
+                setIsHighUrgency(isVeryUrgent);
+
+                if (!hasShownBannerThisSession) {
+                    setShowExpiryBanner(true);
+                    setHasShownBannerThisSession(true);
+                }
+
+                fetchUnreadCount();
+            }
+        } catch (error) {
+            console.error("Fetch expiring offers error:", error);
+        }
+    };
 
     const fetchUnreadCount = async () => {
         try {
@@ -217,6 +323,17 @@ const HomeScreen = ({ navigation }) => {
                 if (wishlistData.success) {
                     setWishlistIds(wishlistData.offerIds || []);
                 }
+            }
+
+            // Sync expiring offers ONLY on the first page load/refresh 
+            // once coordsToUse are definitely known.
+            if (pageNum === 1) {
+                console.log('[Home] Triggering Sync from fetchData page 1');
+                fetchExpiringOffers(coordsToUse);
+                fetchHotDealsSync(coordsToUse);
+                fetchTrendingDealsSync(coordsToUse);
+                fetchRecommendedDealsSync();
+                fetchNewDealsSync(coordsToUse);
             }
         } catch (error) {
             console.error("Fetch data error:", error);
@@ -663,6 +780,106 @@ const HomeScreen = ({ navigation }) => {
                 /> 
                 */}
             </View>
+            {/* In-App Expiry Notification Banner (Toast) */}
+            {/* Hot Deal Morning Banner */}
+            {showHotBanner && hotOfferData && (
+                <TouchableOpacity
+                    activeOpacity={0.9}
+                    onPress={() => {
+                        setShowHotBanner(false);
+                        navigation.navigate('OfferDetails', { offerId: hotOfferData._id });
+                    }}
+                    style={{ 
+                        position: 'absolute', 
+                        top: Platform.OS === 'ios' ? 70 : 50, 
+                        left: 20, 
+                        right: 20, 
+                        zIndex: 10000,
+                        backgroundColor: colors.primary,
+                        borderRadius: 24,
+                        padding: 16,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        shadowColor: colors.primary,
+                        shadowOffset: { width: 0, height: 10 },
+                        shadowOpacity: 0.3,
+                        shadowRadius: 20,
+                        elevation: 10,
+                    }}
+                >
+                    <View style={{ backgroundColor: 'rgba(255,255,255,0.2)' }} className="w-12 h-12 rounded-xl items-center justify-center">
+                        <Sparkles size={28} color="white" strokeWidth={2} />
+                    </View>
+                    <View className="flex-1 ml-4">
+                        <Text style={{ color: 'white' }} className="font-black text-sm tracking-tight">Hot deal nearby! Don’t miss it</Text>
+                        <Text style={{ color: 'white' }} className="text-[11px] font-bold opacity-80" numberOfLines={1}>
+                            Trending deal at {hotOfferData.vendorId?.storeName || 'Nearby Store'}
+                        </Text>
+                    </View>
+                    <TouchableOpacity 
+                        onPress={(e) => {
+                            e.stopPropagation();
+                            setShowHotBanner(false);
+                        }}
+                        className="ml-2 w-8 h-8 items-center justify-center bg-black/10 rounded-full"
+                    >
+                        <X size={16} color="white" />
+                    </TouchableOpacity>
+                </TouchableOpacity>
+            )}
+
+            {showExpiryBanner && !showHotBanner && (
+                <TouchableOpacity
+                    activeOpacity={0.9}
+                    onPress={() => {
+                        setShowExpiryBanner(false);
+                        navigation.navigate('ExpiringDeals');
+                    }}
+                    style={{ 
+                        position: 'absolute', 
+                        top: Platform.OS === 'ios' ? 70 : 50, 
+                        left: 20, 
+                        right: 20, 
+                        zIndex: 9999,
+                        backgroundColor: isDarkMode ? '#1A1A1A' : '#FFFFFF',
+                        borderRadius: 24,
+                        padding: 16,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        shadowColor: "#000",
+                        shadowOffset: { width: 0, height: 10 },
+                        shadowOpacity: 0.3,
+                        shadowRadius: 20,
+                        elevation: 15,
+                        borderWidth: 1,
+                        borderColor: colors.border
+                    }}
+                >
+                    <View style={{ backgroundColor: `${colors.error}15` }} className="w-12 h-12 rounded-xl items-center justify-center">
+                        <Flame size={28} color={colors.error} strokeWidth={2} />
+                    </View>
+                    <View className="flex-1 ml-4">
+                        <Text style={{ color: colors.text }} className="font-black text-sm tracking-tight">
+                            {isHighUrgency ? t('home.ending_2h_title') : t('home.expiring_soon_title')}
+                        </Text>
+                        <Text style={{ color: colors.textSecondary }} className="text-[11px] font-bold opacity-70" numberOfLines={1}>
+                            {isHighUrgency 
+                                ? t('home.2h_urgent')
+                                : t('home.expiring_soon_desc', { count: expiringOffers.length })
+                            }
+                        </Text>
+                    </View>
+                    <TouchableOpacity 
+                        onPress={(e) => {
+                            e.stopPropagation();
+                            setShowExpiryBanner(false);
+                        }}
+                        className="p-2"
+                    >
+                        <X size={18} color={colors.textSecondary} />
+                    </TouchableOpacity>
+                </TouchableOpacity>
+            )}
         </SafeAreaView>
     );
 };

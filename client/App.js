@@ -42,6 +42,7 @@ import NotificationScreen from './src/screens/NotificationScreen';
 import AppSettingsScreen from './src/screens/AppSettingsScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import LanguageSelectionScreen from './src/screens/LanguageSelectionScreen';
+import ExpiringDealsScreen from './src/screens/ExpiringDealsScreen';
 import NoInternetModal from './src/components/NoInternetModal';
 import { deactivateKeepAwake } from 'expo-keep-awake';
 
@@ -197,6 +198,7 @@ function RootStack() {
       <Stack.Screen name="SupportCenter" component={SupportCenterScreen} />
       <Stack.Screen name="TicketDetails" component={TicketDetailsScreen} />
       <Stack.Screen name="Notifications" component={NotificationScreen} />
+      <Stack.Screen name="ExpiringDeals" component={ExpiringDealsScreen} />
       <Stack.Screen name="AppSettings" component={AppSettingsScreen} />
     </Stack.Navigator>
   );

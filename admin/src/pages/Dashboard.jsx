@@ -138,7 +138,7 @@ const Dashboard = () => {
     return (
         <div className="animate-fade-in">
             <header style={{ marginBottom: '48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h1 style={{ fontSize: '28px', fontWeight: '900', letterSpacing: '-1px' }}>dashboard</h1>
+                <h1 style={{ fontSize: '28px', fontWeight: '900', letterSpacing: '-1px' }}>Dashboard</h1>
             </header>
 
             <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px', marginBottom: '40px' }}>
@@ -294,7 +294,7 @@ const Dashboard = () => {
                                     <p style={{ fontWeight: '800', fontSize: '14px' }}>{offer.title}</p>
                                 </td>
                                 <td style={{ border: 'none' }}>
-                                    <span className="badge-modern badge-info">{offer.category}</span>
+                                    <span className="badge-modern badge-info">{offer.category?.name || 'Uncategorized'}</span>
                                 </td>
                                 <td style={{ border: 'none', textAlign: 'right', paddingRight: '32px' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px', color: '#8b5cf6', fontWeight: '900' }}>

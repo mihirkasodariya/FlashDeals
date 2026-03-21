@@ -1,6 +1,6 @@
 const User = require('../models/User');
-const Offer = require('../models/Offer');
 const Notification = require('../models/Notification');
+const Offer = require('../models/Offer');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_key_offerz';
