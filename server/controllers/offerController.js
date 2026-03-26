@@ -20,11 +20,19 @@ const addOffer = async (req, res) => {
         }
 
         let { title, description, category, startDate, endDate } = req.body;
+        console.log('category', category)
+        if (!category || (typeof category === 'string' && category.trim() === '')) {
+            return res.status(400).json({ success: false, message: 'Category is required' });
+        }
 
-        if (category && !mongoose.Types.ObjectId.isValid(category)) {
+        if (!mongoose.Types.ObjectId.isValid(category)) {
             const foundCat = await Category.findOne({ name: new RegExp(`^${category}$`, 'i') });
             if (foundCat) category = foundCat._id;
             else return res.status(400).json({ success: false, message: `Invalid category: ${category}` });
+        }
+
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: 'Offer image is required' });
         }
 
         const offer = new Offer({
@@ -129,7 +137,7 @@ const getVendorOffers = async (req, res) => {
         const now = new Date();
         const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
-        
+
         const query = { vendorId };
 
         const [total, active, upcoming, expired, offers] = await Promise.all([
@@ -210,7 +218,7 @@ const getExpiringOffers = async (req, res) => {
         const radius = parseFloat(req.query.radius) || 15;
         const now = new Date();
         const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-        
+
         let offers = await Offer.find({ endDate: { $gte: now, $lte: tomorrow } })
             .populate('vendorId', 'storeName location profileImage')
             .populate('category')
@@ -239,16 +247,16 @@ const getExpiringOffers = async (req, res) => {
             const userId = req.user.userId;
             const twoHoursLater = new Date(now.getTime() + 2 * 60 * 60 * 1000);
             const veryUrgent = offers.filter(o => new Date(o.endDate) <= twoHoursLater);
-            
+
             if (veryUrgent.length > 0) {
                 const title2h = 'Only 2 hours left for this offer!';
-                const existing = await Notification.findOne({ userId, title: title2h, createdAt: { $gte: new Date(now.getTime() - 2*3600000) } });
+                const existing = await Notification.findOne({ userId, title: title2h, createdAt: { $gte: new Date(now.getTime() - 2 * 3600000) } });
                 if (!existing) {
                     await Notification.create({ userId, title: title2h, body: `Quick! ${veryUrgent.length} local deals expire in under 2 hours.` });
                 }
             } else {
                 const title24h = 'Only 24 hours left for this offer!';
-                const startOfToday = new Date(); startOfToday.setHours(0,0,0,0);
+                const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0);
                 const existing = await Notification.findOne({ userId, title: title24h, createdAt: { $gte: startOfToday } });
                 if (!existing) {
                     await Notification.create({ userId, title: title24h, body: `You have ${offers.length} deals ending in 24h.` });
@@ -268,7 +276,7 @@ const syncHotDeals = async (req, res) => {
         if (!req.user?.userId) return res.json({ success: true });
         const userId = req.user.userId;
         const title = "Hot deal nearby! Don’t miss it";
-        const startOfToday = new Date(); startOfToday.setHours(0,0,0,0);
+        const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0);
         const existing = await Notification.findOne({ userId, title, createdAt: { $gte: startOfToday } });
         if (existing) return res.json({ success: true });
 
@@ -281,7 +289,7 @@ const syncHotDeals = async (req, res) => {
             });
         }
         if (offers.length > 0) {
-            offers.sort((a,b) => (b.visits || 0) - (a.visits || 0));
+            offers.sort((a, b) => (b.visits || 0) - (a.visits || 0));
             const best = offers[0];
             await Notification.create({ userId, title, body: `Trending deal at ${best.vendorId.storeName}! Grab it now.` });
             return res.json({ success: true, created: true, offer: best });
@@ -296,7 +304,7 @@ const syncTrendingDeals = async (req, res) => {
         if (!req.user?.userId) return res.json({ success: true });
         const userId = req.user.userId;
         const title = "Trending Deals near you 15km";
-        const startOfToday = new Date(); startOfToday.setHours(0,0,0,0);
+        const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0);
         const existing = await Notification.findOne({ userId, title, createdAt: { $gte: startOfToday } });
         if (existing) return res.json({ success: true });
 
@@ -323,7 +331,7 @@ const syncRecommendedDeals = async (req, res) => {
         if (!req.user?.userId) return res.json({ success: true });
         const userId = req.user.userId;
         const title = "Recommended offers for you";
-        const startOfToday = new Date(); startOfToday.setHours(0,0,0,0);
+        const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0);
         const existing = await Notification.findOne({ userId, title, createdAt: { $gte: startOfToday } });
         if (existing) return res.json({ success: true });
 
@@ -356,7 +364,7 @@ const syncNewOffers = async (req, res) => {
         if (!req.user?.userId) return res.json({ success: true });
         const userId = req.user.userId;
         const title = "New offers near you";
-        const startOfToday = new Date(); startOfToday.setHours(0,0,0,0);
+        const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0);
         const existing = await Notification.findOne({ userId, title, createdAt: { $gte: startOfToday } });
         if (existing) return res.json({ success: true });
 

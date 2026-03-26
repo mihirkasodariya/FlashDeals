@@ -15,9 +15,8 @@ const login = async (req, res) => {
         const { mobile, password } = req.body;
         console.log('mobile', mobile)
         console.log('password', password)
-        const user = await User.findOne({ mobile, password });
-        console.log('user', user)
-        if (!user) {
+        const user = await User.findOne({ mobile });
+        if (!user || !(await user.comparePassword(password))) {
             return res.status(401).json({ success: false, message: 'Invalid mobile or password' });
         }
 
@@ -198,7 +197,7 @@ const changePassword = async (req, res) => {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
 
-        if (user.password !== currentPassword) {
+        if (!(await user.comparePassword(currentPassword))) {
             return res.status(400).json({ success: false, message: 'Incorrect current password' });
         }
 

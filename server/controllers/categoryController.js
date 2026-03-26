@@ -9,12 +9,13 @@ const createCategory = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Name and image are required' });
         }
 
-        const existingCategory = await Category.findOne({ name });
+        const normalizedName = name.trim().charAt(0).toUpperCase() + name.trim().slice(1);
+        const existingCategory = await Category.findOne({ name: normalizedName });
         if (existingCategory) {
             return res.status(400).json({ success: false, message: 'Category with this name already exists' });
         }
 
-        const category = new Category({ name, image });
+        const category = new Category({ name: normalizedName, image });
         await category.save();
 
         res.status(201).json({ success: true, message: 'Category created successfully', category });
@@ -41,7 +42,9 @@ const updateCategory = async (req, res) => {
         const { name, isActive } = req.body;
         const updateData = {};
 
-        if (name !== undefined) updateData.name = name;
+        if (name !== undefined) {
+             updateData.name = name.trim().charAt(0).toUpperCase() + name.trim().slice(1);
+        }
         if (isActive !== undefined) updateData.isActive = isActive;
 
         if (req.file) {

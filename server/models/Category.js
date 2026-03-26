@@ -5,7 +5,8 @@ const categorySchema = new mongoose.Schema({
         type: String,
         required: true,
         trim: true,
-        unique: true
+        unique: true,
+        set: v => v ? v.charAt(0).toUpperCase() + v.slice(1) : v
     },
     image: {
         type: String,

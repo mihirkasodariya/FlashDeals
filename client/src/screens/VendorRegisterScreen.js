@@ -28,7 +28,7 @@ import AddressAutocomplete from '../components/AddressAutocomplete';
 import CustomButton from '../components/CustomButton';
 import { PhoneAuthProvider } from 'firebase/auth';
 import { auth } from '../lib/firebase';
-import { FirebaseRecaptchaVerifierModal } from 'expo-firebase-recaptcha';
+
 
 import ProgressSteps from '../components/ProgressSteps';
 import * as ImagePicker from 'expo-image-picker';
@@ -662,10 +662,6 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                 </View>
             </Modal>
 
-            <FirebaseRecaptchaVerifierModal
-                ref={recaptchaVerifier}
-                firebaseConfig={auth.app.options}
-            />
         </SafeAreaView>
     );
 };

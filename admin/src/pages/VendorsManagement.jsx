@@ -33,7 +33,7 @@ const VendorsManagement = () => {
     const [deleting, setDeleting] = useState(false);
     const [updating, setUpdating] = useState(false);
 
-    const API_URL = 'http://localhost:5000/api';
+    const API_URL = 'https://api.offerz.live/api';
 
     useEffect(() => {
         fetchVendors();
@@ -190,7 +190,7 @@ const VendorsManagement = () => {
                                             }}>
                                                 {v.storeImage ? (
                                                     <img
-                                                        src={`http://localhost:5000${v.storeImage}`}
+                                                        src={`https://api.offerz.live${v.storeImage}`}
                                                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                                         alt={v.storeName}
                                                     />

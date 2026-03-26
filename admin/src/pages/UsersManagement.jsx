@@ -53,7 +53,7 @@ const UsersManagement = () => {
         { id: 'view_stats', label: 'view analytics' },
     ];
 
-    const API_URL = 'http://localhost:5000/api';
+    const API_URL = 'https://api.offerz.live/api';
 
     useEffect(() => {
         fetchUsers();
@@ -251,7 +251,7 @@ const UsersManagement = () => {
                                             }}>
                                                 {user.profileImage ? (
                                                     <img
-                                                        src={`http://localhost:5000${user.profileImage}`}
+                                                        src={`https://api.offerz.live${user.profileImage}`}
                                                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                                         alt={user.name}
                                                     />
@@ -403,7 +403,7 @@ const UsersManagement = () => {
                                 border: '4px solid white'
                             }}>
                                 {viewModal.profileImage ? (
-                                    <img src={`http://localhost:5000${viewModal.profileImage}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+                                    <img src={`https://api.offerz.live${viewModal.profileImage}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
                                 ) : (
                                     <span style={{ fontSize: '32px', color: 'white', fontWeight: '800' }}>{viewModal.name.charAt(0)}</span>
                                 )}

@@ -37,10 +37,10 @@ const AddOfferScreen = ({ route, navigation }) => {
             const data = await resp.json();
             if (data.success) {
                 setCategories(data.categories);
-                
+
                 // If editing and category is a name string, find its ID
                 if (offerToEdit && typeof offerToEdit.category === 'string') {
-                    const matchedCat = data.categories.find(c => 
+                    const matchedCat = data.categories.find(c =>
                         c.name.toLowerCase() === offerToEdit.category.toLowerCase() ||
                         c._id === offerToEdit.category
                     );
@@ -323,7 +323,7 @@ const AddOfferScreen = ({ route, navigation }) => {
                             style={{ backgroundColor: isDarkMode ? '#2D3748' : '#F7FAFC' }}
                             className="w-full py-5 rounded-[24px] flex-row items-center justify-center"
                         >
-                            <CheckCircle2 size={16} color={colors.primary} className="mr-2" />
+                            <CheckCircle2 size={16} color={colors.primary} className="mr-6" />
                             <Text style={{ color: colors.primary }} className="font-black text-sm tracking-tight">{t('common.cool') || 'Done'}</Text>
                         </TouchableOpacity>
                     </View>

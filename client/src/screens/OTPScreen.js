@@ -12,9 +12,8 @@ import {
 } from 'react-native';
 import { CheckCircle2, AlertCircle } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { PhoneAuthProvider, signInWithCredential } from 'firebase/auth';
-import { auth } from '../lib/firebase';
-import { FirebaseRecaptchaVerifierModal } from 'expo-firebase-recaptcha';
+import getAuth, { getPhoneCredential } from '../utils/firebaseAuth';
+
 import { ChevronLeft } from 'lucide-react-native';
 import OTPInput from '../components/OTPInput';
 import CustomButton from '../components/CustomButton';
@@ -28,7 +27,8 @@ const OTPScreen = ({ navigation, route }) => {
     const [timer, setTimer] = useState(30);
     const [otp, setOtp] = useState('');
     const [loading, setLoading] = useState(false);
-    const [verificationId, setVerificationId] = useState(route.params?.verificationId || '');
+    const [confirmation, setConfirmation] = useState(route.params?.confirmation || null);
+    const [verificationId, setVerificationId] = useState(route.params?.confirmation?.verificationId || route.params?.verificationId || '');
     const recaptchaVerifier = React.useRef(null);
     const [modalConfig, setModalConfig] = useState({
         visible: false,
@@ -74,12 +74,13 @@ const OTPScreen = ({ navigation, route }) => {
 
         setLoading(true);
         try {
-            // Verify OTP with Firebase
-            const credential = PhoneAuthProvider.credential(
+            // Verify OTP with Native/Universal Firebase
+            const credential = getPhoneCredential(
                 verificationId,
                 otp
             );
-            await signInWithCredential(auth, credential);
+            const authInstance = getAuth();
+            await authInstance.signInWithCredential(credential);
             
             // If successful, proceed to verify on your backend
             const { userId, userType, purpose, formData } = route.params || {};
@@ -152,13 +153,11 @@ const OTPScreen = ({ navigation, route }) => {
             const cleanedMobile = mobile.replace(/\D/g, '');
             const finalMobile = cleanedMobile.length === 10 ? '+91' + cleanedMobile : (mobile.startsWith('+') ? mobile : '+' + mobile);
 
-            const phoneProvider = new PhoneAuthProvider(auth);
-            const vId = await phoneProvider.verifyPhoneNumber(
-                finalMobile,
-                recaptchaVerifier.current
-            );
+            const authInstance = getAuth();
+            const confirmation = await authInstance.signInWithPhoneNumber(finalMobile);
             
-            setVerificationId(vId);
+            setConfirmation(confirmation);
+            setVerificationId(confirmation.verificationId);
             setLoading(false);
             setTimer(60);
             setModalConfig({
@@ -285,10 +284,6 @@ const OTPScreen = ({ navigation, route }) => {
                 </View>
             </Modal>
 
-            <FirebaseRecaptchaVerifierModal
-                ref={recaptchaVerifier}
-                firebaseConfig={auth.app.options}
-            />
         </SafeAreaView>
     );
 };

@@ -20,7 +20,7 @@ const NotificationsManagement = () => {
     const [sending, setSending] = useState(false);
     const [status, setStatus] = useState({ type: '', message: '' });
 
-    const API_URL = 'http://localhost:5000/api';
+    const API_URL = 'https://api.offerz.live/api';
 
     const handleSendNotification = async (e) => {
         e.preventDefault();

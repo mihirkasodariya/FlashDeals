@@ -3,6 +3,11 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const hpp = require('hpp');
+const xss = require('xss');
+
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const offerRoutes = require('./routes/offerRoutes');
@@ -16,21 +21,69 @@ const notificationRoutes = require('./routes/notificationRoutes');
 
 const app = express();
 
-// Connect to Database
+// 1. Connect to Database
 connectDB();
 
+// 2. Initial Logging
 app.use((req, res, next) => {
     console.log(`>>> [${new Date().toLocaleTimeString()}] ${req.method} ${req.url}`);
     next();
 });
 
-// Middleware
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// 3. CORS and Body Parsers (Must come before security sandbox)
+const corsOptions = {
+    origin: process.env.CLIENT_URL || '*',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+    optionsSuccessStatus: 204
+};
+app.use(cors(corsOptions));
+app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+
+// 4. Security Sandbox (Runs after body parser to clean the data)
+app.use(helmet()); // Set security HTTP headers
+app.use((req, res, next) => {
+    const cleanObject = (obj) => {
+        if (obj && typeof obj === 'object' && !Buffer.isBuffer(obj)) {
+            Object.keys(obj).forEach(key => {
+                const value = obj[key];
+                
+                // NoSQL Protection: Remove keys starting with $
+                if (key.startsWith('$')) {
+                    delete obj[key];
+                    return;
+                }
+
+                if (value && typeof value === 'object' && !Buffer.isBuffer(value)) {
+                    cleanObject(value);
+                } else if (typeof value === 'string') {
+                    // XSS Protection: Sanitize strings
+                    obj[key] = xss(value);
+                }
+            });
+        }
+    };
+
+    if (req.body) cleanObject(req.body);
+    if (req.params) cleanObject(req.params);
+    if (req.query) cleanObject(req.query);
+    next();
+});
+app.use(hpp()); // Prevent Parameter Pollution
+
+// 5. Rate Limiting
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: { success: false, message: 'Too many requests from this IP, please try again later.' }
+});
+app.use('/api/', limiter);
+
+// 6. Static Files
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
-// Routes
+// 7. Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/offers', offerRoutes);
 app.use('/api/vendor', vendorRoutes);
@@ -43,8 +96,6 @@ app.use('/api/webhooks', webhookRoutes);
 
 app.get('/share/offer/:id', (req, res) => {
     const offerId = req.params.id;
-
-    // Replace these with your actual Store URLs
     const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.mihirkasodariya.Offerz';
     const appStoreUrl = 'https://apps.apple.com/app/offerz/id123456789';
     const appSchemeUrl = `offerz://offer/${offerId}`;
@@ -68,19 +119,11 @@ app.get('/share/offer/:id', (req, res) => {
                 window.onload = function() {
                     const isAndroid = /Android/i.test(navigator.userAgent);
                     const isiOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-                    
-                    // Try to open the app
                     window.location.href = "${appSchemeUrl}";
-                    
-                    // Fallback to store after 2 seconds if app doesn't open
                     setTimeout(function() {
-                        if (isAndroid) {
-                            window.location.href = "${playStoreUrl}";
-                        } else if (isiOS) {
-                            window.location.href = "${appStoreUrl}";
-                        } else {
-                            window.location.href = "/";
-                        }
+                        if (isAndroid) window.location.href = "${playStoreUrl}";
+                        else if (isiOS) window.location.href = "${appStoreUrl}";
+                        else window.location.href = "/";
                     }, 2500);
                 };
             </script>
@@ -96,12 +139,12 @@ app.get('/share/offer/:id', (req, res) => {
     `);
 });
 
-// 404 Handler
+// 8. 404 Handler
 app.use((req, res) => {
     res.status(404).json({ success: false, message: `Route ${req.method} ${req.url} Not Found` });
 });
 
-// Global Error Handler
+// 9. Global Error Handler
 app.use((err, req, res, next) => {
     console.error("!!! SERVER ERROR:", err, "!!!");
     res.status(500).json({ success: false, message: err.message || "Internal Server Error" });
@@ -109,5 +152,5 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Server running on port ${PORT} [MVC STRUCTURE]`);
+    console.log(`🚀 Server running on port ${PORT} [SECURE CONFIG]`);
 });

@@ -2,25 +2,53 @@
 node_modules/
 .expo/
 dist/
+web-build/
+expo-env.d.ts
 
-# Env files
+# Env files (Sensitive)
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+*.local
+! .env.example
+serviceAccountKey.json
 
-# Logs
+# Build results (Very large)
+*.apk
+*.aab
+*.ipa
+*.zip
+*.bin
+*.jks
+*.keystore
+builds_utf8.json
+builds_final.json
+builds.json
+
+# Logs and debug files
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+*_log.txt
+debug_output.txt
+babel_error.txt
+babel_error_utf8.txt
+final_debug.txt
+final_try.txt
+startup_log.txt
 *.txt
 
 # OS files
 .DS_Store
 Thumbs.db
+.idea/
+.vscode/
 
 # Project specific
 server/public/uploads/
 server/config/*.json
-serviceAccountKey.json
+jdk17/
+
+# Sensitive Firebase/Config files
+google-services.json
+GoogleService-Info.plist

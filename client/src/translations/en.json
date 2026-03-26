@@ -47,7 +47,7 @@
         "account": "Account",
         "version": "Version",
         "offer_deleted_success": "The offer has been permanently deleted from your store.",
-        "cool": "COOL",
+        "cool": "Successfully",
         "today": "Today",
         "clear": "Clear"
     },
@@ -180,10 +180,11 @@
         "back_to_personal_desc": "Switch back to your personal account to enjoy exclusive nearby deals.",
         "confirm_switch": "CONFIRM SWITCH",
         "switched_personal_success": "Switched to Personal Account successfully!",
-        "cool": "COOL",
+        "cool": "Successfully",
         "permission_required": "Permission to access library is required",
         "name_required": "Name is required",
-        "placeholder_name": "Enter your name"
+        "placeholder_name": "Enter your name",
+        "account_status": "Account Status"
     },
     "settings": {
         "title": "App Settings",

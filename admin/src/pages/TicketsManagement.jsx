@@ -33,7 +33,7 @@ const TicketsManagement = () => {
     const [replyText, setReplyText] = useState('');
     const [sendingReply, setSendingReply] = useState(false);
 
-    const API_URL = 'http://localhost:5000/api';
+    const API_URL = 'https://api.offerz.live/api';
 
     useEffect(() => {
         fetchTickets();
@@ -317,7 +317,7 @@ const TicketsManagement = () => {
                             <div style={{ marginBottom: '32px' }}>
                                 <p style={{ fontSize: '10px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'lowercase', marginBottom: '12px', letterSpacing: '0.5px' }}>evidence attachment</p>
                                 <a
-                                    href={`http://localhost:5000${viewModal.attachment}`}
+                                    href={`https://api.offerz.live${viewModal.attachment}`}
                                     target="_blank"
                                     rel="noreferrer"
                                     style={{

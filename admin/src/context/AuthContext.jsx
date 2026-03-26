@@ -8,7 +8,7 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const [token, setToken] = useState(localStorage.getItem('adminToken'));
 
-    const API_URL = 'http://localhost:5000/api'; // Standard backend URL
+    const API_URL = 'https://api.offerz.live/api'; // Standard backend URL
 
     useEffect(() => {
         if (token) {

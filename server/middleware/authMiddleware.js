@@ -1,5 +1,9 @@
 const jwt = require('jsonwebtoken');
-const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_key_offerz';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+    console.error('CRITICAL: JWT_SECRET not found in environment variables!');
+    process.exit(1);
+}
 
 const User = require('../models/User');
 
@@ -13,20 +17,29 @@ const authenticateToken = async (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = decoded;
+        
+        // Fetch the user from the database to ensure we have the latest role and status
+        const user = await User.findById(decoded.userId);
+        if (!user) {
+            return res.status(401).json({ success: false, message: 'User no longer exists' });
+        }
 
         // Check if device is still active in database
         if (decoded.deviceId) {
-            const user = await User.findById(decoded.userId);
-            if (!user) {
-                return res.status(401).json({ success: false, message: 'User no longer exists' });
-            }
-
             const device = user.loginDevices.find(d => d._id.toString() === decoded.deviceId);
             if (!device || !device.isActive) {
                 return res.status(401).json({ success: false, message: 'Session expired or device logged out' });
             }
         }
+
+        // Attach the LATEST user data from the database to req.user
+        req.user = {
+            userId: user._id,
+            role: user.role,
+            status: user.status,
+            isVerified: user.isVerified,
+            deviceId: decoded.deviceId
+        };
 
         next();
     } catch (err) {

@@ -16,9 +16,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Camera, Check, AlertCircle, CheckCircle2 } from 'lucide-react-native';
 import FloatingInput from '../components/FloatingInput';
 import CustomButton from '../components/CustomButton';
-import { PhoneAuthProvider } from 'firebase/auth';
-import { auth } from '../lib/firebase';
-import { FirebaseRecaptchaVerifierModal } from 'expo-firebase-recaptcha';
+import getAuth from '../utils/firebaseAuth';
+
 import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '../context/ThemeContext';
 import { API_BASE_URL } from '../config';
@@ -129,17 +128,15 @@ const RegisterScreen = ({ navigation }) => {
                     const cleanedMobile = mobile.replace(/\D/g, '');
                     const finalMobile = cleanedMobile.length === 10 ? '+91' + cleanedMobile : (mobile.startsWith('+') ? mobile : '+' + mobile);
                     
-                    const phoneProvider = new PhoneAuthProvider(auth);
-                    const vId = await phoneProvider.verifyPhoneNumber(
-                        finalMobile,
-                        recaptchaVerifier.current
-                    );
+                    // Native/Universal Firebase Auth
+                    const authInstance = getAuth();
+                    const confirmation = await authInstance.signInWithPhoneNumber(finalMobile);
                     
                     navigation.navigate('OTP', {
                         mobile,
                         userType: 'user',
                         userId: data.userId,
-                        verificationId: vId
+                        confirmation // Pass the confirmation object
                     });
                 } catch (otpErr) {
                     console.error("Firebase Auth Error:", otpErr);
@@ -333,10 +330,6 @@ const RegisterScreen = ({ navigation }) => {
                 </View>
             </Modal>
 
-            <FirebaseRecaptchaVerifierModal
-                ref={recaptchaVerifier}
-                firebaseConfig={auth.app.options}
-            />
         </SafeAreaView>
     );
 };

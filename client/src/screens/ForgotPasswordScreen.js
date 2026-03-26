@@ -13,9 +13,8 @@ import CustomButton from '../components/CustomButton';
 import { useTheme } from '../context/ThemeContext';
 import { CheckCircle2, AlertCircle, ChevronLeft, Lock } from 'lucide-react-native';
 import FloatingInput from '../components/FloatingInput';
-import { FirebaseRecaptchaVerifierModal } from 'expo-firebase-recaptcha';
-import { PhoneAuthProvider } from 'firebase/auth';
-import { auth } from '../lib/firebase';
+
+import getAuth from '../utils/firebaseAuth';
 import { Animated, Modal } from 'react-native';
 import { API_BASE_URL } from '../config';
 
@@ -80,17 +79,15 @@ const ForgotPasswordScreen = ({ navigation }) => {
 
             const finalMobile = cleanedMobile.length === 10 ? '+91' + cleanedMobile : (mobile.startsWith('+') ? mobile : '+' + mobile);
             
-            const phoneProvider = new PhoneAuthProvider(auth);
-            const vId = await phoneProvider.verifyPhoneNumber(
-                finalMobile,
-                recaptchaVerifier.current
-            );
+            // Native/Universal Firebase Auth
+            const authInstance = getAuth();
+            const confirmation = await authInstance.signInWithPhoneNumber(finalMobile);
             
             setLoading(false);
             navigation.navigate('OTP', { 
                 mobile, 
                 purpose: 'reset',
-                verificationId: vId 
+                confirmation 
             });
         } catch (error) {
             setLoading(false);
@@ -208,10 +205,6 @@ const ForgotPasswordScreen = ({ navigation }) => {
                 </View>
             </Modal>
 
-            <FirebaseRecaptchaVerifierModal
-                ref={recaptchaVerifier}
-                firebaseConfig={auth.app.options}
-            />
         </SafeAreaView>
     );
 };

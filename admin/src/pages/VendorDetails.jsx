@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { format, isWithinInterval, isBefore, isAfter } from 'date-fns';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'https://api.offerz.live/api';
 
 // Internal Modal Styles (Consistent with Offers Page)
 const modalOverlayStyle = {
@@ -240,7 +240,7 @@ const VendorDetails = () => {
                             }}>
                                 {vendor.storeImage ? (
                                     <img
-                                        src={`http://localhost:5000${vendor.storeImage}`}
+                                        src={`https://api.offerz.live${vendor.storeImage}`}
                                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                         alt={vendor.storeName}
                                     />
@@ -332,7 +332,7 @@ const VendorDetails = () => {
                                     return (
                                         <div key={offer._id} style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '20px', background: '#fdfdfe', border: '1.5px solid #f1f5f9', borderRadius: '24px' }}>
                                             <div style={{ width: '64px', height: '64px', borderRadius: '16px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
-                                                <img src={`http://localhost:5000${offer.image || '/uploads/offers/default.png'}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                <img src={`https://api.offerz.live${offer.image || '/uploads/offers/default.png'}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                             </div>
                                             <div style={{ flex: 1 }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -518,7 +518,7 @@ const VendorDetails = () => {
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '20px', marginBottom: '20px' }}>
                             <div style={{ borderRadius: '24px', overflow: 'hidden', border: '1px solid #e2e8f0', height: '160px' }}>
                                 <img
-                                    src={`http://localhost:5000${detailsModal.image || '/uploads/offers/default.png'}`}
+                                    src={`https://api.offerz.live${detailsModal.image || '/uploads/offers/default.png'}`}
                                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                     alt=""
                                 />

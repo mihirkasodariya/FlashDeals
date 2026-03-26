@@ -25,7 +25,7 @@ const CategoriesManagement = () => {
     const [confirmModal, setConfirmModal] = useState({ show: false, cat: null });
     const [updating, setUpdating] = useState(false);
 
-    const API_URL = 'http://localhost:5000/api';
+    const API_URL = 'https://api.offerz.live/api';
 
     useEffect(() => {
         fetchCategories();
@@ -163,7 +163,7 @@ const CategoriesManagement = () => {
                                 border: '1px solid #e2e8f0'
                             }}>
                                 <img
-                                    src={`http://localhost:5000${cat.image}`}
+                                    src={`https://api.offerz.live${cat.image}`}
                                     alt={cat.name}
                                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                 />
@@ -181,7 +181,7 @@ const CategoriesManagement = () => {
                                             id: cat._id,
                                             name: cat.name,
                                             image: null,
-                                            preview: `http://localhost:5000${cat.image}`,
+                                            preview: `https://api.offerz.live${cat.image}`,
                                             isActive: cat.isActive
                                         })}
                                         className="action-btn-modern info"

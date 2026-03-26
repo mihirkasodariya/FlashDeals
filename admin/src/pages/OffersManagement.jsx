@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { format, isWithinInterval, isBefore } from 'date-fns';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'https://api.offerz.live/api';
 
 // Internal Modal Styles
 const modalOverlayStyle = {
@@ -259,7 +259,7 @@ const OffersManagement = () => {
                                                 boxShadow: '0 4px 10px rgba(0,0,0,0.05)'
                                             }}>
                                                 <img
-                                                    src={`http://localhost:5000${offer.image || '/uploads/offers/default.png'}`}
+                                                    src={`https://api.offerz.live${offer.image || '/uploads/offers/default.png'}`}
                                                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                                     alt=""
                                                 />
@@ -322,7 +322,7 @@ const OffersManagement = () => {
                                                         startDate: format(new Date(offer.startDate), 'yyyy-MM-dd'),
                                                         endDate: format(new Date(offer.endDate), 'yyyy-MM-dd'),
                                                         image: null,
-                                                        preview: `http://localhost:5000${offer.image}`
+                                                        preview: `https://api.offerz.live${offer.image}`
                                                     })}
                                                     className="action-btn-modern warning"
                                                     title="edit deal"
@@ -362,7 +362,7 @@ const OffersManagement = () => {
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '20px', marginBottom: '20px' }}>
                             <div style={{ borderRadius: '24px', overflow: 'hidden', border: '1px solid #e2e8f0', height: '160px' }}>
                                 <img
-                                    src={`http://localhost:5000${detailsModal.image || '/uploads/offers/default.png'}`}
+                                    src={`https://api.offerz.live${detailsModal.image || '/uploads/offers/default.png'}`}
                                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                     alt=""
                                 />

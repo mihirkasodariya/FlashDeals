@@ -12,16 +12,16 @@ import {
 } from 'react-native';
 import { CheckCircle2, AlertCircle } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { FirebaseRecaptchaVerifierModal } from 'expo-firebase-recaptcha';
-import { auth } from '../lib/firebase';
+
+import getAuth, { getPhoneCredential } from '../utils/firebaseAuth';
 import * as Device from 'expo-device';
-import { PhoneAuthProvider, signInWithCredential } from 'firebase/auth';
 import { colors } from '../theme/colors';
 import { API_BASE_URL } from '../config';
 import { syncFCMToken } from '../utils/notificationService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
 import FloatingInput from '../components/FloatingInput';
+import OTPInput from '../components/OTPInput';
 
 import CustomButton from '../components/CustomButton';
 import TabSwitcher from '../components/TabSwitcher';
@@ -118,13 +118,11 @@ const LoginScreen = ({ navigation }) => {
 
             const finalMobile = cleanedMobile.length === 10 ? '+91' + cleanedMobile : (mobile.startsWith('+') ? mobile : '+' + mobile);
             
-            const phoneProvider = new PhoneAuthProvider(auth);
-            const vId = await phoneProvider.verifyPhoneNumber(
-                finalMobile,
-                recaptchaVerifier.current
-            );
+            // Native/Universal Firebase Auth
+            const authInstance = getAuth();
+            const confirmation = await authInstance.signInWithPhoneNumber(finalMobile);
             
-            setVerificationId(vId);
+            setVerificationId(confirmation.verificationId); 
             setLoading(false);
             setOtpSent(true);
             setTimer(60);
@@ -133,7 +131,7 @@ const LoginScreen = ({ navigation }) => {
                 visible: true,
                 type: 'success',
                 title: t('common.success'),
-                message: t('login.otp_sent_msg')
+                message: t('login.otp_sent_msg') || 'OTP has been sent to your mobile number.'
             });
         } catch (error) {
             setLoading(false);
@@ -180,13 +178,13 @@ const LoginScreen = ({ navigation }) => {
         setLoading(true);
         try {
             if (loginMode === 'otp') {
-                // Verify OTP with Firebase
-                const credential = PhoneAuthProvider.credential(
-                    verificationId,
+                // Verify OTP with Native/Universal Firebase
+                const credential = getPhoneCredential(
+                    verificationId, 
                     otp
                 );
-                await signInWithCredential(auth, credential);
-                // If we reach here, Firebase Auth was successful
+                const authInstance = getAuth();
+                await authInstance.signInWithCredential(credential);
             }
 
             const endpoint = loginMode === 'password' ? 'login' : 'login-with-otp';
@@ -329,12 +327,9 @@ const LoginScreen = ({ navigation }) => {
                                     </TouchableOpacity>
                                 </View>
                             </View>
-                            <FloatingInput
-                                label={t('common.otp') + " (6-Digit)"}
-                                value={otp}
-                                onChangeText={setOtp}
-                                keyboardType="number-pad"
-                                maxLength={6}
+                            <OTPInput
+                                onComplete={(value) => setOtp(value)}
+                                length={6}
                             />
                             <View className="items-center mb-6">
                                 {timer > 0 ? (
@@ -480,10 +475,6 @@ const LoginScreen = ({ navigation }) => {
                 </View>
             </Modal>
 
-            <FirebaseRecaptchaVerifierModal
-                ref={recaptchaVerifier}
-                firebaseConfig={auth.app.options}
-            />
         </SafeAreaView>
     );
 };

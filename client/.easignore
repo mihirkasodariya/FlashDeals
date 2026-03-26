@@ -1,0 +1,14 @@
+# EAS Ignore
+node_modules
+.expo
+.metro-health-check*
+ios
+android/build
+android/.gradle
+android/app/build
+android/.cxx
+android/*.jks
+android/*.p8
+android/*.p12
+android/*.key
+android/*.mobileprovision

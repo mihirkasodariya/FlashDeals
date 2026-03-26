@@ -45,6 +45,10 @@ import LanguageSelectionScreen from './src/screens/LanguageSelectionScreen';
 import ExpiringDealsScreen from './src/screens/ExpiringDealsScreen';
 import NoInternetModal from './src/components/NoInternetModal';
 import { deactivateKeepAwake } from 'expo-keep-awake';
+import * as SplashScreen from 'expo-splash-screen';
+
+// Keep splash screen visible until we determine initial route
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -94,9 +98,9 @@ function MainTabs({ navigation }) {
           backgroundColor: colors.card,
           borderTopWidth: 1,
           borderTopColor: colors.border,
-          height: Platform.OS === 'ios' ? 88 : 92,
+          height: Platform.OS === 'ios' ? 88 : 80,
           paddingBottom: Platform.OS === 'ios' ? 30 : 12,
-          paddingTop: 10,
+          paddingTop: 2,
           elevation: 20,
           shadowColor: '#000',
           shadowOffset: { width: 0, height: -10 },
@@ -157,9 +161,24 @@ function RootStack() {
         }
       } catch (e) {
         setInitialRoute('LanguageSelection');
+      } finally {
+        // Hide splash screen after finding route or failing
+        setTimeout(() => {
+          SplashScreen.hideAsync().catch(() => {});
+        }, 500);
       }
     };
+    
+    // Fail-safe timeout (3 seconds) to ensure app doesn't stay blank/on splash forever
+    const failSafe = setTimeout(() => {
+        if (!initialRoute) {
+            setInitialRoute('LanguageSelection');
+            SplashScreen.hideAsync().catch(() => {});
+        }
+    }, 3000);
+
     checkInitialRoute();
+    return () => clearTimeout(failSafe);
   }, []);
 
   if (!initialRoute) {
@@ -225,7 +244,7 @@ function AppContent() {
   }, []);
 
   const linking = {
-    prefixes: ['offerz://', 'http://192.168.1.21:5000'],
+    prefixes: ['offerz://', 'https://api.offerz.live'],
     config: {
       screens: {
         OfferDetails: 'offer/:offerId',

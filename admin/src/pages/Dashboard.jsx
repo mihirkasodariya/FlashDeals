@@ -52,7 +52,7 @@ const Dashboard = () => {
     const [loading, setLoading] = useState(true);
     const [range, setRange] = useState('6m');
 
-    const API_URL = 'http://localhost:5000/api';
+    const API_URL = 'https://api.offerz.live/api';
 
     useEffect(() => {
         fetchDashboardData();
