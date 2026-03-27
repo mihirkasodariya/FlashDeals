@@ -16,6 +16,7 @@ import { Platform, View, Text, DeviceEventEmitter, ActivityIndicator } from 'rea
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import { registerForPushNotificationsAsync, syncFCMToken } from './src/utils/notificationService';
+import * as NavigationBar from 'expo-navigation-bar';
 
 // Import Screens
 import LoginScreen from './src/screens/LoginScreen';
@@ -48,7 +49,7 @@ import { deactivateKeepAwake } from 'expo-keep-awake';
 import * as SplashScreen from 'expo-splash-screen';
 
 // Keep splash screen visible until we determine initial route
-SplashScreen.preventAutoHideAsync().catch(() => {});
+SplashScreen.preventAutoHideAsync().catch(() => { });
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -87,6 +88,9 @@ function MainTabs({ navigation }) {
     };
   }, [navigation]);
 
+  const insets = useSafeAreaInsets();
+  const hasBottomInset = insets.bottom > 0;
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -94,13 +98,15 @@ function MainTabs({ navigation }) {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: isDarkMode ? '#94A3B8' : '#94A3B8',
         tabBarShowLabel: true,
+        tabBarHideOnKeyboard: true,
         tabBarStyle: {
-          backgroundColor: colors.card,
+          backgroundColor: '#FFFFFF',
           borderTopWidth: 1,
           borderTopColor: colors.border,
-          height: Platform.OS === 'ios' ? 88 : 80,
-          paddingBottom: Platform.OS === 'ios' ? 30 : 12,
-          paddingTop: 2,
+          // Perfect fit based on your request (+1px raise)
+          height: 47 + (insets.bottom > 0 ? insets.bottom : 0),
+          paddingBottom: 1,
+          paddingTop: 0,
           elevation: 20,
           shadowColor: '#000',
           shadowOffset: { width: 0, height: -10 },
@@ -164,17 +170,17 @@ function RootStack() {
       } finally {
         // Hide splash screen after finding route or failing
         setTimeout(() => {
-          SplashScreen.hideAsync().catch(() => {});
+          SplashScreen.hideAsync().catch(() => { });
         }, 500);
       }
     };
-    
+
     // Fail-safe timeout (3 seconds) to ensure app doesn't stay blank/on splash forever
     const failSafe = setTimeout(() => {
-        if (!initialRoute) {
-            setInitialRoute('LanguageSelection');
-            SplashScreen.hideAsync().catch(() => {});
-        }
+      if (!initialRoute) {
+        setInitialRoute('LanguageSelection');
+        SplashScreen.hideAsync().catch(() => { });
+      }
     }, 3000);
 
     checkInitialRoute();
@@ -238,9 +244,22 @@ function AppContent() {
       syncFCMToken(API_BASE_URL);
     };
     initNotifications();
-    
+
     // Deactivate any keep-awake signal to respect system auto-lock settings
     deactivateKeepAwake();
+
+    // Set Navigation Bar color for Android with safety guard
+    if (Platform.OS === 'android') {
+      try {
+        // Only run if the native module is actually available to prevent crashes
+        if (NavigationBar && typeof NavigationBar.setBackgroundColorAsync === 'function') {
+          NavigationBar.setBackgroundColorAsync('#FFFFFF').catch(() => { });
+          NavigationBar.setButtonStyleAsync('dark').catch(() => { });
+        }
+      } catch (error) {
+        console.log("NavigationBar module not supported in current build:", error);
+      }
+    }
   }, []);
 
   const linking = {

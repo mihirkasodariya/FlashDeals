@@ -393,9 +393,9 @@ const OfferDetailsScreen = ({ route, navigation }) => {
             </ScrollView>
 
             {/* Bottom Banner Ad */}
-            <View style={{ backgroundColor: colors.background }}>
+            {/* <View style={{ backgroundColor: colors.background }}>
                 <DummyBannerAd colors={colors} />
-            </View>
+            </View> */}
 
             <Modal
                 visible={isImageModalVisible}

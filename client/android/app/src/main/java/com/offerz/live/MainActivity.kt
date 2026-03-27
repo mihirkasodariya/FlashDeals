@@ -1,4 +1,4 @@
-package offerz.live
+package com.offerz.live
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

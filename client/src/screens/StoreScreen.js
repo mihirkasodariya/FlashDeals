@@ -246,16 +246,16 @@ const StoreScreen = ({ navigation }) => {
                 </View>
 
                 {/* Integration Ad */}
-                <View className="px-6 pb-12">
+                {/* <View className="px-6 pb-12">
                     <DummyBannerAd colors={colors} label="Merchant Performance Sponsored Ad" />
-                </View>
+                </View> */}
 
                 <View className="h-32" />
             </ScrollView >
 
-            <View style={{ backgroundColor: colors.background }}>
+            {/* <View style={{ backgroundColor: colors.background }}>
                 <DummyBannerAd colors={colors} />
-            </View>
+            </View> */}
         </SafeAreaView >
     );
 };

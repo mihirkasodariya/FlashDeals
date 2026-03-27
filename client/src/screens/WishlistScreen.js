@@ -169,9 +169,9 @@ const WishlistScreen = ({ navigation }) => {
             )}
 
             {/* Bottom Banner Ad */}
-            <View style={{ backgroundColor: colors.background }}>
+            {/* <View style={{ backgroundColor: colors.background }}>
                 <DummyBannerAd colors={colors} />
-            </View>
+            </View> */}
         </SafeAreaView>
     );
 };

@@ -1,4 +1,4 @@
-package offerz.live
+package com.offerz.live
 
 import android.app.Application
 import android.content.res.Configuration

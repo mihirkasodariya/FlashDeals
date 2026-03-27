@@ -9,12 +9,12 @@ import { Calendar, Search, MapPin, Bell, Navigation2, X, ArrowRight, Filter, Che
 import { colors as staticColors } from '../theme/colors';
 import { useTheme } from '../context/ThemeContext';
 import OfferCard from '../components/OfferCard';
-import LocationSelectorModal from '../components/LocationSelectorModal';
+// import LocationSelectorModal from '../components/LocationSelectorModal';
 import CustomCalendar from '../components/CustomCalendar';
 import { API_BASE_URL } from '../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
-import { Alert } from 'react-native';
+// import { Alert } from 'react-native';
 
 // Categories will be fetched from the backend
 
@@ -100,13 +100,13 @@ const HomeScreen = ({ navigation }) => {
             const token = await AsyncStorage.getItem('userToken');
             const lat = passedCoords?.lat || userCoordinates?.lat;
             const lng = passedCoords?.lng || userCoordinates?.lng;
-            
+
             let url = `${API_BASE_URL}/offers/sync-hot-deals`;
             if (lat && lng) url += `?lat=${lat}&lng=${lng}`;
 
             const response = await fetch(url, { headers: token ? { 'Authorization': `Bearer ${token}` } : {} });
             const data = await response.json();
-            
+
             if (data.success && data.created) {
                 setHotOfferData(data.offer);
                 setShowHotBanner(true);
@@ -160,7 +160,7 @@ const HomeScreen = ({ navigation }) => {
         try {
             console.log("[InApp] Syncing expiring offers...");
             const token = await AsyncStorage.getItem('userToken');
-            
+
             const lat = passedCoords?.lat || userCoordinates?.latitude || userCoordinates?.lat;
             const lng = passedCoords?.lng || userCoordinates?.longitude || userCoordinates?.lng;
 
@@ -173,10 +173,10 @@ const HomeScreen = ({ navigation }) => {
                 headers: token ? { 'Authorization': `Bearer ${token}` } : {}
             });
             const data = await response.json();
-            
+
             if (data.success && data.offers && data.offers.length > 0) {
                 setExpiringOffers(data.offers);
-                
+
                 // Detect if any offer is ultra-urgent (< 2 hours)
                 const twoHoursLater = new Date(Date.now() + 2 * 60 * 60 * 1000);
                 const isVeryUrgent = data.offers.some(o => new Date(o.endDate) <= twoHoursLater);
@@ -299,15 +299,15 @@ const HomeScreen = ({ navigation }) => {
                 const incomingOffers = offersData.offers || [];
                 if (pageNum === 1) {
                     // Filter duplicates even in first page just in case server is messy
-                    const uniqueInPage = incomingOffers.filter((item, index, self) => 
+                    const uniqueInPage = incomingOffers.filter((item, index, self) =>
                         item?._id && index === self.findIndex((t) => (t._id === item._id))
                     );
                     setOffers(uniqueInPage);
                 } else {
                     setOffers(prev => {
                         const existingIds = new Set(prev.map(o => o._id));
-                        const uniqueNewOffers = incomingOffers.filter(o => 
-                            o?._id && !existingIds.has(o._id) && 
+                        const uniqueNewOffers = incomingOffers.filter(o =>
+                            o?._id && !existingIds.has(o._id) &&
                             // Avoid duplicates within the new chunk itself
                             incomingOffers.findIndex(io => io._id === o._id) === incomingOffers.indexOf(o)
                         );
@@ -371,13 +371,13 @@ const HomeScreen = ({ navigation }) => {
             if (data.success) {
                 const staticCats = [{ _id: 'all', name: t('categories.all'), isStatic: true }];
                 const dynamicCats = data.categories || [];
-                
+
                 // Merge and remove potential duplicates (if server ever sends 'all' id)
                 const merged = [...staticCats, ...dynamicCats];
-                const uniqueCats = merged.filter((item, index, self) => 
+                const uniqueCats = merged.filter((item, index, self) =>
                     item?._id && index === self.findIndex((t) => (t._id === item._id))
                 );
-                
+
                 setCategories(uniqueCats);
             }
         } catch (error) {
@@ -491,8 +491,12 @@ const HomeScreen = ({ navigation }) => {
                                 <Text style={{ fontSize: 18, marginRight: 8 }}>🛍️</Text>
                             ) : item.image ? (
                                 <Image
-                                    source={{ uri: `${API_BASE_URL.replace('/api', '')}${item.image}` }}
-                                    style={{ width: 20, height: 20, marginRight: 8, borderRadius: 4 }}
+                                    source={{
+                                        uri: item.image.startsWith('http')
+                                            ? item.image
+                                            : `${API_BASE_URL.replace('/api', '')}${item.image}`
+                                    }}
+                                    style={{ width: 24, height: 24, marginRight: 8, borderRadius: 6 }}
                                 />
                             ) : (
                                 <Text style={{ fontSize: 18, marginRight: 8 }}>📦</Text>
@@ -540,9 +544,9 @@ const HomeScreen = ({ navigation }) => {
                                 )}
                             />
                             {/* Ad after Hot Offers */}
-                            <View className="mt-2 mb-6 px-6">
+                            {/* <View className="mt-2 mb-6 px-6">
                                 <DummyBannerAd colors={colors} label="Featured Sponsored Content" />
-                            </View>
+                            </View> */}
                         </View>
                     )}
 
@@ -654,8 +658,8 @@ const HomeScreen = ({ navigation }) => {
                     >
                         <Bell size={22} color={colors.primary} strokeWidth={2.5} />
                         {unreadCount > 0 && (
-                            <View 
-                                style={{ backgroundColor: colors.error, borderColor: colors.card }} 
+                            <View
+                                style={{ backgroundColor: colors.error, borderColor: colors.card }}
                                 className="absolute -top-1 -right-1 min-w-[20px] h-5 rounded-full border-2 items-center justify-center px-1 shadow-sm"
                             >
                                 <Text style={{ color: 'white' }} className="text-[10px] font-black">{unreadCount > 9 ? '9+' : unreadCount}</Text>
@@ -770,16 +774,16 @@ const HomeScreen = ({ navigation }) => {
             )}
 
             {/* Banner Ad - Using Dummy for Expo Go Testing */}
-            <View style={{ backgroundColor: colors.background, paddingBottom: Platform.OS === 'ios' ? 0 : 0 }}>
-                <DummyBannerAd colors={colors} />
-                {/* Asli Ad - Production ke liye ise use karein:
+            {/* <View style={{ backgroundColor: colors.background, paddingBottom: Platform.OS === 'ios' ? 0 : 0 }}>
+                <DummyBannerAd colors={colors} /> */}
+            {/* Asli Ad - Production ke liye ise use karein:
                 <BannerAd
                     unitId={TestIds.BANNER}
                     size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
                     requestOptions={{ requestNonPersonalizedAdsOnly: true }}
                 /> 
                 */}
-            </View>
+            {/* </View> */}
             {/* In-App Expiry Notification Banner (Toast) */}
             {/* Hot Deal Morning Banner */}
             {showHotBanner && hotOfferData && (
@@ -789,11 +793,11 @@ const HomeScreen = ({ navigation }) => {
                         setShowHotBanner(false);
                         navigation.navigate('OfferDetails', { offerId: hotOfferData._id });
                     }}
-                    style={{ 
-                        position: 'absolute', 
-                        top: Platform.OS === 'ios' ? 70 : 50, 
-                        left: 20, 
-                        right: 20, 
+                    style={{
+                        position: 'absolute',
+                        top: Platform.OS === 'ios' ? 70 : 50,
+                        left: 20,
+                        right: 20,
                         zIndex: 10000,
                         backgroundColor: colors.primary,
                         borderRadius: 24,
@@ -816,7 +820,7 @@ const HomeScreen = ({ navigation }) => {
                             Trending deal at {hotOfferData.vendorId?.storeName || 'Nearby Store'}
                         </Text>
                     </View>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         onPress={(e) => {
                             e.stopPropagation();
                             setShowHotBanner(false);
@@ -835,11 +839,11 @@ const HomeScreen = ({ navigation }) => {
                         setShowExpiryBanner(false);
                         navigation.navigate('ExpiringDeals');
                     }}
-                    style={{ 
-                        position: 'absolute', 
-                        top: Platform.OS === 'ios' ? 70 : 50, 
-                        left: 20, 
-                        right: 20, 
+                    style={{
+                        position: 'absolute',
+                        top: Platform.OS === 'ios' ? 70 : 50,
+                        left: 20,
+                        right: 20,
                         zIndex: 9999,
                         backgroundColor: isDarkMode ? '#1A1A1A' : '#FFFFFF',
                         borderRadius: 24,
@@ -863,13 +867,13 @@ const HomeScreen = ({ navigation }) => {
                             {isHighUrgency ? t('home.ending_2h_title') : t('home.expiring_soon_title')}
                         </Text>
                         <Text style={{ color: colors.textSecondary }} className="text-[11px] font-bold opacity-70" numberOfLines={1}>
-                            {isHighUrgency 
+                            {isHighUrgency
                                 ? t('home.2h_urgent')
                                 : t('home.expiring_soon_desc', { count: expiringOffers.length })
                             }
                         </Text>
                     </View>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         onPress={(e) => {
                             e.stopPropagation();
                             setShowExpiryBanner(false);

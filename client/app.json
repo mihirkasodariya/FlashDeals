@@ -2,14 +2,10 @@
   "expo": {
     "name": "Offerz",
     "slug": "Offerz",
-    "extra": {
-      "eas": {
-        "projectId": "20a5b665-ba67-493a-92a2-71ab24a614f2"
-      }
-    },
+    "version": "1.0.0",
     "scheme": "offerz",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/offerz_logo.jpeg",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -19,15 +15,19 @@
     "ios": {
       "supportsTablet": true,
       "googleServicesFile": "./GoogleService-Info.plist",
-      "bundleIdentifier": "offerz.live"
+      "bundleIdentifier": "com.offerz.live"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/offerz_logo.jpeg",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": false,
-      "package": "offerz.live",
+      "edgeToEdgeEnabled": true,
+      "navigationBar": {
+        "backgroundColor": "#FFFFFF",
+        "buttonColor": "dark"
+      },
+      "package": "com.offerz.live",
       "googleServicesFile": "./google-services.json",
       "newArchEnabled": true
     },
@@ -60,11 +60,24 @@
         }
       ]
     ],
-    "runtimeVersion": {
-      "policy": "appVersion"
+    "react-native-google-mobile-ads": {
+      "android_app_id": "ca-app-pub-3940256099942544~3347511713",
+      "ios_app_id": "ca-app-pub-3940256099942544~1458002511",
+      "androidAppId": "ca-app-pub-3940256099942544~3347511713",
+      "iosAppId": "ca-app-pub-3940256099942544~1458002511"
     },
     "updates": {
       "url": "https://u.expo.dev/20a5b665-ba67-493a-92a2-71ab24a614f2"
+    },
+    "runtimeVersion": "1.0.0",
+    "extra": {
+      "eas": {
+        "projectId": "20a5b665-ba67-493a-92a2-71ab24a614f2"
+      },
+      "react-native-google-mobile-ads": {
+        "android_app_id": "ca-app-pub-3940256099942544~3347511713",
+        "ios_app_id": "ca-app-pub-3940256099942544~1458002511"
+      }
     }
   }
 }

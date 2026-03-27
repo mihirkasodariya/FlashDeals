@@ -43,7 +43,7 @@ const updateCategory = async (req, res) => {
         const updateData = {};
 
         if (name !== undefined) {
-             updateData.name = name.trim().charAt(0).toUpperCase() + name.trim().slice(1);
+            updateData.name = name.trim().charAt(0).toUpperCase() + name.trim().slice(1);
         }
         if (isActive !== undefined) updateData.isActive = isActive;
 

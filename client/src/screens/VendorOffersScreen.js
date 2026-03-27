@@ -369,9 +369,9 @@ const VendorOffersScreen = ({ navigation }) => {
                 />
             )}
 
-            <View style={{ backgroundColor: colors.background, paddingBottom: insets.bottom > 0 ? insets.bottom : 12 }}>
+            {/* <View style={{ backgroundColor: colors.background, paddingBottom: insets.bottom > 0 ? insets.bottom : 12 }}>
                 <DummyBannerAd colors={colors} />
-            </View>
+            </View> */}
             {/* Delete Confirmation Modal */}
             <Modal transparent visible={showDeleteModal} animationType="fade">
                 <View className="flex-1 justify-center items-center bg-black/80 px-8">

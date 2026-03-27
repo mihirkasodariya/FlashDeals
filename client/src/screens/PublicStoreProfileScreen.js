@@ -204,9 +204,9 @@ const PublicStoreProfileScreen = ({ route, navigation }) => {
                     </View>
 
                     {/* Ad after store card */}
-                    <View className="mt-8">
+                    {/* <View className="mt-8">
                         <DummyBannerAd colors={colors} label="Featured Sponsored Content" />
-                    </View>
+                    </View> */}
 
                     <View className="mt-10 mb-20">
                         <View className="flex-row items-center justify-between mb-8 px-2">
@@ -267,9 +267,9 @@ const PublicStoreProfileScreen = ({ route, navigation }) => {
                 <View style={{ height: 20 }} />
             </ScrollView>
 
-            <View style={{ backgroundColor: colors.background }}>
+            {/* <View style={{ backgroundColor: colors.background }}>
                 <DummyBannerAd colors={colors} />
-            </View>
+            </View> */}
         </View>
     );
 };

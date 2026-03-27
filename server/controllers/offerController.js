@@ -40,7 +40,7 @@ const addOffer = async (req, res) => {
             title,
             description,
             category,
-            image: `/public/offers/${req.file.filename}`,
+            image: `https://api.offerz.live/public/offers/${req.file.filename}`,
             startDate,
             endDate
         });
