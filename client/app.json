@@ -54,8 +54,10 @@
             "agpVersion": "8.7.3",
             "newArchEnabled": true,
             "minSdkVersion": 24,
-            "compileSdkVersion": 35,
-            "targetSdkVersion": 34
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36,
+            "enableMinifyInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true
           }
         }
       ]

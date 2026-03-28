@@ -32,31 +32,31 @@ const DummyBannerAd = ({ colors, label = "Google Test Ad (Banner)" }) => (
     </View>
 );
 
-const DummyNativeAd = ({ colors }) => (
-    <View
-        style={{
-            backgroundColor: colors.card,
-            borderRadius: 24,
-            padding: 16,
-            marginBottom: 20,
-            borderWidth: 1,
-            borderColor: colors.border,
-            borderStyle: 'dashed'
-        }}
-    >
-        <View className="flex-row items-center mb-3">
-            <View style={{ backgroundColor: '#4285F4', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 4, marginRight: 10 }}>
-                <Text style={{ color: 'white', fontSize: 10, fontWeight: 'black' }}>SPONSORED</Text>
-            </View>
-            <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black uppercase tracking-widest">Recommended Deal</Text>
-        </View>
-        <View style={{ backgroundColor: '#eeeeee', height: 150, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
-            <Text style={{ color: '#9e9e9e', fontWeight: 'bold' }}>Native Ad Media Placeholder</Text>
-        </View>
-        <Text style={{ color: colors.text }} className="text-lg font-black mb-1">Premium Product Promotion</Text>
-        <Text style={{ color: colors.textSecondary }} className="text-xs font-bold leading-4 opacity-70">This is a sample layout for a Google Native Ad that fits perfectly with your app's design.</Text>
-    </View>
-);
+// const DummyNativeAd = ({ colors }) => (
+//     <View
+//         style={{
+//             backgroundColor: colors.card,
+//             borderRadius: 24,
+//             padding: 16,
+//             marginBottom: 20,
+//             borderWidth: 1,
+//             borderColor: colors.border,
+//             borderStyle: 'dashed'
+//         }}
+//     >
+//         <View className="flex-row items-center mb-3">
+//             <View style={{ backgroundColor: '#4285F4', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 4, marginRight: 10 }}>
+//                 <Text style={{ color: 'white', fontSize: 10, fontWeight: 'black' }}>SPONSORED</Text>
+//             </View>
+//             <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black uppercase tracking-widest">Recommended Deal</Text>
+//         </View>
+//         <View style={{ backgroundColor: '#eeeeee', height: 150, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+//             <Text style={{ color: '#9e9e9e', fontWeight: 'bold' }}>Native Ad Media Placeholder</Text>
+//         </View>
+//         <Text style={{ color: colors.text }} className="text-lg font-black mb-1">Premium Product Promotion</Text>
+//         <Text style={{ color: colors.textSecondary }} className="text-xs font-bold leading-4 opacity-70">This is a sample layout for a Google Native Ad that fits perfectly with your app's design.</Text>
+//     </View>
+// );
 
 const OfferDetailsScreen = ({ route, navigation }) => {
     const insets = useSafeAreaInsets();
@@ -76,7 +76,7 @@ const OfferDetailsScreen = ({ route, navigation }) => {
 
     const { width, height } = useWindowDimensions();
     const [isFavorite, setIsFavorite] = useState(false);
-    const [isRedeeming, setIsRedeeming] = useState(false);
+    // const [isRedeeming, setIsRedeeming] = useState(false);
     const [isImageModalVisible, setIsImageModalVisible] = useState(false);
 
     // Fetch offer details if only offerId is provided
@@ -160,9 +160,6 @@ const OfferDetailsScreen = ({ route, navigation }) => {
             const data = await response.json();
             if (!data.success) {
                 setIsFavorite(isFavorite); // Revert
-                Alert.alert(t('common.error'), t('offer_details.removed_wishlist'));
-            } else {
-                Alert.alert(t('common.success'), data.added ? t('offer_details.added_wishlist') : t('offer_details.removed_wishlist'));
             }
         } catch (error) {
             console.error('Wishlist toggle error:', error);
@@ -359,9 +356,9 @@ const OfferDetailsScreen = ({ route, navigation }) => {
                     </TouchableOpacity>
 
                     {/* Ad after store info */}
-                    <View className="mb-8">
+                    {/* <View className="mb-8">
                         <DummyNativeAd colors={colors} />
-                    </View>
+                    </View> */}
 
                     <View className="mb-10">
                         <View className="flex-row items-center mb-4">

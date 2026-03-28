@@ -145,7 +145,13 @@ const OfferCard = ({ offer, onPress, grid, isFavorite = false, onRefresh }) => {
                         style={{ backgroundColor: colors.card + 'CC', borderColor: colors.border }}
                         className={`${grid ? 'w-7 h-7' : 'w-9 h-9'} backdrop-blur-xl rounded-full items-center justify-center border`}
                     >
-                        <Heart size={grid ? 14 : 16} color={localFavorite ? staticColors.error : colors.primary} fill={localFavorite ? staticColors.error : 'transparent'} strokeWidth={2.5} />
+                        {/* Syncing Heart style directly with parent (isFavorite) whenever available */}
+                        <Heart 
+                            size={grid ? 14 : 16} 
+                            color={localFavorite ? staticColors.error : colors.primary} 
+                            fill={localFavorite ? staticColors.error : 'transparent'} 
+                            strokeWidth={2.5} 
+                        />
                     </TouchableOpacity>
                 </View>
             </View>
