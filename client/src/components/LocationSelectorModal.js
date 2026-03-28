@@ -9,84 +9,65 @@ import { useTranslation } from 'react-i18next';
 const LocationSelectorModal = ({ visible, onClose, onSelectLocation }) => {
     const { colors, isDarkMode } = useTheme();
     const { t } = useTranslation();
-    const [selectedState, setSelectedState] = useState(null);
-    const [selectedDistrict, setSelectedDistrict] = useState(null);
-    const [selectedCity, setSelectedCity] = useState(null);
+    const [selectedState, setSelectedState] = useState('Gujarat');
+    const [selectedDistrict, setSelectedDistrict] = useState('Surat');
     const [selectedVillage, setSelectedVillage] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const [loading, setLoading] = useState(false);
 
     const dummyLocations = {
-        states: ['Gujarat', 'Maharashtra', 'Rajasthan', 'Delhi', 'Uttar Pradesh', 'Karnataka', 'Tamil Nadu', 'Punjab'],
+        states: ['Gujarat'],
         districts: {
-            'Gujarat': ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot'],
-            'Maharashtra': ['Mumbai', 'Pune', 'Nagpur'],
-            'Karnataka': ['Bangalore', 'Mysore'],
-        },
-        cities: {
-            'Ahmedabad': ['Ahmedabad City', 'Bavla', 'Dholka', 'Viramgam'],
-            'Surat': ['Surat City', 'Bardoli', 'Sayan'],
-            'Vadodara': ['Vadodara City', 'Padra', 'Waghodia', 'Savli'],
-            'Rajkot': ['Rajkot City', 'Gondal', 'Morbi Road Area', 'Shapar'],
-            'Gandhinagar': ['Gandhinagar City', 'Kalol', 'Adalaj'],
-            'Bhavnagar': ['Bhavnagar City', 'Sihor', 'Palitana'],
-            'Jamnagar': ['Jamnagar City', 'Hapa'],
-            'Anand': ['Anand City', 'Vidyanagar', 'Karamsad'],
-            'Mumbai': ['Mumbai South', 'Mumbai Western Suburbs', 'Navi Mumbai', 'Thane'],
-            'Pune': ['Pune City', 'Hinjewadi', 'Baner', 'Wakad'],
-            'Bangalore': ['Bangalore North', 'Bangalore South'],
+            'Gujarat': ['Surat'],
         },
         villages: {
-            // Gujarat
-            'Ahmedabad City': ['Bopal', 'Satellite', 'Vastrapur', 'Prahladnagar', 'Ghatlodia', 'Naroda'],
-            'Surat City': ['Adajan', 'Vesu', 'Varachha', 'Piplod', 'Katargam', 'Nanpura', 'Udhna'],
-            'Vadodara City': ['Alkapuri', 'Gotri', 'Akota', 'Karelibaug', 'Manjalpur', 'Sayajigunj', 'Atladra'],
-            'Rajkot City': ['Kalavad Road', 'Yagnik Road', 'Mavdi', '150 Feet Ring Road', 'Railnagar'],
-            'Gandhinagar City': ['Sector 1-10', 'Sector 11-20', 'Sector 21-30', 'Infocity', 'Sargasan', 'Kudasan'],
-            'Bhavnagar City': ['Kaliyabid', 'Bhavnagar Town', 'Ghogha Circle', 'Subhash Nagar'],
-            'Jamnagar City': ['Digvijay Plot', 'Navagam', 'Town Hall Area'],
-            'Anand City': ['Anand Town', 'Lambhvel Road', 'Amul Dairy Area'],
-            'Vidyanagar': ['V V Nagar Town', 'Bakrol Road', 'Nana Bazar'],
-            // Maharashtra
-            'Mumbai Western Suburbs': ['Andheri West', 'Bandra West', 'Borivali', 'Malad', 'Kandivali'],
-            'Thane': ['Hiranandani Estate', 'Ghodbunder Road', 'Majiwada'],
-            'Hinjewadi': ['Phase 1', 'Phase 2', 'Phase 3'],
-            // Karnataka
-            'Bangalore North': ['Hebbal', 'Yelahanka', 'Devanahalli'],
-            'Bangalore South': ['Jayanagar', 'JP Nagar', 'Electronic City', 'Whitefield'],
+            'Surat': [
+                'Adajan', 'Vesu', 'Varachha', 'Mota Varachha', 'Piplod', 'Katargam', 'Nanpura', 'Udhna', 'Rander', 'Pal', 'Bhatar', 
+                'Majura Gate', 'City Light', 'Althan', 'Amroli', 'Sarthana', 'Puna Gam', 'Bhestan', 'Pandesara', 'Dindoli', 
+                'Limbayat', 'Sachin', 'Hajira', 'Chowk Bazar', 'Ring Road', 'Sahara Darwaja', 'Station Area', 'Khatodara', 
+                'Sosyo Circle Area', 'Ghod Dod Road', 'Magdalla', 'Dumas', 'Bhimrad', 'Saroli', 'Mughalsarai', 'Sayedpura', 
+                'Singanpor', 'Ved Road', 'Dabholi', 'Jehangirpura', 'Variav', 'Kosad', 'Godadara', 'Parvat Patiya', 'Kumbharia', 
+                'Kadodara', 'Utran', 'Palanpur Patia', 'Olpad Road', 'Udhna Magdalla Road'
+            ],
         },
         societies: {
-            // Ahmedabad
-            'Bopal': ['Iscon Platinum', 'Sky City', 'Sobo Center Area', 'Sterling City', 'Aaryan Gloria', 'Sun South'],
-            'Satellite': ['Shyamal', 'Shivranjani', 'Ramdevnagar', 'Venus Atlantis Area', 'Satyagrah Chhavni'],
-            'Ghatlodia': ['K K Nagar', 'Chanakyapuri Area', 'Shayona City'],
-            // Surat
-            'Adajan': ['LP Savani Area', 'Pal Resi', 'Green City', 'Madhav Bagh', 'Honey Park Area', 'TGB Area'],
-            'Vesu': ['Nandini Residency', 'Sangini Residency', 'Happy Home Heights', 'Reva', 'Rajhans Belliza'],
-            'Katargam': ['Gotalawadi', 'Dhanmora Area', 'Hariom Nagar', 'Patel Nagar', 'Rama Krishna Society'],
-            'Nanpura': ['Dutch Garden Area', 'Athwa Gate Area'],
-            // Vadodara
-            'Alkapuri': ['Concorde', 'Windsor Plaza Area', 'Fortune Towers', 'Shree Siddheshwar', 'Arundeep'],
-            'Gotri': ['Iscon Harmony', 'Sahaj Residency', 'Pashabhai Park', 'Arunoday Society', 'Nilamber Circle'],
-            'Manjalpur': ['Vrajbhumi', 'Pushpam Tenement', 'SuryDarshan', 'Deep Chambers'],
-            'Karelibaug': ['L&T Circle Area', 'Amit Nagar Circle', 'Jay Ratna'],
-            // Gandhinagar
-            'Sargasan': ['Pramukh Hills', 'Radhe Residency', 'Swagat Flamingo'],
-            'Kudasan': ['Kavisha Panorama', 'Shalin Heights', 'Skylon'],
-            'Infocity': ['DA-IICT Area', 'TCS Peepul Park Area', 'E-City'],
-            // Bhavnagar
-            'Kaliyabid': ['Ambika Nagar', 'Vidhyanagar Area', 'Bhaktinagar'],
-            // Anand/Vidyanagar
-            'V V Nagar Town': ['Bhaikaka Statue Area', 'Mota Bazar', 'Vallabh Residency'],
-            'Anand Town': ['Station Road Area', 'Laxmi Cinema Area'],
-            // Mumbai
-            'Andheri West': ['Lokhandwala Complex', 'Versova Heights', 'Oberoi Springs', 'Yamuna Nagar'],
-            'Bandra West': ['Pali Hill Residency', 'Carter Road Area', 'Sea View', 'Link Square'],
-            'Hiranandani Estate': ['Rodas Enclave', 'The Walk Area', 'Eagle Ridge'],
-            // Bangalore
-            'Hebbal': ['RMV Clusters', 'Godrej Woodsman', 'Prestige Misty'],
-            'Whitefield': ['Prestige Shantiniketan', 'Brigade Metropolis', 'SJR Brooklyn'],
+            'Adajan': ['LP Savani Area', 'Anand Mahal Road', 'Honey Park Area', 'Star Bazaar Area', 'Adajan Char Rasta', 'Navyug College Area', 'L P Savani Road', 'Green City', 'Madhav Bagh Area', 'Prime Arcade Area', 'Jalaram Society Area'],
+            'Vesu': ['VIP Road Area', 'Shyam Mandir Area', 'Vesu Canal Road', 'G D Goenka Road Area', 'Nandini Residency', 'Sangini Residency', 'Rajhans Belliza', 'Agrawal Vidya Vihar Area', 'Someshwara Enclave', 'Jolly Residency Area'],
+            'Katargam': ['Gotalawadi', 'Dhanmora Area', 'Gajera School Area', 'Akhand Anand College Area', 'Hariom Nagar', 'Patel Nagar', 'Rama Krishna Society', 'Laxminagar', 'Dabholi Char Rasta', 'Kantareswar Mahadev Area', 'Singanpor Road', 'Ankur Char Rasta', 'Katargam Darwaja', 'Kuberji World Area', 'Fulpada Area', 'Umiyadham Temple Area', 'Amba Talavadi Area', 'Lalita Chowk Area'],
+            'Nanpura': ['Dutch Garden Area', 'Athwa Gate Area', 'Kadiwala School Area', 'Police Line Area', 'Mughalsarai Area'],
+            'Varachha': ['Mini Bazar', 'Hirabaug', 'Kapodra', 'Yogi Chowk', 'Mangadh Chowk', 'Rachana Circle', 'Gitanjali Circle', 'Matawadi', 'L H Road', 'Baroda Rayon Area', 'Spinning Mill Area'],
+            'Mota Varachha': ['Sudama Chowk', 'Lajamani Chowk', 'VIP Circle Area', 'Abhishree Residency', 'Riverview Heights', 'Gopin Village', 'Shivdhara Heights Area'],
+            'Ghod Dod Road': ['Jolly Arcade Area', 'Ram Chowk Area', 'Megh Mayur Area', 'Standard Chartered Bank Area', 'St Xaviers School Area', 'Subhash Chowk Area'],
+            'Piplod': ['Valentine Cinema Area', 'Lakeview Area', 'VR Mall Area', 'Dumas Road Area', 'SNDT College Area', 'Iscon Mall Area'],
+            'Rander': ['Rander Town', 'Tadwadi', 'Mora Bhagal Area', 'Fata Talav Area', 'Jahangirabad Area'],
+            'Pal': ['Pal Lake Area', 'Gaurav Path', 'Palanpur Canal Road', 'Pal Gam', 'L P Savani Circle Area', 'Palanpur Jakatnaka Area'],
+            'Amroli': ['Amroli Bridge Area', 'Amroli Chokdi', 'Amroli Gam', 'Chhapra Bhatha Road', 'Anjani Industrial Area', 'Abhishek Residency Area', 'Silver Point Area', 'Avenue Area', 'Gokal Nagar', 'New Amroli Area'],
+            'Sarthana': ['Nature Park Area', 'Sarthana Jakatnaka', 'Lajamani Area', 'Sarthana Community Hall', 'Shyamdham Chowk Area'],
+            'Althan': ['Althan Bhatar Road', 'Someshwar Enclave', 'Shubh Enclave', 'Althan Canal Road', 'Althan Tenement Area'],
+            'Bhatar': ['Bhatar Char Rasta', 'New City Light Area', 'Sanket Tower Area', 'Uma Bhavan Area', 'Bhatar Road'],
+            'Udhna': ['Udhna Darwaja', 'Bhavna Park Area', 'Udhna Railway Station Area', 'Udhna GIDC Area', 'Udhna Silk Mill Area'],
+            'Pandesara': ['GIDC Area', 'Pandesara Housing', 'Batliboi Area', 'Pandesara Gam'],
+            'Dindoli': ['Dindoli Bridge Area', 'Om Nagar', 'Royal Star Town', 'Sai Point Area', 'Nava Gham Area', 'Kharvasa Road Area'],
+            'Bhestan': ['Bhestan Garden Area', 'Bhestan Housing Area', 'Bhestan Station Area'],
+            'Sachin': ['Sachin GIDC', 'Sachin Station Area', 'Pali Gam', 'Kansad Area', 'Sachin GIDC Main Road'],
+            'Limbayat': ['Nilgiri Circle', 'Limbayat Health Center Area', 'Madina Masjid Area', 'Udhna Yard Area'],
+            'Godadara': ['Godadara Bridge Area', 'Maharana Pratap Chowk', 'Godadara Canal Road Area'],
+            'Parvat Patiya': ['Magob', 'Model Town Area', 'Dumbhal Area', 'Amazonia Area'],
+            'Kumbharia': ['Vishwa Karma Arcade Area', 'Kumbharia Jakatnaka', 'Nature Valley Area'],
+            'Kadodara': ['Kadodara Char Rasta', 'Hanuman Mandir Area', 'Kadodara GIDC Area'],
+            'Puna Gam': ['Puna Canal Road', 'Reshma Chowk', 'Sita Nagar', 'Puna Jakatnaka Area', 'Silicon City Area'],
+            'Jehangirpura': ['Dabholi Bridge Area', 'Asaktashram Area', 'Jehangirpura Garden', 'Botanical Garden Area'],
+            'City Light': ['Science Centre Area', 'City Light Shopping Centre', 'Agrasen Bhawan Area', 'SNDT Road Area'],
+            'Station Area': ['Sufi Baug Area', 'Delhi Gate Area', 'Lal Darwaja', 'Railway Station Main Road'],
+            'Dumas': ['Dumas Beach Area', 'Airport Road Area', 'Sultanabad Area', 'Dumas Gam'],
+            'Hajira': ['Reliance GIDC Area', 'Essar GIDC Area', 'Adani Port Area', 'L&T GIDC Area'],
+            'Magdalla': ['Magdalla Port Area', 'ONGC Colony Area', 'Silent Zone Area', 'Magdalla Village Area'],
+            'Saroli': ['Textile Market Area', 'Kadodara Road Area', 'Saroli GIDC Area'],
+            'Khatodara': ['GIDC Khatodara Area', 'Sub Jail Area', 'Sosyo Circle Path'],
+            'Chowk Bazar': ['Hope Bridge Area', 'Dutch Garden Area', 'Old City Area', 'Gandhi Baug Area'],
+            'Sosyo Circle Area': ['Bamroli Road', 'Navjivan Circle Area', 'Social Circle Area'],
+            'Ring Road': ['Kinnary Cinema Area', 'Majura Gate Road', 'Textile Market Ring Road Area']
         }
     };
 
@@ -107,7 +88,7 @@ const LocationSelectorModal = ({ visible, onClose, onSelectLocation }) => {
                         });
                     });
 
-                    const response = await fetch(`https://photon.komoot.io/api/?q=${searchQuery}&limit=15&lat=23.0225&lon=72.5714&lang=en`);
+                    const response = await fetch(`https://photon.komoot.io/api/?q=${searchQuery}&limit=15&lat=21.1702&lon=72.8311&lang=en`);
                     const data = await response.json();
                     const apiResults = data.features.map(f => {
                         const p = f.properties;
@@ -118,7 +99,9 @@ const LocationSelectorModal = ({ visible, onClose, onSelectLocation }) => {
                             coords: { lat: f.geometry.coordinates[1], lng: f.geometry.coordinates[0] }
                         };
                     });
-                    const combined = [...localResults, ...apiResults].filter((v, i, a) => a.findIndex(t => t.name === v.name && t.display === v.display) === i);
+                    const combined = [...localResults, ...apiResults]
+                        .filter((v, i, a) => a.findIndex(t => t.name === v.name && t.display === v.display) === i)
+                        .sort((a,b) => a.name.localeCompare(b.name));
                     setSearchResults(combined);
                 } catch (error) { console.error(error); } finally { setLoading(false); }
                 return;
@@ -130,7 +113,7 @@ const LocationSelectorModal = ({ visible, onClose, onSelectLocation }) => {
                 if (localSocs.length === 0) {
                     setLoading(true);
                     try {
-                        const response = await fetch(`https://photon.komoot.io/api/?q=${selectedVillage}&limit=10&lang=en`);
+                        const response = await fetch(`https://photon.komoot.io/api/?q=${selectedVillage}&limit=10&lat=21.1702&lon=72.8311&lang=en`);
                         const data = await response.json();
                         const apiResults = data.features.map(f => ({
                             type: 'society',
@@ -152,7 +135,7 @@ const LocationSelectorModal = ({ visible, onClose, onSelectLocation }) => {
         return () => clearTimeout(timer);
     }, [searchQuery, step, selectedVillage]);
 
-    const [step, setStep] = useState('state'); // Current browsing step
+    const [step, setStep] = useState('village'); // Current browsing step
 
     const currentList = () => {
         if (searchQuery) return searchResults;
@@ -163,16 +146,13 @@ const LocationSelectorModal = ({ visible, onClose, onSelectLocation }) => {
         } else if (step === 'district') {
             const data = dummyLocations.districts[selectedState] || [];
             list = data.map(d => ({ type: 'district', name: d, parent: selectedState, display: d }));
-        } else if (step === 'city') {
-            const data = dummyLocations.cities[selectedDistrict] || [];
-            list = data.map(c => ({ type: 'city', name: c, parent: selectedDistrict, display: c }));
         } else if (step === 'village') {
-            const data = dummyLocations.villages[selectedCity] || [];
+            const data = dummyLocations.villages[selectedDistrict] || [];
             if (data.length === 0) {
-                // Fallback if no specific areas are defined for this city
-                list = [{ type: 'area', name: `Main ${selectedCity} Area`, parent: selectedCity, display: `Main ${selectedCity} Area` }];
+                // Fallback if no specific areas are defined for this city/district
+                list = [{ type: 'area', name: `Main ${selectedDistrict} Area`, parent: selectedDistrict, display: `Main ${selectedDistrict} Area` }];
             } else {
-                list = data.map(v => ({ type: 'area', name: v, parent: selectedCity, display: v }));
+                list = data.map(v => ({ type: 'area', name: v, parent: selectedDistrict, display: v }));
             }
         } else if (step === 'society') {
             const data = dummyLocations.societies[selectedVillage] || [];
@@ -184,7 +164,8 @@ const LocationSelectorModal = ({ visible, onClose, onSelectLocation }) => {
             }
         }
 
-        return list;
+        // Alphabetical sorting
+        return list.sort((a, b) => a.name.localeCompare(b.name));
     };
 
     const handleSelect = (item) => {
@@ -205,31 +186,22 @@ const LocationSelectorModal = ({ visible, onClose, onSelectLocation }) => {
             setStep('district');
         } else if (step === 'district') {
             setSelectedDistrict(item.name);
-            setStep('city');
-        } else if (step === 'city') {
-            setSelectedCity(item.name);
             setStep('village');
         } else if (step === 'village') {
             setSelectedVillage(item.name);
             setStep('society');
         } else if (step === 'society') {
-            onSelectLocation(`${item.name}, ${selectedVillage}, ${selectedCity}, ${selectedDistrict}, ${selectedState}, India`);
+            onSelectLocation(`${item.name}, ${selectedVillage}, ${selectedDistrict}, ${selectedState}, India`);
             handleClose();
         }
     };
 
     const handleBack = () => {
-        if (step === 'district') setStep('state');
-        else if (step === 'city') setStep('district');
-        else if (step === 'village') setStep('city');
-        else if (step === 'society') setStep('village');
+        if (step === 'society') setStep('village');
     };
 
     const handleClose = () => {
-        setStep('state');
-        setSelectedState(null);
-        setSelectedDistrict(null);
-        setSelectedCity(null);
+        setStep('village');
         setSelectedVillage(null);
         setSearchQuery('');
         onClose();
@@ -245,7 +217,7 @@ const LocationSelectorModal = ({ visible, onClose, onSelectLocation }) => {
                     {/* Header */}
                     <View className="flex-row items-center justify-between px-6 py-4">
                         <View className="flex-row items-center flex-1">
-                            {step !== 'state' && (
+                            {step !== 'village' && (
                                 <TouchableOpacity onPress={handleBack} style={{ backgroundColor: colors.surface }} className="mr-4 w-10 h-10 rounded-full items-center justify-center">
                                     <ChevronLeft size={20} color={colors.primary} strokeWidth={3} />
                                 </TouchableOpacity>
@@ -253,10 +225,7 @@ const LocationSelectorModal = ({ visible, onClose, onSelectLocation }) => {
                             <View>
                                 <Text style={{ color: colors.secondary }} className="text-[10px] font-black uppercase tracking-widest mb-0.5">{t('location_selector.hub')}</Text>
                                 <Text style={{ color: colors.text }} className="text-2xl font-black">
-                                    {step === 'state' ? t('location_selector.choose_state') :
-                                        step === 'district' ? t('location_selector.select_district') :
-                                            step === 'city' ? t('location_selector.select_city') :
-                                                step === 'village' ? t('location_selector.select_village') : t('location_selector.select_society')}
+                                    {step === 'village' ? t('location_selector.select_village') : t('location_selector.select_society')}
                                 </Text>
                             </View>
                         </View>
@@ -266,8 +235,8 @@ const LocationSelectorModal = ({ visible, onClose, onSelectLocation }) => {
                     </View>
 
                     {/* Modern Search */}
-                    <View className="px-6 py-4">
-                        <View style={{ backgroundColor: colors.surface }} className="flex-row items-center rounded-2xl px-5 py-4 border border-transparent">
+                    <View className="px-6 py-2">
+                        <View style={{ backgroundColor: colors.surface }} className="flex-row items-center rounded-2xl px-5 py-2.5 border border-transparent">
                             <Search size={20} color={colors.textSecondary} strokeWidth={2.5} />
                             <TextInput
                                 style={{ color: colors.text }}
@@ -281,33 +250,47 @@ const LocationSelectorModal = ({ visible, onClose, onSelectLocation }) => {
                     </View>
 
                     {/* Selection Visual Path */}
-                    {(selectedState || selectedDistrict || selectedCity) && (
-                        <View className="px-6 py-2 flex-row flex-wrap gap-2">
-                            {selectedState && (
-                                <View className="bg-primary/5 px-3 py-1.5 rounded-full border border-primary/10">
-                                    <Text className="text-[10px] text-primary font-black uppercase">{selectedState}</Text>
-                                </View>
-                            )}
-                            {selectedDistrict && (
-                                <View className="bg-primary/5 px-3 py-1.5 rounded-full border border-primary/10">
-                                    <Text className="text-[10px] text-primary font-black uppercase">{selectedDistrict}</Text>
-                                </View>
-                            )}
-                        </View>
-                    )}
+                    <View className="px-6 py-2 flex-row flex-wrap gap-2">
+                        <TouchableOpacity
+                            onPress={() => {
+                                setStep('state'); // Normally state, but keep it for navigation flow
+                                setSelectedDistrict('Surat');
+                                setSelectedVillage(null);
+                            }}
+                            className="bg-primary/5 px-3 py-1.5 rounded-full border border-primary/10"
+                        >
+                            <Text className="text-[10px] text-primary font-black uppercase">Gujarat</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            onPress={() => {
+                                setStep('village');
+                                setSelectedVillage(null);
+                            }}
+                            className="bg-primary/5 px-3 py-1.5 rounded-full border border-primary/10"
+                        >
+                            <Text className="text-[10px] text-primary font-black uppercase">Surat</Text>
+                        </TouchableOpacity>
+
+                        {selectedVillage && (
+                            <View className="bg-primary/5 px-3 py-1.5 rounded-full border border-primary/10">
+                                <Text className="text-[10px] text-primary font-black uppercase">{selectedVillage}</Text>
+                            </View>
+                        )}
+                    </View>
 
                     {/* Options List */}
                     <FlatList
                         data={currentList()}
                         keyExtractor={(item, index) => `${item.name}-${index}`}
                         contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 40, paddingTop: 10 }}
-                        ListHeaderComponent={!searchQuery && step === 'state' && (
+                        ListHeaderComponent={!searchQuery && step === 'village' && (
                             <View>
                                 <TouchableOpacity
                                     style={{ backgroundColor: `${colors.secondary}1A`, borderColor: `${colors.secondary}1A` }}
                                     className="flex-row items-center p-6 rounded-3xl mb-6 border"
                                     onPress={() => {
-                                        onSelectLocation('Current Location (GPS)');
+                                        onSelectLocation('Current Location');
                                         handleClose();
                                     }}
                                 >
@@ -315,27 +298,11 @@ const LocationSelectorModal = ({ visible, onClose, onSelectLocation }) => {
                                         <Navigation2 size={22} color={colors.secondary} strokeWidth={3} />
                                     </View>
                                     <View className="ml-4">
-                                        <Text style={{ color: colors.text }} className="font-black text-base">{t('location_selector.detect_current')}</Text>
+                                        <Text style={{ color: colors.text }} className="font-black text-base">Current Location (GPS)</Text>
                                         <Text style={{ color: colors.secondary }} className="font-bold text-xs uppercase tracking-tighter">{t('location_selector.using_gps')}</Text>
                                     </View>
                                 </TouchableOpacity>
-
-                                <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black uppercase tracking-widest mb-4 ml-2">Popular Cities</Text>
-                                <View className="flex-row flex-wrap mb-6">
-                                    {['Ahmedabad', 'Mumbai', 'Bangalore', 'Delhi', 'Pune'].map(city => (
-                                        <TouchableOpacity
-                                            key={city}
-                                            onPress={() => {
-                                                setSearchQuery(city);
-                                            }}
-                                            style={{ backgroundColor: colors.surface }}
-                                            className="px-4 py-2 rounded-xl mr-2 mb-2 border border-surface"
-                                        >
-                                            <Text style={{ color: colors.text }} className="font-bold text-xs">{city}</Text>
-                                        </TouchableOpacity>
-                                    ))}
-                                </View>
-                                <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black uppercase tracking-widest mb-2 ml-2">Choose State</Text>
+                                <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black uppercase tracking-widest mb-2 ml-2">Choose Area in Surat</Text>
                             </View>
                         )}
                         renderItem={({ item }) => (

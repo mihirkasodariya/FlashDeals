@@ -9,7 +9,7 @@ import { Calendar, Search, MapPin, Bell, Navigation2, X, ArrowRight, Filter, Che
 // import { colors as staticColors } from '../theme/colors';
 import { useTheme } from '../context/ThemeContext';
 import OfferCard from '../components/OfferCard';
-// import LocationSelectorModal from '../components/LocationSelectorModal';
+import LocationSelectorModal from '../components/LocationSelectorModal';
 import CustomCalendar from '../components/CustomCalendar';
 import { API_BASE_URL } from '../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -71,7 +71,7 @@ const HomeScreen = ({ navigation }) => {
     const { t } = useTranslation();
     const [categories, setCategories] = useState([{ _id: 'all', name: t('categories.all'), isStatic: true }]);
     const [selectedCategory, setSelectedCategory] = useState('all');
-    const [location, setLocation] = useState(t('location_selector.detect_current') + '...');
+    const [location, setLocation] = useState('Current Location');
     const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [radius, setRadius] = useState(5);
@@ -230,14 +230,14 @@ const HomeScreen = ({ navigation }) => {
                     longitude: loc.coords.longitude
                 });
 
-                let city = 'Ahmedabad, Gujarat';
+                let city = 'Surat, Gujarat';
                 if (geocode) {
                     city = `${geocode.city || geocode.subregion || 'Unknown City'}, ${geocode.region || ''}`;
                 }
 
                 // Save for future reference as fallback
                 await AsyncStorage.setItem('userLocation', JSON.stringify({ city, coords }));
-                setLocation(city);
+                setLocation('Current Location'); // Use text requested by user
                 setUserCoordinates(coords);
                 return coords;
             }
@@ -906,6 +906,11 @@ const HomeScreen = ({ navigation }) => {
                     </TouchableOpacity>
                 </TouchableOpacity>
             )}
+            <LocationSelectorModal
+                visible={isLocationModalVisible}
+                onClose={() => setIsLocationModalVisible(false)}
+                onSelectLocation={handleLocationSelect}
+            />
         </SafeAreaView>
     );
 };
