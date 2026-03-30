@@ -79,6 +79,7 @@ const ProfileScreen = ({ navigation }) => {
     }, [navigation]);
 
     const isVendor = user && user.role === 'vendor';
+    const hasVendorProfile = user && user.storeName; // Detect if they were a vendor before
     const isTablet = width > 768;
     const contentWidth = isTablet ? 600 : '100%';
 
@@ -174,7 +175,11 @@ const ProfileScreen = ({ navigation }) => {
         setSwitching(true);
         try {
             const token = await AsyncStorage.getItem('userToken');
-            const response = await fetch(`${API_BASE_URL}/auth/switch-role/user`, {
+            const endpoint = roleSwitchMode === 'vendor' 
+                ? `${API_BASE_URL}/auth/switch-role/vendor`
+                : `${API_BASE_URL}/auth/switch-role/user`;
+
+            const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -195,8 +200,24 @@ const ProfileScreen = ({ navigation }) => {
     };
 
     const handleSwitchToVendor = () => {
-        setRoleSwitchMode('vendor');
-        setIsRoleSwitchModalVisible(true);
+        if (isVendor) {
+            setRoleSwitchMode('vendor');
+            setIsRoleSwitchModalVisible(true);
+        } else {
+            // Normal user becoming vendor for the first time OR returning vendor
+            navigation.navigate('VendorRegister', { 
+                step: 1, 
+                userId: user._id,
+                formData: {
+                    storeName: user.storeName,
+                    storeAddress: user.storeAddress,
+                    location: user.location,
+                    idNumber: user.idNumber,
+                    idType: user.idType || 'GSTIN'
+                },
+                prevDocImage: user.idDocument // Pass existing document if any
+            });
+        }
     };
 
     const handleSwitchToUser = () => {
@@ -318,7 +339,7 @@ const ProfileScreen = ({ navigation }) => {
                         <>
                             <TouchableOpacity
                                 className="flex-row items-center justify-center py-5 mt-8 bg-primary rounded-[28px] shadow-lg shadow-primary/40 px-8"
-                                onPress={isVendor ? handleSwitchToUser : handleSwitchToVendor}
+                                onPress={isVendor ? handleSwitchToUser : (hasVendorProfile ? handleSwitchToVendor : handleSwitchToVendor)}
                                 disabled={switching}
                             >
                                 {switching ? (
@@ -327,7 +348,7 @@ const ProfileScreen = ({ navigation }) => {
                                     <>
                                         <Store size={20} color="white" />
                                         <Text style={{ color: '#FFFFFF' }} className="ml-3 font-black text-sm tracking-widest">
-                                            {isVendor ? t('profile.switch_personal') : t('profile.become_vendor')}
+                                            {isVendor ? t('profile.switch_personal') : (hasVendorProfile ? t('profile.switch_vendor_mode') : t('profile.become_vendor'))}
                                         </Text>
                                     </>
                                 )}
@@ -449,11 +470,11 @@ const ProfileScreen = ({ navigation }) => {
                                     <Store size={40} color={colors.primary} strokeWidth={1.5} />
                                 </View>
                                 <Text style={{ color: colors.text }} className="text-2xl font-black mb-2 text-center tracking-tight">
-                                    {roleSwitchMode === 'vendor' ? t('profile.start_selling') : t('profile.back_to_personal')}
+                                    {roleSwitchMode === 'vendor' ? (hasVendorProfile ? t('profile.switch_vendor_mode') : t('profile.start_selling')) : t('profile.back_to_personal')}
                                 </Text>
                                 <Text style={{ color: colors.textSecondary }} className="text-center mb-10 font-medium leading-5 opacity-70 px-2">
                                     {roleSwitchMode === 'vendor'
-                                        ? t('profile.start_selling_desc')
+                                        ? (hasVendorProfile ? 'Switch back to your store dashboard to manage your offers.' : t('profile.start_selling_desc'))
                                         : t('profile.back_to_personal_desc')}
                                 </Text>
                                 <View className="w-full space-y-4">

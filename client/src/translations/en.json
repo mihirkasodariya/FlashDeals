@@ -165,6 +165,7 @@
         "app_settings": "App Settings",
         "become_vendor": "Become a Vendor Account",
         "switch_personal": "Switch to Personal Account",
+        "switch_vendor_mode": "Switch to Vendor Account",
         "secure_sign_out": "Secure Sign Out",
         "sign_out_title": "Sign Out?",
         "sign_out_desc": "Are you sure you want to disconnect from your active session?",

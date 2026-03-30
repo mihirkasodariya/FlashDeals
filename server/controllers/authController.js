@@ -61,6 +61,9 @@ const login = async (req, res) => {
                 storeAddress: user.storeAddress,
                 storeImage: user.storeImage,
                 location: user.location,
+                idType: user.idType,
+                idNumber: user.idNumber,
+                idDocument: user.idDocument,
                 permissions: user.permissions || []
             }
         });
@@ -119,6 +122,9 @@ const getMe = async (req, res) => {
                 storeAddress: user.storeAddress,
                 storeImage: user.storeImage,
                 location: user.location,
+                idType: user.idType,
+                idNumber: user.idNumber,
+                idDocument: user.idDocument,
                 permissions: user.permissions || []
             }
         });
@@ -252,7 +258,7 @@ const switchToVendor = async (req, res) => {
         user.status = 'approved';
         await user.save();
 
-        res.json({ success: true, message: 'Role changed to vendor successfully', user });
+        res.json({ success: true, message: 'Switched to vendor mode successfully. Role changed.', user });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -279,23 +285,10 @@ const switchToUser = async (req, res) => {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
 
-        // Delete all offers by this vendor
-        await Offer.deleteMany({ vendorId: req.user.userId });
-
-        // Clear vendor fields
         user.role = 'user';
-        user.storeName = undefined;
-        user.storeAddress = undefined;
-        user.storeImage = undefined;
-        user.location = undefined;
-        user.idType = undefined;
-        user.idNumber = undefined;
-        user.idDocument = undefined;
-        user.status = 'submitted';
-
         await user.save();
 
-        res.json({ success: true, message: 'Role changed to user successfully. Store and offers deleted.', user });
+        res.json({ success: true, message: 'Switched to personal mode successfully. Role changed and data preserved.', user });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -373,6 +366,9 @@ const loginWithOTP = async (req, res) => {
                 role: user.role,
                 isVerified: user.isVerified,
                 profileImage: user.profileImage,
+                idNumber: user.idNumber,
+                idType: user.idType,
+                idDocument: user.idDocument,
                 permissions: user.permissions || []
             }
         });

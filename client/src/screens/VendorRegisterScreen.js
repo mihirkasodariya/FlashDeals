@@ -57,8 +57,19 @@ const VendorRegisterScreen = ({ navigation, route }) => {
         }
         if (route.params?.formData) {
             setFormData(prev => ({ ...prev, ...route.params.formData }));
+            if (route.params.formData.idType) {
+                setActiveIdType(route.params.formData.idType);
+            }
         }
-    }, [route.params?.step, route.params?.formData]);
+        if (route.params?.prevDocImage) {
+            // If there's an existing document, construct the full URL
+            const fullUrl = route.params.prevDocImage.startsWith('http') 
+                ? route.params.prevDocImage 
+                : `${API_BASE_URL.replace('/api', '')}/${route.params.prevDocImage}`;
+            setDocImage(fullUrl);
+            setValidationStatus('valid'); // Since it's already verified data
+        }
+    }, [route.params?.step, route.params?.formData, route.params?.prevDocImage]);
 
     const [docImage, setDocImage] = useState(null);
     const [profileImage, setProfileImage] = useState(null);
@@ -320,7 +331,7 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                     formDataToSend.append('idNumber', formData.idNumber);
                 }
 
-                if (docImage) {
+                if (docImage && (docImage.startsWith('file') || docImage.startsWith('content'))) {
                     const fileName = docImage.split('/').pop();
                     const fileType = fileName.split('.').pop() || 'jpg';
 

@@ -48,7 +48,7 @@ app.use((req, res, next) => {
         if (obj && typeof obj === 'object' && !Buffer.isBuffer(obj)) {
             Object.keys(obj).forEach(key => {
                 const value = obj[key];
-                
+
                 // NoSQL Protection: Remove keys starting with $
                 if (key.startsWith('$')) {
                     delete obj[key];
@@ -73,12 +73,12 @@ app.use((req, res, next) => {
 app.use(hpp()); // Prevent Parameter Pollution
 
 // 5. Rate Limiting
-const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 100,
-    message: { success: false, message: 'Too many requests from this IP, please try again later.' }
-});
-app.use('/api/', limiter);
+// const limiter = rateLimit({
+//     windowMs: 15 * 60 * 1000,
+//     max: 100,
+//     message: { success: false, message: 'Too many requests from this IP, please try again later.' }
+// });
+// app.use('/api/', limiter);
 
 // 6. Static Files
 app.use('/public', express.static(path.join(__dirname, 'public')));

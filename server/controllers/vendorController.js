@@ -45,7 +45,7 @@ const updateVendor = async (req, res) => {
         const { userId } = req.params;
 
         // Security check: Ensure user is updating their own profile
-        if (req.user.userId !== userId) {
+        if (req.user.userId.toString() !== userId) {
             return res.status(403).json({ success: false, message: 'Forbidden: You can only update your own profile' });
         }
 
