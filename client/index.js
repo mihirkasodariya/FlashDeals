@@ -7,15 +7,16 @@ import { Platform } from 'react-native';
 import App from './App';
 
 // Initialize Firebase only for native if not already initialized
-if (Platform.OS !== 'web') {
-    const firebase = require('@react-native-firebase/app').default;
-    if (!firebase.apps.length) {
-        try {
-            firebase.initializeApp();
-        } catch (e) {
-            console.log('Firebase Init Error:', e);
-        }
-    }
-}
+// Firebase is auto-initialized by the native library via google-services.json
+// if (Platform.OS !== 'web') {
+//     const firebase = require('@react-native-firebase/app').default;
+//     if (!firebase.apps.length) {
+//         try {
+//             firebase.initializeApp();
+//         } catch (e) {
+//             console.log('Firebase Init Error:', e);
+//         }
+//     }
+// }
 
 registerRootComponent(App);

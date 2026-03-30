@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Text from '../components/CustomText';
-import { View, ScrollView, TouchableOpacity, TextInput, FlatList, Image, useWindowDimensions, ActivityIndicator, RefreshControl, Platform, Modal } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, ScrollView, TouchableOpacity, TextInput, FlatList, Image, useWindowDimensions, ActivityIndicator, RefreshControl, Platform, Modal, Animated } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { Calendar, Search, MapPin, Bell, Navigation2, X, ArrowRight, Filter, ChevronRight, ChevronDown, LayoutGrid, List, Flame, Clock, Sparkles } from 'lucide-react-native';
 // import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads'; // Temporarily disabled for Expo Go
@@ -69,10 +69,32 @@ const HomeScreen = ({ navigation }) => {
     const { width } = useWindowDimensions();
     const { colors, isDarkMode } = useTheme();
     const { t } = useTranslation();
+    const insets = useSafeAreaInsets();
     const [categories, setCategories] = useState([{ _id: 'all', name: t('categories.all'), isStatic: true }]);
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [location, setLocation] = useState('Current Location');
     const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
+    const scrollY = React.useRef(new Animated.Value(0)).current;
+
+    // Pixel-perfect header constants for seamless interaction
+    const ROW_1_HEIGHT = 50;
+    const ROW_1_MARGIN = 1;
+    const LOC_BAR_HIDDEN_HEIGHT = ROW_1_HEIGHT + ROW_1_MARGIN;
+
+    const clampedScrollY = Animated.diffClamp(scrollY, 0, LOC_BAR_HIDDEN_HEIGHT);
+
+    const headerTranslateY = clampedScrollY.interpolate({
+        inputRange: [0, LOC_BAR_HIDDEN_HEIGHT],
+        outputRange: [0, -LOC_BAR_HIDDEN_HEIGHT],
+        extrapolate: 'clamp',
+    });
+
+    const headerOpacity = clampedScrollY.interpolate({
+        inputRange: [0, LOC_BAR_HIDDEN_HEIGHT * 0.75],
+        outputRange: [1, 0],
+        extrapolate: 'clamp',
+    });
+
     const [searchQuery, setSearchQuery] = useState('');
     const [radius, setRadius] = useState(5);
     const [viewMode, setViewMode] = useState('list');
@@ -130,6 +152,8 @@ const HomeScreen = ({ navigation }) => {
             if (data.success && data.created) console.log("[SyncNew] Created morning new-deals alert");
         } catch (error) { console.error("New deals sync error:", error); }
     };
+
+
 
     const fetchRecommendedDealsSync = async () => {
         try {
@@ -485,7 +509,7 @@ const HomeScreen = ({ navigation }) => {
     const renderHeader = () => (
         <View>
             {/* Categories */}
-            <View style={{ backgroundColor: colors.background }} className="py-6">
+            <View style={{ backgroundColor: colors.background }} className="pb-2">
                 <ScrollView
                     horizontal
                     showsHorizontalScrollIndicator={false}
@@ -508,7 +532,7 @@ const HomeScreen = ({ navigation }) => {
                             }}
                         >
                             {item.isStatic ? (
-                                <Text style={{ fontSize: 18, marginRight: 8 }}>🛍️</Text>
+                                <Text style={{ fontSize: 12, marginRight: 8 }}>🛍️</Text>
                             ) : item.image ? (
                                 <Image
                                     source={{
@@ -519,7 +543,7 @@ const HomeScreen = ({ navigation }) => {
                                     style={{ width: 24, height: 24, marginRight: 8, borderRadius: 6 }}
                                 />
                             ) : (
-                                <Text style={{ fontSize: 18, marginRight: 8 }}>📦</Text>
+                                <Text style={{ fontSize: 12, marginRight: 8 }}>📦</Text>
                             )}
                             <Text style={{
                                 fontWeight: 'bold',
@@ -659,39 +683,65 @@ const HomeScreen = ({ navigation }) => {
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
-            <View style={{ backgroundColor: colors.card }} className="px-6 pt-6 pb-2 shadow-sm">
-                <View className="flex-row items-center justify-between mb-6">
-                    <View className="flex-row items-center">
-                        <View style={{ backgroundColor: `${colors.primary}10` }} className="w-12 h-12 rounded-2xl items-center justify-center">
-                            <MapPin size={24} color={colors.primary} strokeWidth={2.5} />
-                        </View>
-                        <TouchableOpacity onPress={() => setIsLocationModalVisible(true)} className="ml-4">
-                            <View className="flex-row items-center">
-                                <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black uppercase tracking-widest mr-1 opacity-60">{t('home.your_location')}</Text>
-                                <ChevronDown size={12} color={colors.textSecondary} />
+
+            {/* Seamless Native Header */}
+            <Animated.View
+                style={{
+                    backgroundColor: colors.card,
+                    position: 'absolute',
+                    top: 0, left: 0, right: 0,
+                    zIndex: 1000,
+                    paddingTop: Math.max(insets?.top ?? 0, 12) + 1, // Support system status bar buffer
+                    paddingHorizontal: 24,
+                    paddingBottom: 4,
+                    transform: [{ translateY: headerTranslateY }],
+                }}
+                className="shadow-sm"
+            >
+                <Animated.View
+                    style={{
+                        height: ROW_1_HEIGHT,
+                        opacity: headerOpacity,
+                        marginBottom: ROW_1_MARGIN,
+                        overflow: 'hidden',
+                    }}
+                >
+                    <View className="flex-row items-center justify-between">
+                        <TouchableOpacity
+                            onPress={() => setIsLocationModalVisible(true)}
+                            className="flex-row items-center"
+                        >
+                            <View style={{ backgroundColor: `${colors.primary}10` }} className="w-10 h-10 rounded-2xl items-center justify-center">
+                                <MapPin size={20} color={colors.primary} strokeWidth={2.5} />
                             </View>
-                            <Text style={{ color: colors.text }} className="text-sm font-black tracking-tight">{location}</Text>
+                            <View className="ml-2">
+                                <View className="flex-row items-center">
+                                    <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black uppercase tracking-widest mr-1 opacity-60">{t('home.your_location')}</Text>
+                                    <ChevronDown size={12} color={colors.textSecondary} />
+                                </View>
+                                <Text style={{ color: colors.text }} className="text-sm font-black tracking-tight">{location}</Text>
+                            </View>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate('Notifications')}
+                            style={{ backgroundColor: colors.surface }}
+                            className="w-12 h-12 rounded-2xl items-center justify-center border border-surface relative"
+                        >
+                            <Bell size={22} color={colors.primary} strokeWidth={2.5} />
+                            {unreadCount > 0 && (
+                                <View
+                                    style={{ backgroundColor: colors.error, borderColor: colors.card }}
+                                    className="absolute -top-1 -right-1 min-w-[20px] h-5 rounded-full border-2 items-center justify-center px-1 shadow-sm"
+                                >
+                                    <Text style={{ color: 'white' }} className="text-[10px] font-black">{unreadCount > 9 ? '9+' : unreadCount}</Text>
+                                </View>
+                            )}
                         </TouchableOpacity>
                     </View>
-                    <TouchableOpacity
-                        onPress={() => navigation.navigate('Notifications')}
-                        style={{ backgroundColor: colors.surface }}
-                        className="w-12 h-12 rounded-2xl items-center justify-center border border-surface relative"
-                    >
-                        <Bell size={22} color={colors.primary} strokeWidth={2.5} />
-                        {unreadCount > 0 && (
-                            <View
-                                style={{ backgroundColor: colors.error, borderColor: colors.card }}
-                                className="absolute -top-1 -right-1 min-w-[20px] h-5 rounded-full border-2 items-center justify-center px-1 shadow-sm"
-                            >
-                                <Text style={{ color: 'white' }} className="text-[10px] font-black">{unreadCount > 9 ? '9+' : unreadCount}</Text>
-                            </View>
-                        )}
-                    </TouchableOpacity>
-                </View>
+                </Animated.View>
 
-                {/* Search Bar */}
-                <View className="flex-row items-center mb-3">
+                {/* Search Bar Row - Sticky part of the moving header */}
+                <View className="flex-row items-center mb-0">
                     <View style={{ backgroundColor: colors.surface }} className="flex-1 h-14 rounded-2xl flex-row items-center px-5 border border-surface">
                         <Search size={20} color={colors.textSecondary} strokeWidth={2.5} />
                         <TextInput
@@ -704,65 +754,39 @@ const HomeScreen = ({ navigation }) => {
                         />
                     </View>
                     <TouchableOpacity
-                        onPress={() => {
-                            setShowDatePicker(true);
-                        }}
+                        onPress={() => setShowDatePicker(true)}
                         style={{ backgroundColor: colors.surface }}
-                        className={`ml-3 w-14 h-14 rounded-2xl items-center justify-center border border-surface`}
+                        className="ml-3 w-14 h-14 rounded-2xl items-center justify-center border border-surface"
                     >
-                        {dateRange.start ? (
-                            <View className="items-center justify-center">
-                                <Calendar size={22} color={colors.primary} strokeWidth={2.5} />
-                                <TouchableOpacity
-                                    onPress={(e) => {
-                                        e.stopPropagation();
-                                        setDateRange({ start: null, end: null });
-                                    }}
-                                    style={{ backgroundColor: colors.primary }}
-                                    className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full items-center justify-center border-2 border-white"
-                                >
-                                    <X size={10} color="white" strokeWidth={4} />
-                                </TouchableOpacity>
-                            </View>
-                        ) : (
-                            <Calendar size={22} color={colors.primary} strokeWidth={2.5} />
-                        )}
+                        <Calendar size={22} color={colors.primary} strokeWidth={2.5} />
                     </TouchableOpacity>
                 </View>
-                {dateRange.start && dateRange.end && (
-                    <View style={{ backgroundColor: `${colors.primary}10`, borderColor: `${colors.primary}20` }} className="flex-row items-center justify-center py-2 px-4 rounded-xl mb-3 border self-center">
-                        <Calendar size={14} color={colors.primary} strokeWidth={2.5} />
-                        <Text style={{ color: colors.primary }} className="font-black text-[10px] ml-2 tracking-widest">
-                            {dateRange.start.toLocaleDateString()}
-                        </Text>
-                        <ArrowRight size={14} color={colors.primary} className="mx-2" />
-                        <Text style={{ color: colors.primary }} className="font-black text-[10px] tracking-widest">
-                            {dateRange.end.toLocaleDateString()}
-                        </Text>
-                        <TouchableOpacity
-                            onPress={() => setDateRange({ start: null, end: null })}
-                            className="ml-3 pl-3 border-l border-primary/20"
-                        >
-                            <X size={14} color={colors.primary} strokeWidth={3} />
-                        </TouchableOpacity>
-                    </View>
-                )}
                 {renderDatePicker()}
-            </View>
+            </Animated.View>
 
             {loading ? (
                 <View className="flex-1 items-center justify-center">
                     <ActivityIndicator size="large" color={colors.primary} />
                 </View>
             ) : (
-                <FlatList className="mt-1"
+                <Animated.FlatList 
+                    style={{ flex: 1, marginTop: 4 }}
+                    onScroll={Animated.event(
+                        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+                        { useNativeDriver: true }
+                    )}
+                    scrollEventThrottle={16}
                     key={viewMode} // Force re-render when switching modes
                     data={mainListOffers}
                     renderItem={renderOfferItem}
                     keyExtractor={(item) => item._id.toString()}
                     numColumns={((width > 768) || viewMode === 'grid') ? 2 : 1}
                     columnWrapperStyle={((width > 768) || viewMode === 'grid') ? { justifyContent: 'space-between', paddingHorizontal: 16 } : null}
-                    contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 100 }}
+                    contentContainerStyle={{
+                        paddingHorizontal: 16,
+                        paddingBottom: 100,
+                        paddingTop: Math.max(insets?.top ?? 0, 12) + 85 // Absolute minimum padding
+                    }}
                     ListHeaderComponent={renderHeader}
                     ListFooterComponent={() => (
                         loadingMore ? (

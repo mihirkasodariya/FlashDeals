@@ -5,10 +5,10 @@
     "version": "1.0.0",
     "scheme": "offerz",
     "orientation": "portrait",
-    "icon": "./assets/offerz_logo.jpeg",
+    "icon": "./assets/app_logo.jpeg",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/red_logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -19,7 +19,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/offerz_logo.jpeg",
+        "foregroundImage": "./assets/app_logo.jpeg",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
@@ -35,14 +35,14 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "@react-native-firebase/app",
+
       "@react-native-community/datetimepicker",
       "expo-localization",
+
       [
         "react-native-google-mobile-ads",
         {
-          "android_app_id": "ca-app-pub-3940256099942544~3347511713",
-          "ios_app_id": "ca-app-pub-3940256099942544~1458002511"
+          "androidAppId": "ca-app-pub-3940256099942544~3347511713"
         }
       ],
       "expo-web-browser",
@@ -54,20 +54,14 @@
             "agpVersion": "8.7.3",
             "newArchEnabled": true,
             "minSdkVersion": 24,
-            "compileSdkVersion": 36,
-            "targetSdkVersion": 36,
-            "enableMinifyInReleaseBuilds": true,
-            "enableShrinkResourcesInReleaseBuilds": true
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
+            "enableMinifyInReleaseBuilds": false,
+            "enableShrinkResourcesInReleaseBuilds": false
           }
         }
       ]
     ],
-    "react-native-google-mobile-ads": {
-      "android_app_id": "ca-app-pub-3940256099942544~3347511713",
-      "ios_app_id": "ca-app-pub-3940256099942544~1458002511",
-      "androidAppId": "ca-app-pub-3940256099942544~3347511713",
-      "iosAppId": "ca-app-pub-3940256099942544~1458002511"
-    },
     "updates": {
       "url": "https://u.expo.dev/20a5b665-ba67-493a-92a2-71ab24a614f2"
     },
@@ -75,10 +69,6 @@
     "extra": {
       "eas": {
         "projectId": "20a5b665-ba67-493a-92a2-71ab24a614f2"
-      },
-      "react-native-google-mobile-ads": {
-        "android_app_id": "ca-app-pub-3940256099942544~3347511713",
-        "ios_app_id": "ca-app-pub-3940256099942544~1458002511"
       }
     }
   }

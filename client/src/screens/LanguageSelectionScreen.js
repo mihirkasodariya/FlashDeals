@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Text from '../components/CustomText';
 import { View, ScrollView, TouchableOpacity, Pressable } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronRight, Check } from 'lucide-react-native';
 import { useTheme } from '../context/ThemeContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -41,6 +41,7 @@ const ALL_LANGUAGES = [
 const LanguageSelectionScreen = ({ navigation }) => {
     const { colors, isDarkMode } = useTheme();
     const { t, i18n } = useTranslation();
+    const insets = useSafeAreaInsets();
     const [selectedLang, setSelectedLang] = useState(RECOMMENDED_LANGUAGES[0]);
 
     // Check for saved language on mount
@@ -132,7 +133,14 @@ const LanguageSelectionScreen = ({ navigation }) => {
                 </View>
             </ScrollView>
 
-            <View style={{ backgroundColor: colors.background, paddingBottom: 30 }} className="px-6 py-4 absolute bottom-0 left-0 right-0 border-t border-black/5 shadow-2xl">
+            <View 
+                style={{ 
+                    backgroundColor: colors.background, 
+                    paddingBottom: Math.max(20, insets.bottom + 20),
+                    paddingTop: 16
+                }} 
+                className="px-6 absolute bottom-0 left-0 right-0 border-t border-black/5 shadow-2xl"
+            >
                 <TouchableOpacity
                     onPress={handleContinue}
                     style={{ backgroundColor: colors.primary }}

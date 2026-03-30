@@ -100,14 +100,14 @@ function MainTabs({ navigation }) {
         tabBarShowLabel: true,
         tabBarHideOnKeyboard: true,
         tabBarStyle: {
-          backgroundColor: '#FFFFFF',
+          backgroundColor: isDarkMode ? '#1A1A1A' : '#FFFFFF',
           borderTopWidth: 1,
           borderTopColor: colors.border,
-          // Perfect fit based on your request (+1px raise)
-          height: 47 + (insets.bottom > 0 ? insets.bottom : 0),
-          paddingBottom: 1,
-          paddingTop: 0,
-          elevation: 20,
+          // Handle insets for all types of navigation (physical, display, gesture)
+          height: Platform.OS === 'android' ? 62 + (insets?.bottom ?? 0) : 56 + (insets?.bottom ?? 0),
+          paddingBottom: insets?.bottom ?? (Platform.OS === 'android' ? 4 : 0),
+          paddingTop: 8,
+          elevation: 10,
           shadowColor: '#000',
           shadowOffset: { width: 0, height: -10 },
           shadowOpacity: isDarkMode ? 0.3 : 0.05,
@@ -253,14 +253,17 @@ function AppContent() {
       try {
         // Only run if the native module is actually available to prevent crashes
         if (NavigationBar && typeof NavigationBar.setBackgroundColorAsync === 'function') {
-          NavigationBar.setBackgroundColorAsync('#FFFFFF').catch(() => { });
-          NavigationBar.setButtonStyleAsync('dark').catch(() => { });
+          const navBarColor = isDarkMode ? '#1A1A1A' : '#FFFFFF';
+          NavigationBar.setBackgroundColorAsync(navBarColor).catch(() => { });
+          NavigationBar.setButtonStyleAsync(isDarkMode ? 'light' : 'dark').catch(() => { });
+          // Ensure it's visible and behaves well with system insets
+          NavigationBar.setVisibilityAsync('visible').catch(() => { });
         }
       } catch (error) {
         console.log("NavigationBar module not supported in current build:", error);
       }
     }
-  }, []);
+  }, [isDarkMode]);
 
   const linking = {
     prefixes: ['offerz://', 'https://api.offerz.live'],
