@@ -741,10 +741,12 @@ const HomeScreen = ({ navigation }) => {
                                     className="flex-row items-center px-3.5 py-1.5 rounded-xl border"
                                 >
                                     <Calendar size={12} color={colors.primary} strokeWidth={3} />
-                                    <Text style={{ color: colors.primary }} className="text-[10px] font-black ml-1.5 mr-1.5 uppercase tracking-wider">
-                                        {dateRange.start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                                        {'-'}
-                                        {dateRange.end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                    <Text style={{ color: colors.primary }} className="text-[10px] font-black ml-1.5 mr-1.5">
+                                        {(() => {
+                                            const s = `${dateRange.start.getDate()} ${dateRange.start.toLocaleDateString('en-US', { month: 'short' })}`;
+                                            const e = `${dateRange.end.getDate()} ${dateRange.end.toLocaleDateString('en-US', { month: 'short' })}`;
+                                            return s === e ? s : `${s} - ${e}`;
+                                        })()}
                                     </Text>
                                     <TouchableOpacity
                                         onPress={() => setDateRange({ start: null, end: null })}
@@ -827,7 +829,7 @@ const HomeScreen = ({ navigation }) => {
                     contentContainerStyle={{
                         paddingHorizontal: 16,
                         paddingBottom: 100,
-                        paddingTop: Math.max(insets?.top ?? 0, 12) + (dateRange.start && dateRange.end ? 85 : 35) // Dynamic space for filters
+                        paddingTop: Math.max(insets?.top ?? 0, 12) + 85 // Static space as Date Chip is in Row 1
                     }}
                     ListHeaderComponent={renderHeader}
                     ListFooterComponent={() => (
