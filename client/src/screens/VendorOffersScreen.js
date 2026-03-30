@@ -45,9 +45,9 @@ const DummyNativeAd = ({ colors }) => (
     >
         <View className="flex-row items-center mb-3">
             <View style={{ backgroundColor: '#4285F4', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 4, marginRight: 10 }}>
-                <Text style={{ color: 'white', fontSize: 10, fontWeight: 'black' }}>SPONSORED</Text>
+                <Text style={{ color: 'white', fontSize: 10, fontWeight: 'black' }}>Sponsored</Text>
             </View>
-            <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black uppercase tracking-widest">Recommended Deal</Text>
+            <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black">Recommended Deal</Text>
         </View>
         <View style={{ backgroundColor: '#eeeeee', height: 150, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
             <Text style={{ color: '#9e9e9e', fontWeight: 'bold' }}>Native Ad Media Placeholder</Text>
@@ -181,7 +181,7 @@ const VendorOffersScreen = ({ navigation }) => {
                     <View className="ml-4 flex-1">
                         <View className="flex-row items-center justify-between mb-1">
                             <View style={{ backgroundColor: `${colors.primary}15` }} className="px-2 py-1 rounded-lg">
-                                <Text style={{ color: colors.primary }} className="text-[10px] font-black uppercase tracking-wider">
+                                <Text style={{ color: colors.primary }} className="text-[10px] font-black">
                                     {(item.category?.name || item.category) || '-'}
                                 </Text>
                             </View>
@@ -204,7 +204,7 @@ const VendorOffersScreen = ({ navigation }) => {
                                 
                                 return (
                                     <View style={{ backgroundColor: status.bg }} className="px-2 py-1 rounded-lg">
-                                        <Text style={{ color: status.color }} className="text-[9px] font-black uppercase tracking-wider">{status.label}</Text>
+                                        <Text style={{ color: status.color }} className="text-[9px] font-black">{status.label}</Text>
                                     </View>
                                 );
                             })()}
@@ -337,7 +337,7 @@ const VendorOffersScreen = ({ navigation }) => {
                         <View>
                             {index > 0 && index % 3 === 0 && (
                                 <View className="mb-6">
-                                    <DummyNativeAd colors={colors} />
+                                    {/* <DummyNativeAd colors={colors} /> */}
                                 </View>
                             )}
                             {renderOfferItem({ item })}
@@ -354,7 +354,7 @@ const VendorOffersScreen = ({ navigation }) => {
                         loadingMore ? (
                             <View className="py-6 items-center">
                                 <ActivityIndicator size="small" color={colors.primary} />
-                                <Text style={{ color: colors.textSecondary }} className="text-[10px] font-bold mt-2 opacity-50 uppercase tracking-widest">{t('common.loading_more') || 'Loading More'}</Text>
+                                <Text style={{ color: colors.textSecondary }} className="text-[10px] font-bold mt-2 opacity-50">{t('common.loading_more') || 'Loading More'}</Text>
                             </View>
                         ) : null
                     )}
@@ -372,7 +372,7 @@ const VendorOffersScreen = ({ navigation }) => {
                                 onPress={() => navigation.navigate('AddOffer')}
                                 className="mt-8 bg-primary px-8 py-4 rounded-2xl"
                             >
-                                <Text style={{ color: '#FFFFFF' }} className="text-white font-black text-xs tracking-widest">{t('store.create_first_offer')}</Text>
+                                <Text style={{ color: '#FFFFFF' }} className="text-white font-black text-xs">{t('store.create_first_offer')}</Text>
                             </TouchableOpacity>
                         </View>
                     }
