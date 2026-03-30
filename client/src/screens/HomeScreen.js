@@ -80,8 +80,15 @@ const HomeScreen = ({ navigation }) => {
     const ROW_1_HEIGHT = 50;
     const ROW_1_MARGIN = 1;
     const LOC_BAR_HIDDEN_HEIGHT = ROW_1_HEIGHT + ROW_1_MARGIN;
+    
+    // Stabilize scroll signal by clamping overscroll to prevent jumping on fast scrolls
+    const stabilizedScrollY = scrollY.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0, 1],
+        extrapolateLeft: 'clamp',
+    });
 
-    const clampedScrollY = Animated.diffClamp(scrollY, 0, LOC_BAR_HIDDEN_HEIGHT);
+    const clampedScrollY = Animated.diffClamp(stabilizedScrollY, 0, LOC_BAR_HIDDEN_HEIGHT);
 
     const headerTranslateY = clampedScrollY.interpolate({
         inputRange: [0, LOC_BAR_HIDDEN_HEIGHT],
@@ -758,9 +765,38 @@ const HomeScreen = ({ navigation }) => {
                         style={{ backgroundColor: colors.surface }}
                         className="ml-3 w-14 h-14 rounded-2xl items-center justify-center border border-surface"
                     >
-                        <Calendar size={22} color={colors.primary} strokeWidth={2.5} />
+                        <Calendar 
+                            size={22} 
+                            color={colors.primary} 
+                            strokeWidth={2.5} 
+                            fill={dateRange.start && dateRange.end ? `${colors.primary}40` : 'transparent'} 
+                        />
                     </TouchableOpacity>
                 </View>
+
+                {/* Active Date Filter Chip - Sticky below Search bar */}
+                {dateRange.start && dateRange.end && (
+                    <View className="mt-4 items-center">
+                        <View 
+                            style={{ backgroundColor: colors.primary + '15', borderColor: colors.primary + '30' }}
+                            className="flex-row items-center self-center px-4 py-2 rounded-2xl border"
+                        >
+                            <Calendar size={14} color={colors.primary} strokeWidth={3} className="mr-3" />
+                            <Text style={{ color: colors.primary }} className="text-xs font-black mr-3 ml-2 uppercase tracking-wider">
+                                {dateRange.start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                {' - '}
+                                {dateRange.end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                            </Text>
+                            <TouchableOpacity 
+                                onPress={() => setDateRange({ start: null, end: null })}
+                                style={{ backgroundColor: colors.primary }}
+                                className="w-5 h-5 rounded-full items-center justify-center -mr-1 shadow-sm"
+                            >
+                                <X size={12} color="white" strokeWidth={4} />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                )}
                 {renderDatePicker()}
             </Animated.View>
 
@@ -785,7 +821,7 @@ const HomeScreen = ({ navigation }) => {
                     contentContainerStyle={{
                         paddingHorizontal: 16,
                         paddingBottom: 100,
-                        paddingTop: Math.max(insets?.top ?? 0, 12) + 85 // Absolute minimum padding
+                        paddingTop: Math.max(insets?.top ?? 0, 12) + (dateRange.start && dateRange.end ? 140 : 90) // Dynamic space for filters
                     }}
                     ListHeaderComponent={renderHeader}
                     ListFooterComponent={() => (

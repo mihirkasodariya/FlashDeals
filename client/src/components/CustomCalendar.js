@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { View, TouchableOpacity, Modal, useWindowDimensions, Animated } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Text from './CustomText';
 import { ChevronLeft, ChevronRight, X, Calendar as CalendarIcon } from 'lucide-react-native';
 import { useTheme } from '../context/ThemeContext';
@@ -18,6 +19,7 @@ const CustomCalendar = ({
     const { colors } = useTheme();
     const { t, i18n } = useTranslation();
     const { width } = useWindowDimensions();
+    const insets = useSafeAreaInsets();
     
     // Navigation State
     const [currentMonth, setCurrentMonth] = useState(new Date(initialDate || new Date()));
@@ -25,6 +27,14 @@ const CustomCalendar = ({
     // Selection State
     const [selectedDate, setSelectedDate] = useState(initialDate || null);
     const [range, setRange] = useState(initialRange);
+    
+    // Sync internal state with external props on change
+    React.useEffect(() => {
+        setRange(initialRange);
+        if (initialRange.start) {
+            setCurrentMonth(new Date(initialRange.start));
+        }
+    }, [initialRange, visible]);
     
     const daysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
     const startDayOfMonth = (year, month) => new Date(year, month, 1).getDay();
@@ -146,7 +156,10 @@ const CustomCalendar = ({
                     onPress={onClose} 
                 />
                 <View 
-                    style={{ backgroundColor: colors.background, paddingBottom: 40 }} 
+                    style={{ 
+                        backgroundColor: colors.background, 
+                        paddingBottom: Math.max(20, insets.bottom + 20) 
+                    }} 
                     className="rounded-t-[40px] shadow-2xl"
                 >
                     {/* Header */}
