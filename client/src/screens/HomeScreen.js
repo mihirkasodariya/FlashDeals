@@ -80,7 +80,7 @@ const HomeScreen = ({ navigation }) => {
     const ROW_1_HEIGHT = 50;
     const ROW_1_MARGIN = 1;
     const LOC_BAR_HIDDEN_HEIGHT = ROW_1_HEIGHT + ROW_1_MARGIN;
-    
+
     // Stabilize scroll signal by clamping overscroll to prevent jumping on fast scrolls
     const stabilizedScrollY = scrollY.interpolate({
         inputRange: [0, 1],
@@ -527,10 +527,10 @@ const HomeScreen = ({ navigation }) => {
                             key={item._id}
                             onPress={() => setSelectedCategory(item._id)}
                             style={{
-                                marginRight: 16,
-                                paddingHorizontal: 24,
-                                paddingVertical: 12,
-                                borderRadius: 16,
+                                marginRight: 12,
+                                paddingHorizontal: 14,
+                                paddingVertical: 7,
+                                borderRadius: 12,
                                 flexDirection: 'row',
                                 alignItems: 'center',
                                 borderWidth: 1,
@@ -539,7 +539,7 @@ const HomeScreen = ({ navigation }) => {
                             }}
                         >
                             {item.isStatic ? (
-                                <Text style={{ fontSize: 12, marginRight: 8 }}>🛍️</Text>
+                                <Text style={{ fontSize: 12, marginRight: 6 }}>🛍️</Text>
                             ) : item.image ? (
                                 <Image
                                     source={{
@@ -547,12 +547,13 @@ const HomeScreen = ({ navigation }) => {
                                             ? item.image
                                             : `${API_BASE_URL.replace('/api', '')}${item.image}`
                                     }}
-                                    style={{ width: 24, height: 24, marginRight: 8, borderRadius: 6 }}
+                                    style={{ width: 20, height: 20, marginRight: 6, borderRadius: 5 }}
                                 />
                             ) : (
-                                <Text style={{ fontSize: 12, marginRight: 8 }}>📦</Text>
+                                <Text style={{ fontSize: 12, marginRight: 6 }}>📦</Text>
                             )}
                             <Text style={{
+                                fontSize: 13,
                                 fontWeight: 'bold',
                                 color: selectedCategory === item._id ? '#FFFFFF' : colors.primary
                             }}>
@@ -717,18 +718,45 @@ const HomeScreen = ({ navigation }) => {
                         <TouchableOpacity
                             onPress={() => setIsLocationModalVisible(true)}
                             className="flex-row items-center"
+                            style={{ maxWidth: '45%' }}
                         >
                             <View style={{ backgroundColor: `${colors.primary}10` }} className="w-10 h-10 rounded-2xl items-center justify-center">
                                 <MapPin size={20} color={colors.primary} strokeWidth={2.5} />
                             </View>
-                            <View className="ml-2">
+                            <View className="ml-2 flex-1">
                                 <View className="flex-row items-center">
-                                    <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black uppercase tracking-widest mr-1 opacity-60">{t('home.your_location')}</Text>
+                                    <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black uppercase tracking-widest mr-1 opacity-60" numberOfLines={1}>{t('home.your_location')}</Text>
                                     <ChevronDown size={12} color={colors.textSecondary} />
                                 </View>
-                                <Text style={{ color: colors.text }} className="text-sm font-black tracking-tight">{location}</Text>
+                                <Text style={{ color: colors.text }} className="text-sm font-black tracking-tight" numberOfLines={1}>{location}</Text>
                             </View>
                         </TouchableOpacity>
+
+                        {/* Date Filter Chip near Notification */}
+                        {dateRange.start && dateRange.end && (
+                            <View className="ml-auto mr-[10px]">
+                                <TouchableOpacity
+                                    onPress={() => setShowDatePicker(true)}
+                                    style={{ backgroundColor: colors.primary + '15', borderColor: colors.primary + '30' }}
+                                    className="flex-row items-center px-3.5 py-1.5 rounded-xl border"
+                                >
+                                    <Calendar size={12} color={colors.primary} strokeWidth={3} />
+                                    <Text style={{ color: colors.primary }} className="text-[10px] font-black ml-1.5 mr-1.5 uppercase tracking-wider">
+                                        {dateRange.start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                        {'-'}
+                                        {dateRange.end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                    </Text>
+                                    <TouchableOpacity
+                                        onPress={() => setDateRange({ start: null, end: null })}
+                                        style={{ backgroundColor: colors.primary }}
+                                        className="w-4 h-4 rounded-full items-center justify-center shadow-sm"
+                                    >
+                                        <X size={10} color="white" strokeWidth={4} />
+                                    </TouchableOpacity>
+                                </TouchableOpacity>
+                            </View>
+                        )}
+
                         <TouchableOpacity
                             onPress={() => navigation.navigate('Notifications')}
                             style={{ backgroundColor: colors.surface }}
@@ -765,38 +793,16 @@ const HomeScreen = ({ navigation }) => {
                         style={{ backgroundColor: colors.surface }}
                         className="ml-3 w-14 h-14 rounded-2xl items-center justify-center border border-surface"
                     >
-                        <Calendar 
-                            size={22} 
-                            color={colors.primary} 
-                            strokeWidth={2.5} 
-                            fill={dateRange.start && dateRange.end ? `${colors.primary}40` : 'transparent'} 
+                        <Calendar
+                            size={22}
+                            color={colors.primary}
+                            strokeWidth={2.5}
+                            fill={dateRange.start && dateRange.end ? `${colors.primary}40` : 'transparent'}
                         />
                     </TouchableOpacity>
                 </View>
 
-                {/* Active Date Filter Chip - Sticky below Search bar */}
-                {dateRange.start && dateRange.end && (
-                    <View className="mt-4 items-center">
-                        <View 
-                            style={{ backgroundColor: colors.primary + '15', borderColor: colors.primary + '30' }}
-                            className="flex-row items-center self-center px-4 py-2 rounded-2xl border"
-                        >
-                            <Calendar size={14} color={colors.primary} strokeWidth={3} className="mr-3" />
-                            <Text style={{ color: colors.primary }} className="text-xs font-black mr-3 ml-2 uppercase tracking-wider">
-                                {dateRange.start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                                {' - '}
-                                {dateRange.end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                            </Text>
-                            <TouchableOpacity 
-                                onPress={() => setDateRange({ start: null, end: null })}
-                                style={{ backgroundColor: colors.primary }}
-                                className="w-5 h-5 rounded-full items-center justify-center -mr-1 shadow-sm"
-                            >
-                                <X size={12} color="white" strokeWidth={4} />
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                )}
+
                 {renderDatePicker()}
             </Animated.View>
 
@@ -805,8 +811,8 @@ const HomeScreen = ({ navigation }) => {
                     <ActivityIndicator size="large" color={colors.primary} />
                 </View>
             ) : (
-                <Animated.FlatList 
-                    style={{ flex: 1, marginTop: 4 }}
+                <Animated.FlatList
+                    style={{ flex: 1 }}
                     onScroll={Animated.event(
                         [{ nativeEvent: { contentOffset: { y: scrollY } } }],
                         { useNativeDriver: true }
@@ -821,7 +827,7 @@ const HomeScreen = ({ navigation }) => {
                     contentContainerStyle={{
                         paddingHorizontal: 16,
                         paddingBottom: 100,
-                        paddingTop: Math.max(insets?.top ?? 0, 12) + (dateRange.start && dateRange.end ? 140 : 90) // Dynamic space for filters
+                        paddingTop: Math.max(insets?.top ?? 0, 12) + (dateRange.start && dateRange.end ? 85 : 35) // Dynamic space for filters
                     }}
                     ListHeaderComponent={renderHeader}
                     ListFooterComponent={() => (
