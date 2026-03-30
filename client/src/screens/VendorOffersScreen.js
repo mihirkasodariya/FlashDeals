@@ -72,7 +72,7 @@ const VendorOffersScreen = ({ navigation }) => {
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
-    const [stats, setStats] = useState({ active: 0, upcoming: 0, expired: 0 });
+    const [stats, setStats] = useState({ active: 0, upcoming: 0, expired: 0, drafts: 0 });
     const [filterStatus, setFilterStatus] = useState('All');
 
     const fetchMyOffers = async (pageNum = 1, isRefresh = false) => {
@@ -169,7 +169,11 @@ const VendorOffersScreen = ({ navigation }) => {
             <View style={{ backgroundColor: colors.card, borderColor: colors.border }} className="rounded-[32px] mb-6 p-5 shadow-sm border overflow-hidden">
                 <View className="flex-row">
                     <Image
-                        source={{ uri: item.image.startsWith('http') ? item.image : `${STATIC_BASE_URL}${item.image}` }}
+                        source={{ 
+                            uri: item.image 
+                                ? (item.image.startsWith('http') ? item.image : `${STATIC_BASE_URL}${item.image}`)
+                                : 'https://via.placeholder.com/150?text=No+Image' 
+                        }}
                         style={{ backgroundColor: colors.surface }}
                         className="w-24 h-24 rounded-2xl"
                         resizeMode="cover"
@@ -177,7 +181,9 @@ const VendorOffersScreen = ({ navigation }) => {
                     <View className="ml-4 flex-1">
                         <View className="flex-row items-center justify-between mb-1">
                             <View style={{ backgroundColor: `${colors.primary}15` }} className="px-2 py-1 rounded-lg">
-                                <Text style={{ color: colors.primary }} className="text-[10px] font-black uppercase tracking-wider">{item.category?.name || item.category}</Text>
+                                <Text style={{ color: colors.primary }} className="text-[10px] font-black uppercase tracking-wider">
+                                    {(item.category?.name || item.category) || '-'}
+                                </Text>
                             </View>
                             {(() => {
                                 const now = new Date();
@@ -188,7 +194,9 @@ const VendorOffersScreen = ({ navigation }) => {
                                 
                                 let status = { label: 'Active', color: '#10B981', bg: '#10B98115' };
                                 
-                                if (start > todayEnd) {
+                                if (item.status === 'draft') {
+                                    status = { label: 'Draft', color: '#8B5CF6', bg: '#8B5CF615' };
+                                } else if (start > todayEnd) {
                                     status = { label: 'Upcoming', color: '#F59E0B', bg: '#F59E0B15' };
                                 } else if (end < todayStart) {
                                     status = { label: 'Expired', color: '#EF4444', bg: '#EF444415' };
@@ -206,7 +214,7 @@ const VendorOffersScreen = ({ navigation }) => {
                         <View className="flex-row items-center mt-2 opacity-60">
                             <Calendar size={12} color={colors.textSecondary} />
                             <Text style={{ color: colors.textSecondary }} className="text-[10px] font-bold ml-1">
-                                {new Date(item.startDate).toLocaleDateString()} - {new Date(item.endDate).toLocaleDateString()}
+                                {item.startDate ? new Date(item.startDate).toLocaleDateString() : '-'} - {item.endDate ? new Date(item.endDate).toLocaleDateString() : '-'}
                             </Text>
                         </View>
                     </View>
@@ -281,8 +289,9 @@ const VendorOffersScreen = ({ navigation }) => {
                     contentContainerStyle={{ paddingHorizontal: 24, gap: 12 }}
                 >
                     {[
-                        { label: 'All', count: stats.active + stats.upcoming + stats.expired, color: colors.primary },
+                        { label: 'All', count: stats.active + stats.upcoming + stats.expired + (stats.drafts || 0), color: colors.primary },
                         { label: 'Active', count: stats.active, color: '#10B981' },
+                        { label: 'Drafts', count: stats.drafts || 0, color: '#8B5CF6' },
                         { label: 'Upcoming', count: stats.upcoming, color: '#F59E0B' },
                         { label: 'Expired', count: stats.expired, color: '#EF4444' }
                     ].map((item) => (
@@ -318,9 +327,10 @@ const VendorOffersScreen = ({ navigation }) => {
                         const start = new Date(offer.startDate);
                         const end = new Date(offer.endDate);
 
-                        if (filterStatus === 'Active') return start <= todayEnd && end >= todayStart;
-                        if (filterStatus === 'Upcoming') return start > todayEnd;
-                        if (filterStatus === 'Expired') return end < todayStart;
+                        if (filterStatus === 'Active') return offer.status !== 'draft' && start <= todayEnd && end >= todayStart;
+                        if (filterStatus === 'Drafts') return offer.status === 'draft';
+                        if (filterStatus === 'Upcoming') return offer.status !== 'draft' && start > todayEnd;
+                        if (filterStatus === 'Expired') return offer.status !== 'draft' && end < todayStart;
                         return true;
                     })}
                     renderItem={({ item, index }) => (
@@ -362,7 +372,7 @@ const VendorOffersScreen = ({ navigation }) => {
                                 onPress={() => navigation.navigate('AddOffer')}
                                 className="mt-8 bg-primary px-8 py-4 rounded-2xl"
                             >
-                                <Text className="text-white font-black text-xs tracking-widest">{t('store.create_first_offer')}</Text>
+                                <Text style={{ color: '#FFFFFF' }} className="text-white font-black text-xs tracking-widest">{t('store.create_first_offer')}</Text>
                             </TouchableOpacity>
                         </View>
                     }

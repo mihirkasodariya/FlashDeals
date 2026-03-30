@@ -26,6 +26,8 @@ const AddOfferScreen = ({ route, navigation }) => {
     const [image, setImage] = useState(offerToEdit?.image ? `${API_BASE_URL.replace('/api', '')}${offerToEdit.image}` : null);
     const [title, setTitle] = useState(offerToEdit?.title || '');
     const [description, setDescription] = useState(offerToEdit?.description || '');
+    const [showDiscardModal, setShowDiscardModal] = useState(false);
+    const [pendingAction, setPendingAction] = useState(null);
     const [categories, setCategories] = useState([]);
     const [categoryKey, setCategoryKey] = useState(
         offerToEdit?.category?._id || offerToEdit?.category || ''
@@ -110,9 +112,40 @@ const AddOfferScreen = ({ route, navigation }) => {
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [successMsg, setSuccessMsg] = useState('');
 
-    const handlePublishOffer = async () => {
-        if (!title || !description || !image || !startDate || !endDate) {
+    // Unsaved Changes Guard
+    React.useEffect(() => {
+        const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+            // Check if ANY field has content
+            if (!title && !description && !image) {
+                return;
+            }
+
+            // If we are currently loading (saving), don't show the alert
+            if (loading) {
+                return;
+            }
+
+            // Prevent default behavior of leaving the screen
+            e.preventDefault();
+
+            // Store the action and show custom modal
+            setPendingAction(e.data.action);
+            setShowDiscardModal(true);
+        });
+
+        return unsubscribe;
+    }, [navigation, title, description, image, loading, categoryKey, startDate, endDate]);
+
+    const handlePublishOffer = async (statusOverride = 'active', nextAction = null) => {
+        const finalStatus = statusOverride;
+        if (finalStatus === 'active' && (!title || !image || !categoryKey || !startDate || !endDate)) {
             Alert.alert(t('common.error'), t('store.fill_all_fields'));
+            return;
+        }
+
+        // At least one detail is needed for a draft save
+        if (finalStatus === 'draft' && (!title && !description && !image)) {
+            Alert.alert(t('common.error'), 'Please provide at least one detail (Title, Description, or Image) to save as draft.');
             return;
         }
 
@@ -126,9 +159,10 @@ const AddOfferScreen = ({ route, navigation }) => {
             formData.append('category', categoryKey); // This is now the categoryId
             formData.append('startDate', startDate.toISOString());
             formData.append('endDate', endDate.toISOString());
+            formData.append('status', finalStatus);
 
             // Only append image if it's a new one (starts with file:// or /Data/)
-            if (image.startsWith('file://') || image.startsWith('content://') || !offerToEdit) {
+            if (image && (image.startsWith('file://') || image.startsWith('content://') || !offerToEdit)) {
                 const filename = image.split('/').pop();
                 const match = /\.(\w+)$/.exec(filename);
                 const type = match ? `image/${match[1]}` : `image`;
@@ -156,8 +190,17 @@ const AddOfferScreen = ({ route, navigation }) => {
 
             const data = await response.json();
             if (data.success) {
-                setSuccessMsg(isEditing ? t('store.offer_updated') : t('store.offer_added'));
-                setShowSuccessModal(true);
+                setSuccessMsg(finalStatus === 'draft' ? 'Offer saved to drafts!' : (isEditing ? t('store.offer_updated') : t('store.offer_added')));
+                
+                // Close modals before navigating
+                setShowDiscardModal(false);
+
+                if (nextAction) {
+                    // If we came from the Guard, just finish the navigation
+                    navigation.dispatch(nextAction);
+                } else {
+                    setShowSuccessModal(true);
+                }
             } else {
                 Alert.alert(t('common.error'), data.message || t('store.failed_publish_offer'));
             }
@@ -308,11 +351,21 @@ const AddOfferScreen = ({ route, navigation }) => {
                 </View>
             </ScrollView>
 
-            <View style={{ borderTopColor: colors.border, backgroundColor: colors.background, paddingBottom: insets.bottom > 0 ? insets.bottom : 20 }} className="px-6 py-6 border-t">
+            <View style={{ borderTopColor: colors.border, backgroundColor: colors.background, paddingBottom: Math.max(20, insets.bottom + 20) }} className="px-6 py-4 border-t flex-row gap-3">
                 <TouchableOpacity
-                    onPress={handlePublishOffer}
+                    onPress={() => handlePublishOffer('draft')}
                     disabled={loading}
-                    className="w-full bg-primary py-5 rounded-[24px] items-center shadow-lg shadow-primary/30"
+                    style={{ backgroundColor: colors.surface }}
+                    className="flex-1 py-5 rounded-[24px] items-center border border-surface shadow-sm"
+                >
+                    <Text style={{ color: colors.textSecondary }} className="font-black text-sm tracking-tight">Save Draft</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    onPress={() => handlePublishOffer('active')}
+                    disabled={loading}
+                    className="flex-2 bg-primary py-5 rounded-[24px] items-center shadow-lg shadow-primary/30"
+                    style={{ flex: 2 }}
                 >
                     {loading ? (
                         <ActivityIndicator color="white" />
@@ -338,6 +391,50 @@ const AddOfferScreen = ({ route, navigation }) => {
                             <CheckCircle2 size={16} color={colors.primary} className="mr-6" />
                             <Text style={{ color: colors.primary }} className="font-black text-sm tracking-tight">{t('common.cool') || 'Done'}</Text>
                         </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
+
+            {/* Custom Discard/Save Draft Modal */}
+            <Modal transparent visible={showDiscardModal} animationType="fade">
+                <View className="flex-1 justify-center items-center bg-black/80 px-8">
+                    <View style={{ backgroundColor: isDarkMode ? '#1A1A1A' : '#FFFFFF' }} className="w-full rounded-[40px] p-8 items-center shadow-2xl">
+                        <View style={{ backgroundColor: `${colors.primary}10` }} className="w-16 h-16 rounded-[24px] items-center justify-center mb-6">
+                            <LucidePackage size={30} color={colors.primary} strokeWidth={1.5} />
+                        </View>
+                        <Text style={{ color: colors.text }} className="text-xl font-black text-center mb-2">{t('settings.discard')}</Text>
+                        <Text style={{ color: colors.textSecondary }} className="text-center font-bold mb-8 opacity-60">
+                            {isEditing ? 'Do you want to save changes to this offer?' : 'You have unsaved details. Would you like to save this as a draft?'}
+                        </Text>
+
+                        <View className="w-full" style={{ gap: 12 }}>
+                            <TouchableOpacity
+                                onPress={() => handlePublishOffer('draft', pendingAction)}
+                                style={{ backgroundColor: isDarkMode ? colors.primary : '#1A1A1A' }}
+                                className="w-full py-5 rounded-[24px] items-center shadow-lg shadow-black/10"
+                            >
+                                <Text style={{ color: '#FFFFFF' }} className="font-black text-sm tracking-tight">Save as Draft</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setShowDiscardModal(false);
+                                    if (pendingAction) navigation.dispatch(pendingAction);
+                                }}
+                                style={{ backgroundColor: `${colors.error}10` }}
+                                className="w-full py-5 rounded-[24px] items-center border border-red-500/10"
+                            >
+                                <Text className="text-red-500 font-black text-sm tracking-tight">Don't Save</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                onPress={() => setShowDiscardModal(false)}
+                                style={{ backgroundColor: isDarkMode ? '#2D374833' : '#F7FAFC' }}
+                                className="w-full py-5 rounded-[24px] items-center"
+                            >
+                                <Text style={{ color: colors.textSecondary }} className="font-bold text-xs opacity-60">Wait, Keep Editing</Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 </View>
             </Modal>

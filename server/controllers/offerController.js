@@ -19,31 +19,47 @@ const addOffer = async (req, res) => {
             return res.status(403).json({ success: false, message: 'Only vendors can add offers' });
         }
 
-        let { title, description, category, startDate, endDate } = req.body;
-        console.log('category', category)
-        if (!category || (typeof category === 'string' && category.trim() === '')) {
-            return res.status(400).json({ success: false, message: 'Category is required' });
+        let { title, description, category, startDate, endDate, status } = req.body;
+        const finalStatus = status || 'active';
+
+        // Conditional Validation
+        if (finalStatus === 'active') {
+             if (!title || !category || !req.file || !startDate || !endDate) {
+                return res.status(400).json({ success: false, message: 'All fields (Title, Category, Image, Dates) are required for publishing' });
+            }
+        } else if (finalStatus === 'draft') {
+            // Check if AT LEAST something is present for draft, otherwise it's an empty record
+             if (!title && !description && !category && !req.file) {
+                return res.status(400).json({ success: false, message: 'Please provide at least one field to save as draft' });
+             }
         }
 
-        if (!mongoose.Types.ObjectId.isValid(category)) {
-            const foundCat = await Category.findOne({ name: new RegExp(`^${category}$`, 'i') });
-            if (foundCat) category = foundCat._id;
-            else return res.status(400).json({ success: false, message: `Invalid category: ${category}` });
+        // Parse category if provided
+        if (category && (typeof category === 'string' && category.trim() !== '')) {
+            if (!mongoose.Types.ObjectId.isValid(category)) {
+                const foundCat = await Category.findOne({ name: new RegExp(`^${category}$`, 'i') });
+                if (foundCat) category = foundCat._id;
+                else return res.status(400).json({ success: false, message: `Invalid category: ${category}` });
+            }
+        } else if (finalStatus === 'active') {
+             return res.status(400).json({ success: false, message: 'Category is required for publishing' });
         }
 
-        if (!req.file) {
-            return res.status(400).json({ success: false, message: 'Offer image is required' });
-        }
-
-        const offer = new Offer({
+        const offerData = {
             vendorId: req.user.userId,
             title,
             description,
-            category,
-            image: `https://api.offerz.live/public/offers/${req.file.filename}`,
-            startDate,
-            endDate
-        });
+            category: category || undefined,
+            startDate: startDate || undefined,
+            endDate: endDate || undefined,
+            status: finalStatus
+        };
+
+        if (req.file) {
+            offerData.image = `https://api.offerz.live/public/offers/${req.file.filename}`;
+        }
+
+        const offer = new Offer(offerData);
 
         await offer.save();
         await offer.populate('category');
@@ -59,7 +75,7 @@ const getOffers = async (req, res) => {
         const { lat, lng, radius, category, search, startDate, endDate } = req.query;
         const now = new Date();
 
-        const query = {};
+        const query = { status: { $ne: 'draft' } };
 
         if (startDate && endDate) {
             const rangeStart = new Date(startDate);
@@ -140,20 +156,28 @@ const getVendorOffers = async (req, res) => {
 
         const query = { vendorId };
 
-        const [total, active, upcoming, expired, offers] = await Promise.all([
+        const [total, active, upcoming, expired, drafts, offers] = await Promise.all([
             Offer.countDocuments(query),
-            Offer.countDocuments({ ...query, startDate: { $lte: endOfDay }, endDate: { $gte: startOfDay } }),
-            Offer.countDocuments({ ...query, startDate: { $gt: endOfDay } }),
-            Offer.countDocuments({ ...query, endDate: { $lt: startOfDay } }),
+            Offer.countDocuments({ ...query, status: 'active', startDate: { $lte: endOfDay }, endDate: { $gte: startOfDay } }),
+            Offer.countDocuments({ ...query, status: 'active', startDate: { $gt: endOfDay } }),
+            Offer.countDocuments({ ...query, status: 'active', endDate: { $lt: startOfDay } }),
+            Offer.countDocuments({ ...query, status: 'draft' }),
             Offer.find(query)
                 .populate('vendorId', 'storeName name location profileImage storeImage storeAddress')
                 .populate('category')
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit)
+                .lean()
         ]);
 
-        res.json({ success: true, offers, total, stats: { active, upcoming, expired }, page, hasMore: skip + offers.length < total });
+        res.json({ 
+            success: true, 
+            offers, 
+            total, 
+            stats: { active, upcoming, expired, drafts }, 
+            hasMore: total > skip + offers.length 
+        });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -219,7 +243,10 @@ const getExpiringOffers = async (req, res) => {
         const now = new Date();
         const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
-        let offers = await Offer.find({ endDate: { $gte: now, $lte: tomorrow } })
+        let offers = await Offer.find({ 
+            endDate: { $gte: now, $lte: tomorrow },
+            status: { $ne: 'draft' }
+        })
             .populate('vendorId', 'storeName location profileImage')
             .populate('category')
             .sort({ endDate: 1 })

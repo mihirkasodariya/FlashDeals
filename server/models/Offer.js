@@ -2,13 +2,13 @@ const mongoose = require('mongoose');
 
 const offerSchema = new mongoose.Schema({
     vendorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    title: { type: String, required: true },
-    description: { type: String, required: true },
-    category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
-    image: { type: String, required: true },
-    startDate: { type: Date, required: true },
-    endDate: { type: Date, required: true },
-    status: { type: String, enum: ['active', 'expired', 'scheduled'], default: 'active' },
+    title: { type: String },
+    description: { type: String },
+    category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
+    image: { type: String },
+    startDate: { type: Date },
+    endDate: { type: Date },
+    status: { type: String, enum: ['active', 'expired', 'scheduled', 'draft'], default: 'active' },
     visits: { type: Number, default: 0 },
     impressions: { type: Number, default: 0 },
     // You might want to add more fields like discount, stock, etc. later
