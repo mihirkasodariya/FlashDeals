@@ -28,13 +28,15 @@ const CustomCalendar = ({
     const [selectedDate, setSelectedDate] = useState(initialDate || null);
     const [range, setRange] = useState(initialRange);
     
-    // Sync internal state with external props on change
+    // Sync internal state ONLY when the modal opens to avoid infinite update loops
     React.useEffect(() => {
-        setRange(initialRange);
-        if (initialRange.start) {
-            setCurrentMonth(new Date(initialRange.start));
+        if (visible) {
+            setRange(initialRange);
+            if (initialRange && initialRange.start) {
+                setCurrentMonth(new Date(initialRange.start));
+            }
         }
-    }, [initialRange, visible]);
+    }, [visible]);
     
     const daysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
     const startDayOfMonth = (year, month) => new Date(year, month, 1).getDay();

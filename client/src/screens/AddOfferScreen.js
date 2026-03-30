@@ -61,7 +61,7 @@ const AddOfferScreen = ({ route, navigation }) => {
     }, []);
 
     const [startDate, setStartDate] = useState(offerToEdit ? new Date(offerToEdit.startDate) : new Date());
-    const [endDate, setEndDate] = useState(offerToEdit ? new Date(offerToEdit.endDate) : new Date(Date.now() + 86400000));
+    const [endDate, setEndDate] = useState(offerToEdit ? new Date(offerToEdit.endDate) : new Date(Date.now() + 7 * 86400000));
     const [showStartPicker, setShowStartPicker] = useState(false);
     const [showEndPicker, setShowEndPicker] = useState(false);
 
@@ -206,7 +206,7 @@ const AddOfferScreen = ({ route, navigation }) => {
                             <View style={{ backgroundColor: `${colors.primary}10` }} className="w-20 h-20 rounded-[32px] items-center justify-center mb-4">
                                 <Camera size={36} color={colors.primary} strokeWidth={1.5} />
                             </View>
-                            <Text style={{ color: colors.primary }} className="font-black text-xs tracking-widest uppercase opacity-60">{t('store.select_banner')}</Text>
+                            <Text style={{ color: colors.primary }} className="font-black text-[11px] tracking-wider opacity-60">{t('store.select_banner')}</Text>
                             <Text style={{ color: colors.textSecondary }} className="text-[10px] font-bold mt-1 opacity-40">{t('store.tap_upload')}</Text>
                         </View>
                     )}
@@ -215,14 +215,17 @@ const AddOfferScreen = ({ route, navigation }) => {
                 {/* Form Fields */}
                 <View className="mt-8 space-y-6 pb-20">
                     <View>
-                        <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-2 ml-1 uppercase">{t('store.offer_title')}</Text>
+                        <View className="flex-row items-center mb-2 ml-1">
+                            <Text style={{ color: colors.textSecondary }} className="text-[11px] font-black tracking-wider">{t('store.offer_title')}</Text>
+                            <Text style={{ color: colors.error }} className="ml-1 text-[12px] font-bold">*</Text>
+                        </View>
                         <View style={{ backgroundColor: colors.surface }} className="flex-row items-center px-4 py-4 rounded-2xl">
                             <Type size={18} color={colors.primary} className="mr-3" />
                             <TextInput
                                 style={{ color: colors.text }}
                                 className="flex-1 font-bold"
                                 placeholder={t('store.title_placeholder')}
-                                placeholderTextColor={isDarkMode ? '#666' : '#999'}
+                                placeholderTextColor={isDarkMode ? '#666' : '#dbdbdbff'}
                                 value={title}
                                 onChangeText={setTitle}
                             />
@@ -230,14 +233,14 @@ const AddOfferScreen = ({ route, navigation }) => {
                     </View>
 
                     <View className="mt-6">
-                        <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-2 ml-1 uppercase">{t('store.detail_desc')}</Text>
+                        <Text style={{ color: colors.textSecondary }} className="text-[11px] font-black tracking-wider mb-2 ml-1">{t('store.detail_desc')}</Text>
                         <View style={{ backgroundColor: colors.surface }} className="flex-row items-start px-4 py-4 rounded-2xl min-h-[120px]">
                             <FileText size={18} color={colors.primary} className="mr-3 mt-1" />
                             <TextInput
                                 style={{ color: colors.text }}
                                 className="flex-1 font-bold"
                                 placeholder={t('store.desc_placeholder')}
-                                placeholderTextColor={isDarkMode ? '#666' : '#999'}
+                                placeholderTextColor={isDarkMode ? '#666' : '#dbdbdbff'}
                                 multiline
                                 numberOfLines={4}
                                 value={description}
@@ -248,7 +251,10 @@ const AddOfferScreen = ({ route, navigation }) => {
                     </View>
 
                     <View className="mt-6">
-                        <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-2 ml-1 uppercase">{t('support.category')}</Text>
+                        <View className="flex-row items-center mb-2 ml-1">
+                            <Text style={{ color: colors.textSecondary }} className="text-[11px] font-black tracking-wider">{t('store.select_category')}</Text>
+                            <Text style={{ color: colors.error }} className="ml-1 text-[12px] font-bold">*</Text>
+                        </View>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row mt-2">
                             {categories.map(cat => (
                                 <TouchableOpacity
@@ -265,29 +271,35 @@ const AddOfferScreen = ({ route, navigation }) => {
 
                     <View className="flex-row gap-4 mt-6">
                         <View className="flex-1">
-                            <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-2 ml-1 uppercase">{t('store.start_date')}</Text>
+                            <View className="flex-row items-center mb-2 ml-1">
+                                <Text style={{ color: colors.textSecondary }} className="text-[11px] font-black tracking-wider">{t('store.start_date')}</Text>
+                                <Text style={{ color: colors.error }} className="ml-1 text-[12px] font-bold">*</Text>
+                            </View>
                             <TouchableOpacity
                                 onPress={() => setShowStartPicker(true)}
                                 style={{ backgroundColor: colors.surface }}
                                 className="flex-row items-center px-4 py-4 rounded-2xl"
                             >
                                 <Calendar size={18} color={colors.primary} className="mr-3" />
-                                <Text style={{ color: colors.text }} className="flex-1 font-black text-sm">
-                                    {startDate.toLocaleDateString()}
+                                <Text style={{ color: colors.text }} className="flex-1 font-black text-sm ml-2">
+                                    {startDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                                 </Text>
                             </TouchableOpacity>
                         </View>
 
                         <View className="flex-1">
-                            <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mb-2 ml-1 uppercase">{t('store.end_date')}</Text>
+                            <View className="flex-row items-center mb-2 ml-1">
+                                <Text style={{ color: colors.textSecondary }} className="text-[11px] font-black tracking-wider">{t('store.end_date')}</Text>
+                                <Text style={{ color: colors.error }} className="ml-1 text-[12px] font-bold">*</Text>
+                            </View>
                             <TouchableOpacity
                                 onPress={() => setShowEndPicker(true)}
                                 style={{ backgroundColor: colors.surface }}
                                 className="flex-row items-center px-4 py-4 rounded-2xl"
                             >
                                 <Calendar size={18} color={colors.primary} className="mr-3" />
-                                <Text style={{ color: colors.text }} className="flex-1 font-black text-sm">
-                                    {endDate.toLocaleDateString()}
+                                <Text style={{ color: colors.text }} className="flex-1 font-black text-sm ml-2">
+                                    {endDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                                 </Text>
                             </TouchableOpacity>
 
