@@ -4,7 +4,7 @@ import { View, FlatList, ScrollView, TouchableOpacity, Image, ActivityIndicator,
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useFocusEffect } from '@react-navigation/native';
-import { ChevronLeft, Package as LucidePackage, Trash2, Calendar, Tag, Eye, MousePointer2, Edit2, AlertCircle, CheckCircle2 } from 'lucide-react-native';
+import { ChevronLeft, Package as LucidePackage, Trash2, Calendar, Tag, Eye, MousePointer2, Edit2, AlertCircle, CheckCircle2, Plus } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../context/ThemeContext';
 import { colors as staticColors } from '../theme/colors';
@@ -270,15 +270,25 @@ const VendorOffersScreen = ({ navigation }) => {
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
-            <View className="flex-row items-center px-6 py-4">
+            <View className="flex-row items-center justify-between px-6 py-4">
+                <View className="flex-row items-center">
+                    <TouchableOpacity
+                        onPress={() => navigation.goBack()}
+                        style={{ backgroundColor: colors.surface }}
+                        className="w-10 h-10 items-center justify-center rounded-xl"
+                    >
+                        <ChevronLeft size={24} color={colors.primary} />
+                    </TouchableOpacity>
+                    <Text style={{ color: colors.text }} className="ml-4 text-2xl font-black">{t('store.my_flash_offers')}</Text>
+                </View>
+
                 <TouchableOpacity
-                    onPress={() => navigation.goBack()}
-                    style={{ backgroundColor: colors.surface }}
-                    className="w-10 h-10 items-center justify-center rounded-xl"
+                    onPress={() => navigation.navigate('AddOffer')}
+                    style={{ backgroundColor: colors.primary }}
+                    className="w-10 h-10 items-center justify-center rounded-xl shadow-lg shadow-primary/30"
                 >
-                    <ChevronLeft size={24} color={colors.primary} />
+                    <Plus size={20} color="white" strokeWidth={3} />
                 </TouchableOpacity>
-                <Text style={{ color: colors.text }} className="ml-4 text-2xl font-black">{t('store.my_flash_offers')}</Text>
             </View>
 
             {/* Quick Stats & Filters */}

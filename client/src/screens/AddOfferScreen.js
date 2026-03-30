@@ -111,6 +111,7 @@ const AddOfferScreen = ({ route, navigation }) => {
 
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [successMsg, setSuccessMsg] = useState('');
+    const [isSubmitted, setIsSubmitted] = useState(false);
 
     // Unsaved Changes Guard
     React.useEffect(() => {
@@ -120,8 +121,8 @@ const AddOfferScreen = ({ route, navigation }) => {
                 return;
             }
 
-            // If we are currently loading (saving), don't show the alert
-            if (loading) {
+            // If offer is already submitted or we are currently loading, don't show the alert
+            if (isSubmitted || loading) {
                 return;
             }
 
@@ -134,7 +135,7 @@ const AddOfferScreen = ({ route, navigation }) => {
         });
 
         return unsubscribe;
-    }, [navigation, title, description, image, loading, categoryKey, startDate, endDate]);
+    }, [navigation, title, description, image, loading, categoryKey, startDate, endDate, isSubmitted]);
 
     const handlePublishOffer = async (statusOverride = 'active', nextAction = null) => {
         const finalStatus = statusOverride;
@@ -190,6 +191,7 @@ const AddOfferScreen = ({ route, navigation }) => {
 
             const data = await response.json();
             if (data.success) {
+                setIsSubmitted(true); // Bypass guard
                 setSuccessMsg(finalStatus === 'draft' ? 'Offer saved to drafts!' : (isEditing ? t('store.offer_updated') : t('store.offer_added')));
                 
                 // Close modals before navigating
@@ -214,7 +216,16 @@ const AddOfferScreen = ({ route, navigation }) => {
 
     const handleModalClose = () => {
         setShowSuccessModal(false);
-        navigation.goBack();
+        // Reset form after success
+        setTitle('');
+        setDescription('');
+        setImage(null);
+        setCategoryKey('');
+        setStartDate(new Date());
+        setEndDate(new Date(Date.now() + 7 * 86400000));
+        setIsSubmitted(false);
+
+        navigation.navigate('VendorOffers');
     };
 
     return (
