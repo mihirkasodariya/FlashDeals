@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Heart, ShoppingBag, Sparkles } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Location from 'expo-location';
 
 import { colors as staticColors } from '../theme/colors';
 import { useTheme } from '../context/ThemeContext';
@@ -67,13 +68,20 @@ const WishlistScreen = ({ navigation }) => {
     const { t } = useTranslation();
     const [favorites, setFavorites] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [userCoordinates, setUserCoordinates] = useState(null);
 
-    const fetchWishlist = async () => {
+    const fetchWishlist = async (coords = null) => {
         try {
             const token = await AsyncStorage.getItem('userToken');
             if (!token) return;
 
-            const response = await fetch(`${API_BASE_URL}/wishlist`, {
+            const lat = coords?.lat || userCoordinates?.lat;
+            const lng = coords?.lng || userCoordinates?.lng;
+
+            let url = `${API_BASE_URL}/wishlist`;
+            if (lat && lng) url += `?lat=${lat}&lng=${lng}`;
+
+            const response = await fetch(url, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -89,13 +97,28 @@ const WishlistScreen = ({ navigation }) => {
     };
 
     useEffect(() => {
+        const loadInitialData = async () => {
+            let coords = null;
+            try {
+                const { status } = await Location.requestForegroundPermissionsAsync();
+                if (status === 'granted') {
+                    const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+                    coords = { lat: location.coords.latitude, lng: location.coords.longitude };
+                    setUserCoordinates(coords);
+                }
+            } catch (error) {
+                console.error("Location error in Wishlist:", error);
+            }
+            fetchWishlist(coords);
+        };
+
         // Initial fetch
-        fetchWishlist();
+        loadInitialData();
 
         // Refetch when screen comes into focus
         if (navigation && navigation.addListener) {
             const unsubscribe = navigation.addListener('focus', () => {
-                fetchWishlist();
+                loadInitialData();
             });
             return unsubscribe;
         }

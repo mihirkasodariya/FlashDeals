@@ -25,19 +25,52 @@ exports.toggleWishlist = async (req, res) => {
     }
 };
 
+function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLon = (lon2 - lon1) * (Math.PI / 180);
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+}
+
 // Get user's wishlist
 exports.getWishlist = async (req, res) => {
     try {
+        const { lat, lng } = req.query;
         const userId = req.user.userId;
-        const wishlists = await Wishlist.find({ user: userId }).populate({
-            path: 'offer',
-            populate: {
-                path: 'vendorId',
-                select: 'name storeName location storeImage'
-            }
-        });
+        const wishlists = await Wishlist.find({ user: userId })
+            .populate({
+                path: 'offer',
+                populate: {
+                    path: 'vendorId',
+                    select: 'name storeName location storeImage'
+                }
+            })
+            .lean(); // Use lean for better performance
+
         // Filter out any null if offer was deleted
-        const offers = wishlists.map(w => w.offer).filter(Boolean);
+        let offers = wishlists.map(w => w.offer).filter(Boolean);
+
+        if (lat && lng) {
+            const userLat = parseFloat(lat);
+            const userLng = parseFloat(lng);
+
+            offers.forEach(offer => {
+                const loc = offer.vendorId && offer.vendorId.location;
+                if (loc && typeof loc.latitude === 'number' && typeof loc.longitude === 'number') {
+                    const dist = getDistanceFromLatLonInKm(userLat, userLng, loc.latitude, loc.longitude);
+                    offer.distance = dist;
+                }
+            });
+
+            // Sort by distance
+            offers.sort((a, b) => {
+                const distA = a.distance !== undefined ? a.distance : Infinity;
+                const distB = b.distance !== undefined ? b.distance : Infinity;
+                return distA - distB;
+            });
+        }
 
         res.status(200).json({ success: true, offers });
     } catch (error) {
