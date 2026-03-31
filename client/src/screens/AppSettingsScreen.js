@@ -7,7 +7,8 @@ import { ChevronLeft, Globe, Moon, Sun, Bell, Star, Share2, HelpCircle, ChevronR
 import { colors as staticColors } from '../theme/colors';
 import { useTheme } from '../context/ThemeContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { registerForPushNotificationsAsync, checkNotificationPermissions } from '../utils/notificationService';
+import { registerForPushNotificationsAsync, checkNotificationPermissions, removeFCMToken, syncFCMToken } from '../utils/notificationService';
+import { API_BASE_URL } from '../config';
 
 const RECOMMENDED_LANGUAGES = [
     { id: 'en', name: 'English', native: 'English', flag: '🇬🇧' },
@@ -112,10 +113,8 @@ const AppSettingsScreen = ({ navigation }) => {
             if (token) {
                 setNotificationsEnabled(true);
                 await AsyncStorage.setItem('notificationsEnabled', 'true');
-                if (token !== 'demo-token-simulator') {
-                    // Here you would typically send the token to your backend
-                    console.log('Push Token:', token);
-                }
+                // Sync token with server
+                await syncFCMToken(API_BASE_URL);
             } else {
                 Alert.alert(
                     t('common.error'),
@@ -125,6 +124,8 @@ const AppSettingsScreen = ({ navigation }) => {
         } else {
             setNotificationsEnabled(false);
             await AsyncStorage.setItem('notificationsEnabled', 'false');
+            // Remove token from server
+            await removeFCMToken(API_BASE_URL);
         }
     };
 

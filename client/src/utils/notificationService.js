@@ -6,11 +6,15 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Set up default behavior for notifications when received
 Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-        shouldShowAlert: true,
-        shouldPlaySound: true,
-        shouldSetBadge: true,
-    }),
+    handleNotification: async () => {
+        const enabled = await AsyncStorage.getItem('notificationsEnabled');
+        const show = enabled === null || enabled === 'true'; // default true
+        return {
+            shouldShowAlert: show,
+            shouldPlaySound: show,
+            shouldSetBadge: show,
+        };
+    },
 });
 
 export async function registerForPushNotificationsAsync() {
@@ -71,9 +75,15 @@ export async function checkNotificationPermissions() {
 
 export async function syncFCMToken(apiBaseUrl, manualToken = null) {
     try {
-        const token = manualToken || (await AsyncStorage.getItem('userToken'));
-        if (!token) {
+        const userToken = manualToken || (await AsyncStorage.getItem('userToken'));
+        if (!userToken) {
             console.log('[Sync] No user token available for sync. Skipping.');
+            return;
+        }
+
+        const enabled = await AsyncStorage.getItem('notificationsEnabled');
+        if (enabled === 'false') {
+            console.log('[Sync] Notifications disabled by user. Skipping sync.');
             return;
         }
 
@@ -102,7 +112,7 @@ export async function syncFCMToken(apiBaseUrl, manualToken = null) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+                'Authorization': `Bearer ${userToken}`
             },
             body: JSON.stringify({ fcmToken })
         });
@@ -115,5 +125,30 @@ export async function syncFCMToken(apiBaseUrl, manualToken = null) {
         }
     } catch (error) {
         console.error('❌ [Sync] Critical error in syncFCMToken:', error);
+    }
+}
+
+export async function removeFCMToken(apiBaseUrl) {
+    try {
+        const userToken = await AsyncStorage.getItem('userToken');
+        if (!userToken) return;
+
+        console.log('[Sync] Removing token from server because notifications disabled...');
+
+        const resp = await fetch(`${apiBaseUrl}/auth/update-fcm-token`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${userToken}`
+            },
+            body: JSON.stringify({ fcmToken: null }) // Setting to null disables it on server
+        });
+        
+        const data = await resp.json();
+        if (data.success) {
+            console.log('✅ [Sync] FCM Token removed successfully');
+        }
+    } catch (error) {
+        console.error('❌ [Sync] Critical error in removeFCMToken:', error);
     }
 }
