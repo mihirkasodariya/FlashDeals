@@ -256,7 +256,11 @@ const ProfileScreen = ({ navigation }) => {
                                 <View style={{ backgroundColor: colors.surface, borderColor: colors.card }} className="w-[120px] h-[120px] rounded-full items-center justify-center border-4 shadow-xl overflow-hidden">
                                     {user.profileImage ? (
                                         <Image
-                                            source={{ uri: `${API_BASE_URL.replace('/api', '')}${user.profileImage}` }}
+                                            source={{ 
+                                                uri: user.profileImage.startsWith('http') 
+                                                    ? user.profileImage 
+                                                    : `${API_BASE_URL.replace('/api', '')}${user.profileImage}` 
+                                            }}
                                             className="w-full h-full"
                                             resizeMode="cover"
                                         />
@@ -409,7 +413,14 @@ const ProfileScreen = ({ navigation }) => {
                                                 {editImage ? (
                                                     <Image source={{ uri: editImage }} className="w-full h-full" />
                                                 ) : user.profileImage ? (
-                                                    <Image source={{ uri: `${API_BASE_URL.replace('/api', '')}${user.profileImage}` }} className="w-full h-full" />
+                                                    <Image 
+                                                        source={{ 
+                                                            uri: user.profileImage.startsWith('http') 
+                                                                ? user.profileImage 
+                                                                : `${API_BASE_URL.replace('/api', '')}${user.profileImage}` 
+                                                        }} 
+                                                        className="w-full h-full" 
+                                                    />
                                                 ) : (
                                                     <User size={60} color={colors.textSecondary} opacity={0.3} />
                                                 )}

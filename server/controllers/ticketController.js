@@ -15,7 +15,7 @@ const createTicket = async (req, res) => {
             category: category || 'General',
             priority: priority || 'Medium',
             ticketId,
-            attachment: req.file ? `/public/help/${req.file.filename}` : null
+            attachment: req.file ? req.file.location : null
         });
 
         await ticket.save();

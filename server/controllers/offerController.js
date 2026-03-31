@@ -56,7 +56,7 @@ const addOffer = async (req, res) => {
         };
 
         if (req.file) {
-            offerData.image = `https://api.offerz.live/public/offers/${req.file.filename}`;
+            offerData.image = req.file.location;
         }
 
         const offer = new Offer(offerData);
@@ -210,7 +210,11 @@ const editOffer = async (req, res) => {
     try {
         if (req.user.role !== 'vendor') return res.status(403).json({ success: false, message: 'Only vendors can edit' });
         const { offerId } = req.params;
-        const updates = req.body;
+        const updates = { ...req.body };
+        if (req.file) {
+            updates.image = req.file.location;
+        }
+
         if (updates.category && !mongoose.Types.ObjectId.isValid(updates.category)) {
             const foundCat = await Category.findOne({ name: new RegExp(`^${updates.category}$`, 'i') });
             if (foundCat) updates.category = foundCat._id;

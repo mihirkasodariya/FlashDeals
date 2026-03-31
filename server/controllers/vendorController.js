@@ -24,7 +24,7 @@ const completeRegistration = async (req, res) => {
         }
 
         if (req.file) {
-            updateData.idDocument = `/public/uploads/${req.file.filename}`;
+            updateData.idDocument = req.file.location;
         }
 
         const user = await User.findByIdAndUpdate(userId, updateData, { returnDocument: 'after' });
@@ -64,7 +64,7 @@ const updateVendor = async (req, res) => {
         }
 
         if (req.file) {
-            updateData.storeImage = `/public/storelogo/${req.file.filename}`;
+            updateData.storeImage = req.file.location;
         }
 
         const user = await User.findByIdAndUpdate(

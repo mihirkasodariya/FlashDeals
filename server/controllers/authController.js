@@ -86,7 +86,7 @@ const register = async (req, res) => {
             mobile,
             password,
             role: role || 'user',
-            profileImage: req.file ? `/public/uploads/${req.file.filename}` : null,
+            profileImage: req.file ? req.file.location : null,
             isVerified: false // Will be verified via OTP screen
         });
 
@@ -139,7 +139,7 @@ const updateProfile = async (req, res) => {
         let updateData = { name };
 
         if (req.file) {
-            updateData.profileImage = `/public/uploads/${req.file.filename}`;
+            updateData.profileImage = req.file.location;
         }
 
         const user = await User.findByIdAndUpdate(

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const offerController = require('../controllers/offerController');
 const { authenticateToken, optionalAuthenticateToken } = require('../middleware/authMiddleware');
-const { uploadOffer } = require('../middleware/uploadMiddleware');
+const { uploadOfferS3 } = require('../middleware/s3UploadMiddleware');
 
 router.get('/', offerController.getOffers);
 router.get('/expiring-soon', optionalAuthenticateToken, offerController.getExpiringOffers);
@@ -12,8 +12,8 @@ router.get('/sync-recommended-deals', optionalAuthenticateToken, offerController
 router.get('/sync-new-offers', optionalAuthenticateToken, offerController.syncNewOffers);
 router.get('/:offerId', offerController.getOfferById);
 router.get('/vendor/:vendorId', offerController.getVendorOffers);
-router.post('/add', authenticateToken, uploadOffer.single('image'), offerController.addOffer);
-router.put('/edit/:offerId', authenticateToken, uploadOffer.single('image'), offerController.editOffer);
+router.post('/add', authenticateToken, uploadOfferS3.single('image'), offerController.addOffer);
+router.put('/edit/:offerId', authenticateToken, uploadOfferS3.single('image'), offerController.editOffer);
 router.delete('/delete/:offerId', authenticateToken, offerController.deleteOffer);
 router.post('/visit/:offerId', offerController.incrementOfferVisits);
 

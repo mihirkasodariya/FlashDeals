@@ -3,7 +3,7 @@ const Category = require('../models/Category');
 const createCategory = async (req, res) => {
     try {
         const { name } = req.body;
-        const image = req.file ? `/public/categories/${req.file.filename}` : null;
+        const image = req.file ? req.file.location : null;
 
         if (!name || !image) {
             return res.status(400).json({ success: false, message: 'Name and image are required' });
@@ -48,7 +48,7 @@ const updateCategory = async (req, res) => {
         if (isActive !== undefined) updateData.isActive = isActive;
 
         if (req.file) {
-            updateData.image = `/public/categories/${req.file.filename}`;
+            updateData.image = req.file.location;
         }
 
         const category = await Category.findByIdAndUpdate(req.params.id, updateData, { returnDocument: 'after' });

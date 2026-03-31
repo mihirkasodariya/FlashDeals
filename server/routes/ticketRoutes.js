@@ -2,12 +2,12 @@ const express = require('express');
 const router = express.Router();
 const ticketController = require('../controllers/ticketController');
 const { authenticateToken, isAdmin } = require('../middleware/authMiddleware');
-const { uploadHelp } = require('../middleware/uploadMiddleware');
+const { uploadSupportS3 } = require('../middleware/s3UploadMiddleware');
 
 // All ticket routes require authentication
 router.use(authenticateToken);
 
-router.post('/create', uploadHelp.single('attachment'), ticketController.createTicket);
+router.post('/create', uploadSupportS3.single('attachment'), ticketController.createTicket);
 router.get('/my-tickets', ticketController.getMyTickets);
 
 // Admin-only ticket routes

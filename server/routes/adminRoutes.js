@@ -5,7 +5,7 @@ const Offer = require('../models/Offer');
 const Category = require('../models/Category');
 const mongoose = require('mongoose');
 const { authenticateToken, isAdmin } = require('../middleware/authMiddleware');
-const { uploadOffer } = require('../middleware/uploadMiddleware');
+const { uploadOfferS3 } = require('../middleware/s3UploadMiddleware');
 
 router.get('/users', authenticateToken, isAdmin, async (req, res) => {
     try {
@@ -167,7 +167,7 @@ router.get('/offers', authenticateToken, isAdmin, async (req, res) => {
 });
 
 // Edit Offer (Admin override)
-router.put('/offer/:id', authenticateToken, isAdmin, uploadOffer.single('image'), async (req, res) => {
+router.put('/offer/:id', authenticateToken, isAdmin, uploadOfferS3.single('image'), async (req, res) => {
     try {
         const { title, description, category, startDate, endDate } = req.body;
         const updateData = {};
@@ -185,7 +185,7 @@ router.put('/offer/:id', authenticateToken, isAdmin, uploadOffer.single('image')
         if (startDate) updateData.startDate = startDate;
         if (endDate) updateData.endDate = endDate;
         if (req.file) {
-            updateData.image = `/public/offers/${req.file.filename}`;
+            updateData.image = req.file.location;
         }
 
         const offer = await Offer.findByIdAndUpdate(req.params.id, updateData, { returnDocument: 'after' }).populate('category');
@@ -199,7 +199,7 @@ router.put('/offer/:id', authenticateToken, isAdmin, uploadOffer.single('image')
 });
 
 // Add Offer for Vendor (Admin side)
-router.post('/vendor/:vendorId/offer', authenticateToken, isAdmin, uploadOffer.single('image'), async (req, res) => {
+router.post('/vendor/:vendorId/offer', authenticateToken, isAdmin, uploadOfferS3.single('image'), async (req, res) => {
     try {
         const { title, description, category, startDate, endDate } = req.body;
         const { vendorId } = req.params;
@@ -220,7 +220,7 @@ router.post('/vendor/:vendorId/offer', authenticateToken, isAdmin, uploadOffer.s
             title,
             description,
             category: categoryId,
-            image: `/public/offers/${req.file.filename}`,
+            image: req.file.location,
             startDate,
             endDate
         });
