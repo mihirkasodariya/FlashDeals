@@ -96,17 +96,37 @@ const AddOfferScreen = ({ route, navigation }) => {
         );
     };
 
-    const pickImage = async () => {
-        let result = await ImagePicker.launchImageLibraryAsync({
+    const [showChoiceModal, setShowChoiceModal] = useState(false);
+
+    const pickImage = (mode) => {
+        setShowChoiceModal(false);
+        const options = {
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
             aspect: [16, 9],
             quality: 0.8,
-        });
+        };
 
-        if (!result.canceled) {
-            setImage(result.assets[0].uri);
-        }
+        const pick = async () => {
+            const { status } = mode === 'camera' 
+                ? await ImagePicker.requestCameraPermissionsAsync()
+                : await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+            if (status !== 'granted') {
+                Alert.alert(t('common.error'), t('store.need_photo_permission'));
+                return;
+            }
+
+            const result = mode === 'camera'
+                ? await ImagePicker.launchCameraAsync(options)
+                : await ImagePicker.launchImageLibraryAsync(options);
+
+            if (!result.canceled) {
+                setImage(result.assets[0].uri);
+            }
+        };
+
+        pick();
     };
 
     const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -247,7 +267,7 @@ const AddOfferScreen = ({ route, navigation }) => {
             <ScrollView className="flex-1 px-6 pt-6" showsVerticalScrollIndicator={false}>
                 {/* Image Picker */}
                 <TouchableOpacity
-                    onPress={pickImage}
+                    onPress={() => setShowChoiceModal(true)}
                     style={{ backgroundColor: colors.card, borderColor: isDarkMode ? `${colors.primary}33` : `${colors.primary}20` }}
                     className="w-full h-56 rounded-[48px] overflow-hidden items-center justify-center border-2 border-dashed"
                 >
@@ -453,6 +473,43 @@ const AddOfferScreen = ({ route, navigation }) => {
                                 <Text style={{ color: colors.textSecondary }} className="font-bold text-xs opacity-60">Wait, Keep Editing</Text>
                             </TouchableOpacity>
                         </View>
+                    </View>
+                </View>
+            </Modal>
+            {/* Image Choice Modal */}
+            <Modal transparent visible={showChoiceModal} animationType="fade">
+                <View className="flex-1 justify-center items-center bg-black/60 px-8">
+                    <Pressable className="absolute inset-0" onPress={() => setShowChoiceModal(false)} />
+                    <View style={{ backgroundColor: colors.card }} className="w-full rounded-[40px] p-8 items-center shadow-2xl border border-white/5">
+                        <Text style={{ color: colors.text }} className="text-xl font-black mb-1.5">{t('store.select_banner')}</Text>
+                        <Text style={{ color: colors.textSecondary }} className="text-center font-bold mb-8 opacity-60 text-xs tracking-widest uppercase">{t('store.tap_upload')}</Text>
+
+                        <View className="flex-row justify-between w-full" style={{ gap: 15 }}>
+                            <TouchableOpacity
+                                onPress={() => pickImage('camera')}
+                                style={{ backgroundColor: colors.surface, borderColor: colors.border }}
+                                className="flex-1 py-10 rounded-[32px] items-center border"
+                            >
+                                <Camera size={32} color={colors.primary} />
+                                <Text style={{ color: colors.text }} className="mt-4 font-black text-[10px] tracking-widest uppercase">Camera</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                onPress={() => pickImage('library')}
+                                style={{ backgroundColor: colors.surface, borderColor: colors.border }}
+                                className="flex-1 py-10 rounded-[32px] items-center border"
+                            >
+                                <Image source={require('../../assets/logos/gallery.png')} style={{ width: 32, height: 32, tintColor: colors.primary }} resizeMode="contain" />
+                                <Text style={{ color: colors.text }} className="mt-4 font-black text-[10px] tracking-widest uppercase">Gallery</Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        <TouchableOpacity
+                            onPress={() => setShowChoiceModal(false)}
+                            className="mt-8 pt-4 w-full items-center"
+                        >
+                            <Text style={{ color: colors.textSecondary }} className="font-black text-[10px] tracking-[3px] opacity-40">IGNORE</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
             </Modal>

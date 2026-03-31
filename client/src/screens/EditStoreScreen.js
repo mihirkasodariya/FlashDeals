@@ -9,7 +9,9 @@ import {
     Alert,
     ActivityIndicator,
     StyleSheet,
-    Image
+    Image,
+    Modal,
+    Pressable
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -34,27 +36,40 @@ const EditStoreScreen = ({ navigation, route }) => {
     });
     const [logo, setLogo] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [showChoiceModal, setShowChoiceModal] = useState(false);
 
     // Dynamic base URL for static files
     const STATIC_BASE_URL = API_BASE_URL.replace('/api', '');
 
-    const handlePickLogo = async () => {
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (status !== 'granted') {
-            Alert.alert(t('common.error'), t('store.need_photo_permission'));
-            return;
-        }
-
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ['images'],
+    const handlePickLogo = (mode) => {
+        setShowChoiceModal(false);
+        const options = {
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
             aspect: [1, 1],
             quality: 0.8,
-        });
+        };
 
-        if (!result.canceled) {
-            setLogo(result.assets[0]);
-        }
+        const pick = async () => {
+            const { status } = mode === 'camera' 
+                ? await ImagePicker.requestCameraPermissionsAsync()
+                : await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+            if (status !== 'granted') {
+                Alert.alert(t('common.error'), t('store.need_photo_permission'));
+                return;
+            }
+
+            const result = mode === 'camera'
+                ? await ImagePicker.launchCameraAsync(options)
+                : await ImagePicker.launchImageLibraryAsync(options);
+
+            if (!result.canceled) {
+                setLogo(result.assets[0]);
+            }
+        };
+
+        pick();
     };
 
     const handleUpdate = async () => {
@@ -148,7 +163,7 @@ const EditStoreScreen = ({ navigation, route }) => {
                 >
                     <View className="items-center mb-10 mt-4">
                         <TouchableOpacity
-                            onPress={handlePickLogo}
+                            onPress={() => setShowChoiceModal(true)}
                             style={{ backgroundColor: colors.surface, borderColor: colors.border }}
                             className="w-28 h-28 rounded-[32px] border-2 border-dashed items-center justify-center overflow-hidden"
                         >
@@ -219,6 +234,42 @@ const EditStoreScreen = ({ navigation, route }) => {
                     </View>
                 </ScrollView>
             </KeyboardAvoidingView>
+            <Modal transparent visible={showChoiceModal} animationType="fade">
+                <View className="flex-1 justify-center items-center bg-black/60 px-8">
+                    <Pressable className="absolute inset-0" onPress={() => setShowChoiceModal(false)} />
+                    <View style={{ backgroundColor: colors.card }} className="w-full rounded-[40px] p-8 items-center shadow-2xl border border-white/5">
+                        <Text style={{ color: colors.text }} className="text-xl font-black mb-1.5">{t('vendor_register.identify')}</Text>
+                        <Text style={{ color: colors.textSecondary }} className="text-center font-bold mb-8 opacity-60 text-xs tracking-widest uppercase">{t('store.change_logo')}</Text>
+
+                        <View className="flex-row justify-between w-full" style={{ gap: 15 }}>
+                            <TouchableOpacity
+                                onPress={() => handlePickLogo('camera')}
+                                style={{ backgroundColor: colors.surface, borderColor: colors.border }}
+                                className="flex-1 py-10 rounded-[32px] items-center border"
+                            >
+                                <Camera size={32} color={colors.primary} />
+                                <Text style={{ color: colors.text }} className="mt-4 font-black text-[10px] tracking-widest uppercase">Camera</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                onPress={() => handlePickLogo('library')}
+                                style={{ backgroundColor: colors.surface, borderColor: colors.border }}
+                                className="flex-1 py-10 rounded-[32px] items-center border"
+                            >
+                                <Image source={require('../../assets/logos/gallery.png')} style={{ width: 32, height: 32, tintColor: colors.primary }} resizeMode="contain" />
+                                <Text style={{ color: colors.text }} className="mt-4 font-black text-[10px] tracking-widest uppercase">Gallery</Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        <TouchableOpacity
+                            onPress={() => setShowChoiceModal(false)}
+                            className="mt-8 pt-4 w-full items-center"
+                        >
+                            <Text style={{ color: colors.textSecondary }} className="font-black text-[10px] tracking-[3px] opacity-40">IGNORE</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
         </SafeAreaView>
     );
 };
