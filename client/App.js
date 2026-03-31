@@ -290,7 +290,7 @@ function AppContent() {
     }
 
     return () => {
-      Notifications.removeNotificationSubscription(responseListener);
+      responseListener.remove();
     };
   }, [isDarkMode]);
 

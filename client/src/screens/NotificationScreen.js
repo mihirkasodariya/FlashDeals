@@ -110,7 +110,7 @@ const NotificationScreen = ({ navigation }) => {
                     <ChevronLeft size={24} color={colors.primary} />
                 </TouchableOpacity>
                 <View className="items-center">
-                    <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-[3px] uppercase opacity-60">{t('notifications.updates') || 'Updates'}</Text>
+                    <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-[3px] opacity-60">{t('notifications.updates') || 'Updates'}</Text>
                     <Text style={{ color: colors.text }} className="text-sm font-black mt-0.5">{t('profile.notifications')}</Text>
                 </View>
                 <TouchableOpacity
@@ -150,7 +150,7 @@ const NotificationScreen = ({ navigation }) => {
                         <View style={{ backgroundColor: colors.surface }} className="w-24 h-24 rounded-[40px] items-center justify-center mb-6 opacity-40">
                             <Ghost size={48} color={colors.textSecondary} />
                         </View>
-                        <Text style={{ color: colors.textSecondary }} className="text-sm font-black opacity-30 tracking-widest uppercase">{t('notifications.empty')}</Text>
+                        <Text style={{ color: colors.textSecondary }} className="text-sm font-black opacity-30 tracking-widest">{t('notifications.empty')}</Text>
                     </View>
                 ) : (
                     notifications.map((item, index) => (
@@ -172,34 +172,36 @@ const NotificationScreen = ({ navigation }) => {
                                 }
                             }}
                             style={{ 
-                                backgroundColor: item.isRead ? 'transparent' : colors.card,
-                                borderColor: colors.border
+                                backgroundColor: item.isRead ? (isDarkMode ? `${colors.surface}80` : '#F8FAFC') : colors.card,
+                                borderColor: item.isRead ? (isDarkMode ? colors.border : '#E2E8F0') : colors.border,
+                                elevation: item.isRead ? 0 : 2,
+                                shadowOpacity: item.isRead ? 0.05 : 0.1
                             }}
-                            className={`flex-row p-5 rounded-[32px] border mb-4 relative overflow-hidden shadow-sm`}
+                            className={`flex-row p-5 rounded-[32px] border mb-4 relative overflow-hidden`}
                         >
                             {!item.isRead && (
                                 <View style={{ backgroundColor: colors.primary }} className="absolute h-full w-1.5 left-0" />
                             )}
 
-                            <View style={{ backgroundColor: item.isRead ? colors.surface : `${colors.primary}10` }} className="w-14 h-14 rounded-[22px] items-center justify-center mr-4">
-                                <Info size={24} color={item.isRead ? colors.textSecondary : colors.primary} strokeWidth={2} />
+                            <View style={{ backgroundColor: item.isRead ? (isDarkMode ? colors.surface : '#EDF2F7') : `${colors.primary}10` }} className="w-14 h-14 rounded-[22px] items-center justify-center mr-4">
+                                <Info size={24} color={item.isRead ? colors.textSecondary : colors.primary} strokeWidth={2} opacity={item.isRead ? 0.5 : 1} />
                             </View>
 
-                            <View className="flex-1 pr-4">
-                                <View className="flex-row justify-between items-center mb-1">
-                                    <Text numberOfLines={1} style={{ color: colors.text }} className={`text-base tracking-tight ${item.isRead ? 'font-black opacity-40' : 'font-black'}`}>
+                            <View className="flex-1 pr-2">
+                                <View className="flex-row justify-between items-start mb-1.5">
+                                    <Text numberOfLines={2} style={{ color: item.isRead ? colors.textSecondary : colors.text }} className={`text-base flex-1 leading-5 ${item.isRead ? 'font-bold opacity-60' : 'font-black'}`}>
                                         {item.title}
                                     </Text>
                                     {!item.isRead && (
-                                        <View style={{ backgroundColor: colors.error }} className="w-2.5 h-2.5 rounded-full ml-2" />
+                                        <View style={{ backgroundColor: colors.error }} className="w-2.5 h-2.5 rounded-full ml-2 mt-1.5" />
                                     )}
                                 </View>
-                                <Text numberOfLines={3} style={{ color: colors.textSecondary }} className={`text-xs leading-4 mb-3 font-bold ${item.isRead ? 'opacity-30' : 'opacity-70'}`}>
+                                <Text numberOfLines={3} style={{ color: colors.textSecondary }} className={`text-xs leading-5 mb-3 font-medium ${item.isRead ? 'opacity-40' : 'opacity-80'}`}>
                                     {item.body}
                                 </Text>
                                 <View className="flex-row items-center">
-                                    <Clock size={12} color={colors.textSecondary} opacity={0.4} />
-                                    <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black ml-1.5 opacity-40 uppercase tracking-widest">
+                                    <Clock size={12} color={colors.textSecondary} opacity={item.isRead ? 0.3 : 0.5} />
+                                    <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black ml-1.5 opacity-40 tracking-widest">
                                         {formatTime(item.createdAt)}
                                     </Text>
                                 </View>

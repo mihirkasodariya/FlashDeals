@@ -167,7 +167,7 @@ const CustomCalendar = ({
                     {/* Header */}
                     <View className="p-8 pb-4 flex-row justify-between items-center">
                         <View>
-                            <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-[2px] uppercase opacity-60">
+                            <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-[2px] opacity-60">
                                 {mode === 'range' ? t('home.select_range') : t('store.select_date')}
                             </Text>
                             <Text style={{ color: colors.text }} className="text-2xl font-black">
@@ -197,7 +197,7 @@ const CustomCalendar = ({
                     <View className="flex-row px-6 mb-2">
                         {weekDays.map((day, idx) => (
                             <View key={idx} className="flex-1 items-center">
-                                <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black opacity-40 uppercase">
+                                <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black opacity-40">
                                     {day}
                                 </Text>
                             </View>
@@ -277,7 +277,7 @@ const CustomCalendar = ({
                                 >
                                     <View className="flex-row items-center">
                                         <X size={16} color={colors.textSecondary} className="mr-2" />
-                                        <Text style={{ color: colors.textSecondary }} className="font-black text-sm uppercase">
+                                        <Text style={{ color: colors.textSecondary }} className="font-black text-sm">
                                             {t('common.clear')}
                                         </Text>
                                     </View>

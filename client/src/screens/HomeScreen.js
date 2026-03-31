@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Text from '../components/CustomText';
-import { View, ScrollView, TouchableOpacity, TextInput, FlatList, Image, useWindowDimensions, ActivityIndicator, RefreshControl, Platform, Modal, Animated } from 'react-native';
+import { View, ScrollView, TouchableOpacity, TextInput, FlatList, Image, useWindowDimensions, ActivityIndicator, RefreshControl, Platform, Modal, Animated, StatusBar } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { Calendar, Search, MapPin, Bell, Navigation2, X, ArrowRight, Filter, ChevronRight, ChevronDown, LayoutGrid, List, Flame, Clock, Sparkles } from 'lucide-react-native';
@@ -691,6 +691,7 @@ const HomeScreen = ({ navigation }) => {
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
+            <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={colors.background} />
 
             {/* Seamless Native Header */}
             <Animated.View
@@ -725,7 +726,7 @@ const HomeScreen = ({ navigation }) => {
                             </View>
                             <View className="ml-2 flex-1">
                                 <View className="flex-row items-center">
-                                    <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black uppercase tracking-widest mr-1 opacity-60" numberOfLines={1}>{t('home.your_location')}</Text>
+                                    <Text style={{ color: colors.textSecondary }} className="text-[10px] font-black tracking-widest mr-1 opacity-60" numberOfLines={1}>{t('home.your_location')}</Text>
                                     <ChevronDown size={12} color={colors.textSecondary} />
                                 </View>
                                 <Text style={{ color: colors.text }} className="text-sm font-black tracking-tight" numberOfLines={1}>{location}</Text>
@@ -808,7 +809,7 @@ const HomeScreen = ({ navigation }) => {
                 {renderDatePicker()}
             </Animated.View>
 
-            {loading ? (
+            {loading && offers.length === 0 ? (
                 <View className="flex-1 items-center justify-center">
                     <ActivityIndicator size="large" color={colors.primary} />
                 </View>

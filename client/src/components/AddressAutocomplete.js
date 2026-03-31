@@ -79,7 +79,7 @@ const AddressAutocomplete = ({ value, onChangeText, placeholder, label }) => {
 
     return (
         <View className="mb-5 z-50">
-            {label && <Text style={{ color: colors.textSecondary }} className="text-xs font-bold uppercase mb-2 ml-1">{label}</Text>}
+            {label && <Text style={{ color: colors.textSecondary }} className="text-xs font-bold mb-2 ml-1">{label}</Text>}
             <View style={{ backgroundColor: colors.surface, borderColor: colors.border }} className="flex-row items-center rounded-xl px-4 py-3 border">
                 <MapPin size={18} color={colors.textSecondary} />
                 <TextInput

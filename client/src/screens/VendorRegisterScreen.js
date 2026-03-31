@@ -608,7 +608,7 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                                 }}
                                 className="w-full py-5 items-center mt-2"
                             >
-                                <Text style={{ color: staticColors.error }} className="font-black text-xs tracking-[3px] uppercase">{t('vendor_register.quit_revert')}</Text>
+                                <Text style={{ color: staticColors.error }} className="font-black text-xs tracking-[3px]">{t('vendor_register.quit_revert')}</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -667,7 +667,7 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                             }}
                             className="w-full py-5 rounded-[24px] items-center justify-center"
                         >
-                            <Text style={{ color: '#FFFFFF' }} className="font-black tracking-widest text-sm uppercase">{t('common.continue')}</Text>
+                            <Text style={{ color: '#FFFFFF' }} className="font-black tracking-widest text-sm">{t('common.continue')}</Text>
                         </TouchableOpacity>
                     </Animated.View>
                 </View>
