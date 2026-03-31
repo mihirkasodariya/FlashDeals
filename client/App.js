@@ -53,6 +53,22 @@ SplashScreen.preventAutoHideAsync().catch(() => { });
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
+const StoreSubStack = createStackNavigator();
+
+function StoreStack() {
+  const { colors } = useTheme();
+  return (
+    <StoreSubStack.Navigator
+      screenOptions={{
+        headerShown: false,
+        cardStyle: { backgroundColor: colors.background },
+      }}
+    >
+      <StoreSubStack.Screen name="StoreHome" component={StoreScreen} />
+      <StoreSubStack.Screen name="VendorOffers" component={VendorOffersScreen} />
+    </StoreSubStack.Navigator>
+  );
+}
 
 function MainTabs({ navigation }) {
   const { t } = useTranslation();
@@ -137,7 +153,7 @@ function MainTabs({ navigation }) {
       <Tab.Screen name="Wishlist" component={WishlistScreen} options={{ tabBarLabel: t('common.wishlist') }} />
       <Tab.Screen
         name="Store"
-        component={StoreScreen}
+        component={StoreStack}
         options={{
           tabBarLabel: t('common.store'),
           tabBarItemStyle: { display: role === 'vendor' ? 'flex' : 'none' }
@@ -215,7 +231,6 @@ function RootStack() {
       <Stack.Screen name="OfferDetails" component={OfferDetailsScreen} />
       <Stack.Screen name="EditStore" component={EditStoreScreen} />
       <Stack.Screen name="AddOffer" component={AddOfferScreen} />
-      <Stack.Screen name="VendorOffers" component={VendorOffersScreen} />
       <Stack.Screen name="PublicStoreProfile" component={PublicStoreProfileScreen} />
       <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
       <Stack.Screen name="LoginHistory" component={LoginHistoryScreen} />

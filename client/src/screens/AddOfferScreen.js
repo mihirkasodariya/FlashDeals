@@ -116,6 +116,9 @@ const AddOfferScreen = ({ route, navigation }) => {
     // Unsaved Changes Guard
     React.useEffect(() => {
         const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+            if (isEditing) {
+                return;
+            }
             // Check if ANY field has content
             if (!title && !description && !image) {
                 return;
@@ -363,20 +366,22 @@ const AddOfferScreen = ({ route, navigation }) => {
             </ScrollView>
 
             <View style={{ borderTopColor: colors.border, backgroundColor: colors.background, paddingBottom: Math.max(20, insets.bottom + 20) }} className="px-6 py-4 border-t flex-row gap-3">
-                <TouchableOpacity
-                    onPress={() => handlePublishOffer('draft')}
-                    disabled={loading}
-                    style={{ backgroundColor: colors.surface }}
-                    className="flex-1 py-5 rounded-[24px] items-center border border-surface shadow-sm"
-                >
-                    <Text style={{ color: colors.textSecondary }} className="font-black text-sm tracking-tight">Save Draft</Text>
-                </TouchableOpacity>
+                {!isEditing && (
+                    <TouchableOpacity
+                        onPress={() => handlePublishOffer('draft')}
+                        disabled={loading}
+                        style={{ backgroundColor: colors.surface }}
+                        className="flex-1 py-5 rounded-[24px] items-center border border-surface shadow-sm"
+                    >
+                        <Text style={{ color: colors.textSecondary }} className="font-black text-sm tracking-tight">Save Draft</Text>
+                    </TouchableOpacity>
+                )}
 
                 <TouchableOpacity
                     onPress={() => handlePublishOffer('active')}
                     disabled={loading}
-                    className="flex-2 bg-primary py-5 rounded-[24px] items-center shadow-lg shadow-primary/30"
-                    style={{ flex: 2 }}
+                    className={`${isEditing ? 'flex-1' : 'flex-2'} bg-primary py-5 rounded-[24px] items-center shadow-lg shadow-primary/30`}
+                    style={{ flex: isEditing ? 1 : 2 }}
                 >
                     {loading ? (
                         <ActivityIndicator color="white" />
@@ -424,7 +429,7 @@ const AddOfferScreen = ({ route, navigation }) => {
                                 style={{ backgroundColor: isDarkMode ? colors.primary : '#1A1A1A' }}
                                 className="w-full py-5 rounded-[24px] items-center shadow-lg shadow-black/10"
                             >
-                                <Text style={{ color: '#FFFFFF' }} className="font-black text-sm tracking-tight">Save as Draft</Text>
+                                <Text style={{ color: '#FFFFFF' }} className="font-black text-sm tracking-tight">{isEditing ? 'Save Changes' : 'Save Draft'}</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity
