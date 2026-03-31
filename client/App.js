@@ -12,7 +12,7 @@ import { Home as HomeIcon, Heart, User, Store as StoreIcon } from 'lucide-react-
 import { colors } from './src/theme/colors';
 import { API_BASE_URL } from './src/config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform, View, Text, DeviceEventEmitter, ActivityIndicator, Linking } from 'react-native';
+import { Platform, View, Text, DeviceEventEmitter, ActivityIndicator, Linking, Alert } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
@@ -245,6 +245,52 @@ function RootStack() {
   );
 }
 
+const navigationRef = React.createRef();
+
+// Global fetch interceptor to handle session mismatch (401 Unauthorized)
+// We define this outside the component to avoid recursion issues during re-renders
+const originalFetch = global.fetch;
+global.fetch = async (...args) => {
+  try {
+    const response = await originalFetch(...args);
+    
+    // If we get a 401, it means the token is invalid or another device logged in
+    if (response.status === 401) {
+      const url = typeof args[0] === 'string' ? args[0] : args[0].url;
+      
+      // Only intercept for our own API calls, not static assets or external maps/fonts
+      // Note: We access API_BASE_URL which is imported in scope
+      if (url && url.includes(API_BASE_URL)) {
+        console.log('[Auth] Session invalidated (401). Proceeding to logout...');
+        
+        // Avoid infinite loop if we're already on login/register screens
+        const currentRoute = navigationRef.current?.getCurrentRoute();
+        const publicScreens = ['Login', 'Register', 'OTP', 'ForgotPassword', 'LanguageSelection', 'Onboarding'];
+        
+        if (currentRoute && !publicScreens.includes(currentRoute.name)) {
+          // Clear all auth data
+          await AsyncStorage.multiRemove(['userToken', 'userRole']);
+          
+          // Update UI state globally via event
+          DeviceEventEmitter.emit('roleChanged');
+          
+          // Force navigation to Login screen
+          navigationRef.current?.reset({
+            index: 0,
+            routes: [{ name: 'Login' }],
+          });
+          
+          // Optional: Inform user
+          Alert.alert("Session Expired", "You've been logged in on another device. Please login again.");
+        }
+      }
+    }
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 function AppContent() {
   const { isDarkMode, colors } = useTheme();
 
@@ -304,7 +350,7 @@ function AppContent() {
   };
 
   return (
-    <NavigationContainer linking={linking}>
+    <NavigationContainer ref={navigationRef} linking={linking}>
       <StatusBar style={isDarkMode ? "light" : "dark"} />
       <RootStack />
       <NoInternetModal />

@@ -32,6 +32,9 @@ const login = async (req, res) => {
         // Record Login Device
         const { deviceInfo, os } = req.body;
 
+        // Enforce Single Device Login: Clear all previous sessions
+        user.loginDevices = [];
+
         user.loginDevices.push({
             _id: deviceId,
             deviceInfo: deviceInfo || 'Unknown Device',
@@ -39,11 +42,6 @@ const login = async (req, res) => {
             lastLogin: new Date(),
             isActive: true
         });
-
-        // Keep only last 10 devices
-        if (user.loginDevices.length > 10) {
-            user.loginDevices.shift();
-        }
 
         await user.save();
 
@@ -347,6 +345,9 @@ const loginWithOTP = async (req, res) => {
             { expiresIn: '30d' }
         );
 
+        // Enforce Single Device Login: Clear all previous sessions
+        user.loginDevices = [];
+
         user.loginDevices.push({
             _id: deviceId,
             deviceInfo: deviceInfo || 'Unknown Device',
@@ -355,7 +356,6 @@ const loginWithOTP = async (req, res) => {
             isActive: true
         });
 
-        if (user.loginDevices.length > 10) user.loginDevices.shift();
         await user.save();
 
         res.json({
