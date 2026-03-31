@@ -46,6 +46,7 @@ import OnboardingScreen from './src/screens/OnboardingScreen';
 import LanguageSelectionScreen from './src/screens/LanguageSelectionScreen';
 import ExpiringDealsScreen from './src/screens/ExpiringDealsScreen';
 import NoInternetModal from './src/components/NoInternetModal';
+import SessionLogoutModal from './src/components/SessionLogoutModal';
 import { deactivateKeepAwake } from 'expo-keep-awake';
 import * as SplashScreen from 'expo-splash-screen';
 
@@ -280,8 +281,8 @@ global.fetch = async (...args) => {
             routes: [{ name: 'Login' }],
           });
           
-          // Optional: Inform user
-          Alert.alert("Session Expired", "You've been logged in on another device. Please login again.");
+          // Inform user via custom modal
+          DeviceEventEmitter.emit('showSessionLogout');
         }
       }
     }
@@ -354,6 +355,7 @@ function AppContent() {
       <StatusBar style={isDarkMode ? "light" : "dark"} />
       <RootStack />
       <NoInternetModal />
+      <SessionLogoutModal />
     </NavigationContainer>
   );
 }
