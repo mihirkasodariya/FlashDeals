@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Modal, TouchableOpacity, Animated, Platform } from 'react-native';
+import { View, Modal, TouchableOpacity, Animated, Platform, Pressable } from 'react-native';
 import * as Network from 'expo-network';
 import Text from './CustomText';
 import { WifiOff, RefreshCw, AlertCircle } from 'lucide-react-native';
@@ -65,6 +65,7 @@ const NoInternetModal = () => {
             animationType="none"
         >
             <View className="flex-1 items-center justify-center bg-black/60 px-6">
+                <Pressable className="absolute inset-0" onPress={() => setVisible(false)} />
                 <Animated.View
                     style={{
                         opacity: fadeAnim,

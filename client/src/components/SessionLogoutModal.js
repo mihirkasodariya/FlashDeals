@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Modal, TouchableOpacity, Animated, Platform, DeviceEventEmitter } from 'react-native';
+import { View, Modal, TouchableOpacity, Animated, Platform, DeviceEventEmitter, Pressable } from 'react-native';
 import Text from './CustomText';
 import { LogOut, ShieldAlert, ChevronRight } from 'lucide-react-native';
 import { useTheme } from '../context/ThemeContext';
@@ -43,6 +43,7 @@ const SessionLogoutModal = () => {
             statusBarTranslucent
         >
             <View className="flex-1 items-center justify-center bg-black/70 px-8">
+                <Pressable className="absolute inset-0" onPress={handleConfirm} />
                 <Animated.View
                     style={{
                         opacity: fadeAnim,

@@ -96,37 +96,17 @@ const AddOfferScreen = ({ route, navigation }) => {
         );
     };
 
-    const [showChoiceModal, setShowChoiceModal] = useState(false);
-
-    const pickImage = (mode) => {
-        setShowChoiceModal(false);
-        const options = {
+    const pickImage = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
             aspect: [16, 9],
             quality: 0.8,
-        };
+        });
 
-        const pick = async () => {
-            const { status } = mode === 'camera' 
-                ? await ImagePicker.requestCameraPermissionsAsync()
-                : await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-            if (status !== 'granted') {
-                Alert.alert(t('common.error'), t('store.need_photo_permission'));
-                return;
-            }
-
-            const result = mode === 'camera'
-                ? await ImagePicker.launchCameraAsync(options)
-                : await ImagePicker.launchImageLibraryAsync(options);
-
-            if (!result.canceled) {
-                setImage(result.assets[0].uri);
-            }
-        };
-
-        pick();
+        if (!result.canceled) {
+            setImage(result.assets[0].uri);
+        }
     };
 
     const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -267,7 +247,7 @@ const AddOfferScreen = ({ route, navigation }) => {
             <ScrollView className="flex-1 px-6 pt-6" showsVerticalScrollIndicator={false}>
                 {/* Image Picker */}
                 <TouchableOpacity
-                    onPress={() => setShowChoiceModal(true)}
+                    onPress={pickImage}
                     style={{ backgroundColor: colors.card, borderColor: isDarkMode ? `${colors.primary}33` : `${colors.primary}20` }}
                     className="w-full h-56 rounded-[48px] overflow-hidden items-center justify-center border-2 border-dashed"
                 >
@@ -411,107 +391,76 @@ const AddOfferScreen = ({ route, navigation }) => {
                 </TouchableOpacity>
             </View>
             <Modal transparent visible={showSuccessModal} animationType="fade">
-                <View className="flex-1 justify-center items-center bg-black/80 px-8">
-                    <Pressable className="absolute inset-0" onPress={() => setShowSuccessModal(false)} />
-                    <View style={{ backgroundColor: isDarkMode ? '#1A1A1A' : '#FFFFFF' }} className="w-full rounded-[40px] p-8 items-center shadow-2xl">
-                        <View style={{ backgroundColor: `${colors.success}15` }} className="w-20 h-20 rounded-[30px] items-center justify-center mb-6">
-                            <CheckCircle2 size={40} color={colors.success} strokeWidth={1.5} />
-                        </View>
-                        <Text style={{ color: colors.text }} className="text-2xl font-black text-center mb-2 tracking-tight">{t('common.success')}</Text>
-                        <Text style={{ color: colors.textSecondary }} className="text-center font-bold mb-8 leading-6 opacity-70">{successMsg}</Text>
+                <TouchableWithoutFeedback onPress={() => setShowSuccessModal(false)}>
+                    <View className="flex-1 justify-center items-center bg-black/80 px-8">
+                        <TouchableWithoutFeedback onPress={() => {}}>
+                            <View style={{ backgroundColor: isDarkMode ? '#1A1A1A' : '#FFFFFF' }} className="w-full rounded-[40px] p-8 items-center shadow-2xl">
+                                <View style={{ backgroundColor: `${colors.success}15` }} className="w-20 h-20 rounded-[30px] items-center justify-center mb-6">
+                                    <CheckCircle2 size={40} color={colors.success} strokeWidth={1.5} />
+                                </View>
+                                <Text style={{ color: colors.text }} className="text-2xl font-black text-center mb-2 tracking-tight">{t('common.success')}</Text>
+                                <Text style={{ color: colors.textSecondary }} className="text-center font-bold mb-8 leading-6 opacity-70">{successMsg}</Text>
 
-                        <TouchableOpacity
-                            onPress={handleModalClose}
-                            style={{ backgroundColor: isDarkMode ? '#2D3748' : '#F7FAFC' }}
-                            className="w-full py-5 rounded-[24px] flex-row items-center justify-center"
-                        >
-                            <CheckCircle2 size={16} color={colors.primary} className="mr-6" />
-                            <Text style={{ color: colors.primary }} className="font-black text-sm tracking-tight">{t('common.cool') || 'Done'}</Text>
-                        </TouchableOpacity>
+                                <TouchableOpacity
+                                    onPress={handleModalClose}
+                                    style={{ backgroundColor: isDarkMode ? '#2D3748' : '#F7FAFC' }}
+                                    className="w-full py-5 rounded-[24px] flex-row items-center justify-center"
+                                >
+                                    <CheckCircle2 size={16} color={colors.primary} className="mr-6" />
+                                    <Text style={{ color: colors.primary }} className="font-black text-sm tracking-tight">{t('common.cool') || 'Done'}</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </TouchableWithoutFeedback>
                     </View>
-                </View>
+                </TouchableWithoutFeedback>
             </Modal>
 
             {/* Custom Discard/Save Draft Modal */}
             <Modal transparent visible={showDiscardModal} animationType="fade">
-                <View className="flex-1 justify-center items-center bg-black/80 px-8">
-                    <Pressable className="absolute inset-0" onPress={() => setShowDiscardModal(false)} />
-                    <View style={{ backgroundColor: isDarkMode ? '#1A1A1A' : '#FFFFFF' }} className="w-full rounded-[40px] p-8 items-center shadow-2xl">
-                        <View style={{ backgroundColor: `${colors.primary}10` }} className="w-16 h-16 rounded-[24px] items-center justify-center mb-6">
-                            <LucidePackage size={30} color={colors.primary} strokeWidth={1.5} />
-                        </View>
-                        <Text style={{ color: colors.text }} className="text-xl font-black text-center mb-2">{t('settings.discard')}</Text>
-                        <Text style={{ color: colors.textSecondary }} className="text-center font-bold mb-8 opacity-60">
-                            {isEditing ? 'Do you want to save changes to this offer?' : 'You have unsaved details. Would you like to save this as a draft?'}
-                        </Text>
+                <TouchableWithoutFeedback onPress={() => setShowDiscardModal(false)}>
+                    <View className="flex-1 justify-center items-center bg-black/80 px-8">
+                        <TouchableWithoutFeedback onPress={() => {}}>
+                            <View style={{ backgroundColor: isDarkMode ? '#1A1A1A' : '#FFFFFF' }} className="w-full rounded-[40px] p-8 items-center shadow-2xl">
+                                <View style={{ backgroundColor: `${colors.primary}10` }} className="w-16 h-16 rounded-[24px] items-center justify-center mb-6">
+                                    <LucidePackage size={30} color={colors.primary} strokeWidth={1.5} />
+                                </View>
+                                <Text style={{ color: colors.text }} className="text-xl font-black text-center mb-2">{t('settings.discard')}</Text>
+                                <Text style={{ color: colors.textSecondary }} className="text-center font-bold mb-8 opacity-60">
+                                    {isEditing ? 'Do you want to save changes to this offer?' : 'You have unsaved details. Would you like to save this as a draft?'}
+                                </Text>
 
-                        <View className="w-full" style={{ gap: 12 }}>
-                            <TouchableOpacity
-                                onPress={() => handlePublishOffer('draft', pendingAction)}
-                                style={{ backgroundColor: isDarkMode ? colors.primary : '#1A1A1A' }}
-                                className="w-full py-5 rounded-[24px] items-center shadow-lg shadow-black/10"
-                            >
-                                <Text style={{ color: '#FFFFFF' }} className="font-black text-sm tracking-tight">{isEditing ? 'Save Changes' : 'Save Draft'}</Text>
-                            </TouchableOpacity>
+                                <View className="w-full" style={{ gap: 12 }}>
+                                    <TouchableOpacity
+                                        onPress={() => handlePublishOffer('draft', pendingAction)}
+                                        style={{ backgroundColor: isDarkMode ? colors.primary : '#1A1A1A' }}
+                                        className="w-full py-5 rounded-[24px] items-center shadow-lg shadow-black/10"
+                                    >
+                                        <Text style={{ color: '#FFFFFF' }} className="font-black text-sm tracking-tight">{isEditing ? 'Save Changes' : 'Save Draft'}</Text>
+                                    </TouchableOpacity>
 
-                            <TouchableOpacity
-                                onPress={() => {
-                                    setShowDiscardModal(false);
-                                    if (pendingAction) navigation.dispatch(pendingAction);
-                                }}
-                                style={{ backgroundColor: `${colors.error}10` }}
-                                className="w-full py-5 rounded-[24px] items-center border border-red-500/10"
-                            >
-                                <Text className="text-red-500 font-black text-sm tracking-tight">Don't Save</Text>
-                            </TouchableOpacity>
+                                    <TouchableOpacity
+                                        onPress={() => {
+                                            setShowDiscardModal(false);
+                                            if (pendingAction) navigation.dispatch(pendingAction);
+                                        }}
+                                        style={{ backgroundColor: `${colors.error}10` }}
+                                        className="w-full py-5 rounded-[24px] items-center border border-red-500/10"
+                                    >
+                                        <Text className="text-red-500 font-black text-sm tracking-tight">Don't Save</Text>
+                                    </TouchableOpacity>
 
-                            <TouchableOpacity
-                                onPress={() => setShowDiscardModal(false)}
-                                style={{ backgroundColor: isDarkMode ? '#2D374833' : '#F7FAFC' }}
-                                className="w-full py-5 rounded-[24px] items-center"
-                            >
-                                <Text style={{ color: colors.textSecondary }} className="font-bold text-xs opacity-60">Wait, Keep Editing</Text>
-                            </TouchableOpacity>
-                        </View>
+                                    <TouchableOpacity
+                                        onPress={() => setShowDiscardModal(false)}
+                                        style={{ backgroundColor: isDarkMode ? '#2D374833' : '#F7FAFC' }}
+                                        className="w-full py-5 rounded-[24px] items-center"
+                                    >
+                                        <Text style={{ color: colors.textSecondary }} className="font-bold text-xs opacity-60">Wait, Keep Editing</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        </TouchableWithoutFeedback>
                     </View>
-                </View>
-            </Modal>
-            {/* Image Choice Modal */}
-            <Modal transparent visible={showChoiceModal} animationType="fade">
-                <View className="flex-1 justify-center items-center bg-black/60 px-8">
-                    <Pressable className="absolute inset-0" onPress={() => setShowChoiceModal(false)} />
-                    <View style={{ backgroundColor: colors.card }} className="w-full rounded-[40px] p-8 items-center shadow-2xl border border-white/5">
-                        <Text style={{ color: colors.text }} className="text-xl font-black mb-1.5">{t('store.select_banner')}</Text>
-                        <Text style={{ color: colors.textSecondary }} className="text-center font-bold mb-8 opacity-60 text-xs tracking-widest uppercase">{t('store.tap_upload')}</Text>
-
-                        <View className="flex-row justify-between w-full" style={{ gap: 15 }}>
-                            <TouchableOpacity
-                                onPress={() => pickImage('camera')}
-                                style={{ backgroundColor: colors.surface, borderColor: colors.border }}
-                                className="flex-1 py-10 rounded-[32px] items-center border"
-                            >
-                                <Camera size={32} color={colors.primary} />
-                                <Text style={{ color: colors.text }} className="mt-4 font-black text-[10px] tracking-widest uppercase">Camera</Text>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity
-                                onPress={() => pickImage('library')}
-                                style={{ backgroundColor: colors.surface, borderColor: colors.border }}
-                                className="flex-1 py-10 rounded-[32px] items-center border"
-                            >
-                                <Image source={require('../../assets/logos/gallery.png')} style={{ width: 32, height: 32, tintColor: colors.primary }} resizeMode="contain" />
-                                <Text style={{ color: colors.text }} className="mt-4 font-black text-[10px] tracking-widest uppercase">Gallery</Text>
-                            </TouchableOpacity>
-                        </View>
-
-                        <TouchableOpacity
-                            onPress={() => setShowChoiceModal(false)}
-                            className="mt-8 pt-4 w-full items-center"
-                        >
-                            <Text style={{ color: colors.textSecondary }} className="font-black text-[10px] tracking-[3px] opacity-40">IGNORE</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
+                </TouchableWithoutFeedback>
             </Modal>
             {renderDatePicker()}
         </SafeAreaView>
