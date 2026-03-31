@@ -280,6 +280,7 @@ const RegisterScreen = ({ navigation }) => {
                 onRequestClose={() => setModalConfig(prev => ({ ...prev, visible: false }))}
             >
                 <View className="flex-1 items-center justify-center bg-black/60 px-6">
+                    <Pressable className="absolute inset-0" onPress={() => setModalConfig(prev => ({ ...prev, visible: false }))} />
                     <Animated.View 
                         style={{ 
                             opacity: modalFadeAnim,

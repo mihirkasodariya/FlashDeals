@@ -381,6 +381,7 @@ const ProfileScreen = ({ navigation }) => {
                     {/* Logout Modal */}
                     <Modal visible={isLogoutModalVisible} animationType="fade" transparent={true}>
                         <View className="flex-1 justify-center items-center bg-black/80 px-8">
+                            <Pressable className="absolute inset-0" onPress={() => setIsLogoutModalVisible(false)} />
                             <View style={{ backgroundColor: isDarkMode ? '#1A1A1A' : '#FFFFFF' }} className="rounded-[40px] p-8 w-full items-center shadow-2xl relative overflow-hidden">
                                 <View style={{ backgroundColor: `${colors.error}15` }} className="w-20 h-20 rounded-[30px] items-center justify-center mb-6">
                                     <LogOut size={40} color="#FF4444" strokeWidth={1.5} />
@@ -398,6 +399,7 @@ const ProfileScreen = ({ navigation }) => {
                     {/* Edit Profile Modal */}
                     <Modal visible={isEditModalVisible} animationType="slide" transparent={true}>
                         <View className="flex-1 justify-end bg-black/60">
+                            <Pressable className="absolute inset-0" onPress={() => setIsEditModalVisible(false)} />
                             <View style={{ backgroundColor: colors.background }} className="rounded-t-[48px] p-8 min-h-[70%]">
                                 <View className="flex-row justify-between items-center mb-10">
                                     <Text style={{ color: colors.text }} className="text-3xl font-black tracking-tight">{t('profile.edit_profile')}</Text>
@@ -476,6 +478,7 @@ const ProfileScreen = ({ navigation }) => {
                     {/* Role Switch Confirmation Modal */}
                     <Modal visible={isRoleSwitchModalVisible} animationType="fade" transparent={true}>
                         <View className="flex-1 justify-center items-center bg-black/80 px-8">
+                            <Pressable className="absolute inset-0" onPress={() => setIsRoleSwitchModalVisible(false)} />
                             <View style={{ backgroundColor: isDarkMode ? '#1A1A1A' : '#FFFFFF' }} className="rounded-[40px] p-8 w-full items-center shadow-2xl relative overflow-hidden">
                                 <View style={{ backgroundColor: `${colors.primary}15` }} className="w-20 h-20 rounded-[30px] items-center justify-center mb-6">
                                     <Store size={40} color={colors.primary} strokeWidth={1.5} />
@@ -516,6 +519,7 @@ const ProfileScreen = ({ navigation }) => {
                     {/* Success Message Modal */}
                     <Modal visible={isSuccessModalVisible} animationType="fade" transparent={true}>
                         <View className="flex-1 justify-center items-center bg-black/80">
+                            <Pressable className="absolute inset-0" onPress={() => setIsSuccessModalVisible(false)} />
                             <View style={{ backgroundColor: colors.card }} className="w-72 p-8 rounded-[40px] items-center shadow-2xl">
                                 <View style={{ backgroundColor: `${colors.success}15` }} className="w-20 h-20 rounded-[30px] items-center justify-center mb-6">
                                     <CheckCircle2 size={40} color={colors.success} strokeWidth={2} />

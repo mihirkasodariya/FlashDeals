@@ -121,7 +121,7 @@ const EditStoreScreen = ({ navigation, route }) => {
     const logoSource = logo
         ? { uri: logo.uri }
         : vendorData?.storeImage
-            ? { uri: `${STATIC_BASE_URL}${vendorData.storeImage}` }
+            ? { uri: vendorData.storeImage.startsWith('http') ? vendorData.storeImage : `${STATIC_BASE_URL}${vendorData.storeImage}` }
             : null;
 
     return (

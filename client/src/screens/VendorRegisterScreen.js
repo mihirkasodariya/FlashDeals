@@ -13,7 +13,8 @@ import {
     BackHandler,
     DeviceEventEmitter,
     Modal,
-    Animated
+    Animated,
+    Pressable
 } from 'react-native';
 import * as Location from 'expo-location';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -581,6 +582,7 @@ const VendorRegisterScreen = ({ navigation, route }) => {
             {/* Custom Exit Confirmation Modal */}
             <Modal visible={isExitModalVisible} animationType="fade" transparent={true}>
                 <View className="flex-1 justify-center items-center bg-black/80 px-8">
+                    <Pressable className="absolute inset-0" onPress={() => setIsExitModalVisible(false)} />
                     <View style={{ backgroundColor: colors.card }} className="rounded-[60px] p-10 w-full items-center shadow-2xl relative overflow-hidden">
                         {/* Decorative Background Blob */}
                         <View style={{ backgroundColor: `${staticColors.error}0D` }} className="absolute -top-10 -right-10 w-32 h-32 rounded-full" />
@@ -623,6 +625,7 @@ const VendorRegisterScreen = ({ navigation, route }) => {
                 onRequestClose={() => setModalConfig(prev => ({ ...prev, visible: false }))}
             >
                 <View className="flex-1 items-center justify-center bg-black/60 px-6">
+                    <Pressable className="absolute inset-0" onPress={() => setModalConfig(prev => ({ ...prev, visible: false }))} />
                     <Animated.View 
                         style={{ 
                             opacity: modalFadeAnim,

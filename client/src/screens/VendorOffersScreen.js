@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Text from '../components/CustomText';
-import { View, FlatList, ScrollView, TouchableOpacity, Image, ActivityIndicator, Alert, useWindowDimensions, RefreshControl, Modal, Platform } from 'react-native';
+import { View, FlatList, ScrollView, TouchableOpacity, Image, ActivityIndicator, Alert, useWindowDimensions, RefreshControl, Modal, Platform, Pressable } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useFocusEffect } from '@react-navigation/native';
@@ -395,6 +395,7 @@ const VendorOffersScreen = ({ navigation }) => {
             {/* Delete Confirmation Modal */}
             <Modal transparent visible={showDeleteModal} animationType="fade">
                 <View className="flex-1 justify-center items-center bg-black/80 px-8">
+                    <Pressable className="absolute inset-0" onPress={() => setShowDeleteModal(false)} />
                     <View style={{ backgroundColor: isDarkMode ? '#1A1A1A' : '#FFFFFF' }} className="rounded-[40px] p-8 w-full items-center shadow-2xl relative overflow-hidden">
                         <View style={{ backgroundColor: `${staticColors.error}15` }} className="w-20 h-20 rounded-[30px] items-center justify-center mb-6">
                             <Trash2 size={40} color="#FF4444" strokeWidth={1.5} />
@@ -431,6 +432,7 @@ const VendorOffersScreen = ({ navigation }) => {
             {/* Success Modal */}
             <Modal transparent visible={showSuccessModal} animationType="fade">
                 <View className="flex-1 justify-center items-center bg-black/80 px-8">
+                    <Pressable className="absolute inset-0" onPress={() => setShowSuccessModal(false)} />
                     <View style={{ backgroundColor: isDarkMode ? '#1A1A1A' : '#FFFFFF' }} className="w-full rounded-[40px] p-8 items-center shadow-2xl relative overflow-hidden">
                         <View style={{ backgroundColor: `${staticColors.success}15` }} className="w-20 h-20 rounded-[30px] items-center justify-center mb-6">
                             <CheckCircle2 size={40} color={staticColors.success} strokeWidth={1.5} />

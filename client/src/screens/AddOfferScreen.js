@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Text from '../components/CustomText';
-import { View, ScrollView, TextInput, TouchableOpacity, Image, Alert, ActivityIndicator, Platform, Modal } from 'react-native';
+import { View, ScrollView, TextInput, TouchableOpacity, Image, Alert, ActivityIndicator, Platform, Modal, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
@@ -23,7 +23,7 @@ const AddOfferScreen = ({ route, navigation }) => {
     const isEditing = !!offerToEdit;
 
     const [loading, setLoading] = useState(false);
-    const [image, setImage] = useState(offerToEdit?.image ? `${API_BASE_URL.replace('/api', '')}${offerToEdit.image}` : null);
+    const [image, setImage] = useState(offerToEdit?.image ? (offerToEdit.image.startsWith('http') ? offerToEdit.image : `${API_BASE_URL.replace('/api', '')}${offerToEdit.image}`) : null);
     const [title, setTitle] = useState(offerToEdit?.title || '');
     const [description, setDescription] = useState(offerToEdit?.description || '');
     const [showDiscardModal, setShowDiscardModal] = useState(false);
@@ -392,6 +392,7 @@ const AddOfferScreen = ({ route, navigation }) => {
             </View>
             <Modal transparent visible={showSuccessModal} animationType="fade">
                 <View className="flex-1 justify-center items-center bg-black/80 px-8">
+                    <Pressable className="absolute inset-0" onPress={() => setShowSuccessModal(false)} />
                     <View style={{ backgroundColor: isDarkMode ? '#1A1A1A' : '#FFFFFF' }} className="w-full rounded-[40px] p-8 items-center shadow-2xl">
                         <View style={{ backgroundColor: `${colors.success}15` }} className="w-20 h-20 rounded-[30px] items-center justify-center mb-6">
                             <CheckCircle2 size={40} color={colors.success} strokeWidth={1.5} />
@@ -414,6 +415,7 @@ const AddOfferScreen = ({ route, navigation }) => {
             {/* Custom Discard/Save Draft Modal */}
             <Modal transparent visible={showDiscardModal} animationType="fade">
                 <View className="flex-1 justify-center items-center bg-black/80 px-8">
+                    <Pressable className="absolute inset-0" onPress={() => setShowDiscardModal(false)} />
                     <View style={{ backgroundColor: isDarkMode ? '#1A1A1A' : '#FFFFFF' }} className="w-full rounded-[40px] p-8 items-center shadow-2xl">
                         <View style={{ backgroundColor: `${colors.primary}10` }} className="w-16 h-16 rounded-[24px] items-center justify-center mb-6">
                             <LucidePackage size={30} color={colors.primary} strokeWidth={1.5} />
