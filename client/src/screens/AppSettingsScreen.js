@@ -132,8 +132,7 @@ const AppSettingsScreen = ({ navigation }) => {
     const handleShareApp = async () => {
         try {
             await Share.share({
-                message: t('settings.share_message'),
-                url: 'https://offerz.com'
+                message: `Check out Offerz! Get the best local offers in real-time. Download now: https://play.google.com/store/apps/details?id=com.offerz.live`,
             });
         } catch (error) {
             console.error(error);
@@ -143,7 +142,7 @@ const AppSettingsScreen = ({ navigation }) => {
     const handleRateApp = () => {
         const storeUrl = Platform.OS === 'ios'
             ? 'itms-apps://itunes.apple.com/app/id123456789'
-            : 'market://details?id=com.mihirkasodariya.Offerz';
+            : 'https://play.google.com/store/apps/details?id=com.offerz.live';
 
         Linking.canOpenURL(storeUrl).then(supported => {
             if (supported) {
