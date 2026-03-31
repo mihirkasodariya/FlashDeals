@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo, useMemo } from 'react';
 import Text from '../components/CustomText';
 import { View, ScrollView, TouchableOpacity, TextInput, FlatList, Image, useWindowDimensions, ActivityIndicator, RefreshControl, Platform, Modal, Animated, StatusBar } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -15,6 +15,59 @@ import { API_BASE_URL } from '../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 // import { Alert } from 'react-native';
+
+// Memoized Category List for stability
+const CategoryList = memo(({ categories, selectedCategory, onSelect, colors }) => {
+    return (
+        <View style={{ backgroundColor: colors.background }} className="pb-2">
+            <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ paddingHorizontal: 16 }}
+            >
+                {categories.map((item) => (
+                    <TouchableOpacity
+                        key={item._id}
+                        onPress={() => onSelect(item._id)}
+                        style={{
+                            marginRight: 12,
+                            paddingHorizontal: 14,
+                            paddingVertical: 7,
+                            borderRadius: 12,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            borderWidth: 1,
+                            borderColor: selectedCategory === item._id ? colors.primary : colors.border,
+                            backgroundColor: selectedCategory === item._id ? colors.primary : colors.card
+                        }}
+                    >
+                        {item.isStatic ? (
+                            <Text style={{ fontSize: 12, marginRight: 6 }}>🛍️</Text>
+                        ) : item.image ? (
+                            <Image
+                                source={{
+                                    uri: item.image.startsWith('http')
+                                        ? item.image
+                                        : `${API_BASE_URL.replace('/api', '')}${item.image}`
+                                }}
+                                style={{ width: 20, height: 20, marginRight: 6, borderRadius: 5 }}
+                            />
+                        ) : (
+                            <Text style={{ fontSize: 12, marginRight: 6 }}>📦</Text>
+                        )}
+                        <Text style={{
+                            fontSize: 13,
+                            fontWeight: 'bold',
+                            color: selectedCategory === item._id ? '#FFFFFF' : colors.primary
+                        }}>
+                            {item.name}
+                        </Text>
+                    </TouchableOpacity>
+                ))}
+            </ScrollView>
+        </View>
+    );
+});
 
 // Categories will be fetched from the backend
 
@@ -452,17 +505,23 @@ const HomeScreen = ({ navigation }) => {
 
     useEffect(() => {
         const delayDebounceFn = setTimeout(() => {
-            onRefresh();
-        }, 500);
+            // Only refresh data, don't trigger the pull-to-refresh loading indicator
+            // This prevents the entire header from "reloading" visually
+            refreshData(false);
+        }, 300);
         return () => clearTimeout(delayDebounceFn);
     }, [selectedCategory, searchQuery, radius, dateRange]);
 
-    const onRefresh = () => {
-        setRefreshing(true);
+    const refreshData = (showIndicator = true) => {
+        if (showIndicator) setRefreshing(true);
         setPage(1);
         setHasMore(true);
         fetchData(1, true);
         fetchUnreadCount();
+    };
+
+    const onRefresh = () => {
+        refreshData(true);
     };
 
     const handleLoadMore = () => {
@@ -513,57 +572,14 @@ const HomeScreen = ({ navigation }) => {
 
     const isTablet = width > 768;
 
-    const renderHeader = () => (
+    const headerElement = useMemo(() => (
         <View>
-            {/* Categories */}
-            <View style={{ backgroundColor: colors.background }} className="pb-2">
-                <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={{ paddingHorizontal: 16 }}
-                >
-                    {categories.map((item) => (
-                        <TouchableOpacity
-                            key={item._id}
-                            onPress={() => setSelectedCategory(item._id)}
-                            style={{
-                                marginRight: 12,
-                                paddingHorizontal: 14,
-                                paddingVertical: 7,
-                                borderRadius: 12,
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                borderWidth: 1,
-                                borderColor: selectedCategory === item._id ? colors.primary : colors.border,
-                                backgroundColor: selectedCategory === item._id ? colors.primary : colors.card
-                            }}
-                        >
-                            {item.isStatic ? (
-                                <Text style={{ fontSize: 12, marginRight: 6 }}>🛍️</Text>
-                            ) : item.image ? (
-                                <Image
-                                    source={{
-                                        uri: item.image.startsWith('http')
-                                            ? item.image
-                                            : `${API_BASE_URL.replace('/api', '')}${item.image}`
-                                    }}
-                                    style={{ width: 20, height: 20, marginRight: 6, borderRadius: 5 }}
-                                />
-                            ) : (
-                                <Text style={{ fontSize: 12, marginRight: 6 }}>📦</Text>
-                            )}
-                            <Text style={{
-                                fontSize: 13,
-                                fontWeight: 'bold',
-                                color: selectedCategory === item._id ? '#FFFFFF' : colors.primary
-                            }}>
-                                {item.name}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
-                </ScrollView>
-            </View>
-
+            <CategoryList 
+                categories={categories} 
+                selectedCategory={selectedCategory} 
+                onSelect={setSelectedCategory} 
+                colors={colors} 
+            />
             {/* Discovery Sections (only if not searching) */}
             {searchQuery === '' && (
                 <>
@@ -667,7 +683,7 @@ const HomeScreen = ({ navigation }) => {
                 </View>
             </View>
         </View>
-    );
+    ), [categories, selectedCategory, hotOffers, upcomingOffers, searchQuery, t, colors, width, radius, viewMode, wishlistIds]);
 
     const renderOfferItem = ({ item, index }) => {
         const isGrid = (width > 768) || viewMode === 'grid';
@@ -805,7 +821,6 @@ const HomeScreen = ({ navigation }) => {
                     </TouchableOpacity>
                 </View>
 
-
                 {renderDatePicker()}
             </Animated.View>
 
@@ -832,7 +847,7 @@ const HomeScreen = ({ navigation }) => {
                         paddingBottom: 100,
                         paddingTop: Math.max(insets?.top ?? 0, 12) + 85 // Static space as Date Chip is in Row 1
                     }}
-                    ListHeaderComponent={renderHeader}
+                    ListHeaderComponent={headerElement}
                     ListFooterComponent={() => (
                         loadingMore ? (
                             <View className="py-6 items-center">
