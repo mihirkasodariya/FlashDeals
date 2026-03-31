@@ -5,7 +5,7 @@ const axios = require('axios');
 
 exports.sendCustomNotification = async (req, res) => {
     try {
-        const { title, body, audience } = req.body;
+        const { title, body, audience, url } = req.body;
 
         if (!title || !body || !audience) {
             return res.status(400).json({ success: false, message: 'Title, body, and audience are required' });
@@ -92,7 +92,8 @@ exports.sendCustomNotification = async (req, res) => {
                     to: token,
                     title,
                     body,
-                    sound: 'default'
+                    sound: 'default',
+                    data: url ? { url } : {}
                 }));
 
                 const expoResponse = await axios.post('https://exp.host/--/api/v2/push/send', expoMessages);
@@ -116,7 +117,8 @@ exports.sendCustomNotification = async (req, res) => {
             try {
                 const fcmMessage = {
                     notification: { title, body },
-                    tokens: fcmTokens
+                    tokens: fcmTokens,
+                    data: url ? { url } : {}
                 };
                 const fcmResponse = await admin.messaging().sendEachForMulticast(fcmMessage);
                 results.successCount += fcmResponse.successCount;

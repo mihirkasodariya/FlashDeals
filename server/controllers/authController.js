@@ -267,11 +267,13 @@ const switchToVendor = async (req, res) => {
 const updateFCMToken = async (req, res) => {
     try {
         const { fcmToken } = req.body;
-        if (!fcmToken) {
-            return res.status(400).json({ success: false, message: 'FCM token is required' });
+        if (!fcmToken || typeof fcmToken !== 'string') {
+            console.error(`[FCM Sync] User ${req.user.userId} attempted to sync an invalid token.`);
+            return res.status(400).json({ success: false, message: 'Invalid or missing FCM token' });
         }
 
         await User.findByIdAndUpdate(req.user.userId, { fcmToken });
+        console.log(`[FCM Sync] User ${req.user.userId} token updated successfully.`);
         res.json({ success: true, message: 'FCM token updated successfully' });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });

@@ -207,7 +207,7 @@ const LoginScreen = ({ navigation }) => {
 
             if (data.success) {
                 await AsyncStorage.setItem('userToken', data.token);
-                syncFCMToken(API_BASE_URL);
+                syncFCMToken(API_BASE_URL, data.token);
 
                 // Auto-fulfill pending wishlist if any
                 const pendingId = await AsyncStorage.getItem('pendingWishlistOfferId');

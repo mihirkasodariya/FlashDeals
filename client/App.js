@@ -12,7 +12,8 @@ import { Home as HomeIcon, Heart, User, Store as StoreIcon } from 'lucide-react-
 import { colors } from './src/theme/colors';
 import { API_BASE_URL } from './src/config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform, View, Text, DeviceEventEmitter, ActivityIndicator } from 'react-native';
+import { Platform, View, Text, DeviceEventEmitter, ActivityIndicator, Linking } from 'react-native';
+import * as Notifications from 'expo-notifications';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import { registerForPushNotificationsAsync, syncFCMToken } from './src/utils/notificationService';
@@ -260,6 +261,15 @@ function AppContent() {
     };
     initNotifications();
 
+    // Notification Click Listener
+    const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
+      const url = response.notification.request.content.data?.url;
+      if (url) {
+        // Automatically handle both deep links (offerz://) and regular links
+        Linking.openURL(url);
+      }
+    });
+
     // Deactivate any keep-awake signal to respect system auto-lock settings
     deactivateKeepAwake();
 
@@ -278,6 +288,10 @@ function AppContent() {
         console.log("NavigationBar module not supported in current build:", error);
       }
     }
+
+    return () => {
+      Notifications.removeNotificationSubscription(responseListener);
+    };
   }, [isDarkMode]);
 
   const linking = {

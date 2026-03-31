@@ -39,21 +39,22 @@ export async function registerForPushNotificationsAsync() {
 
         // Get the token
         try {
-            // Get Expo Push Token (works in Expo Go and Standalone)
-            const tokenData = await Notifications.getExpoPushTokenAsync({
-                projectId: Constants.expoConfig?.extra?.eas?.projectId
-            });
-            token = tokenData.data;
-            console.log('✅ Token gathered:', token);
-        } catch (e) {
-            console.log('Error getting Expo push token: ', e);
-            try {
-                // Fallback to device token
+            if (Platform.OS === 'android') {
+                // Get Native FCM Token for Android
                 const deviceToken = await Notifications.getDevicePushTokenAsync();
                 token = deviceToken.data;
-            } catch (err) {
-                token = 'demo-token-simulator';
+                console.log('✅ Native FCM Token gathered:', token);
+            } else {
+                // Get Expo Push Token for iOS or fallback
+                const tokenData = await Notifications.getExpoPushTokenAsync({
+                    projectId: Constants.expoConfig?.extra?.eas?.projectId
+                });
+                token = tokenData.data;
+                console.log('✅ Expo Push Token gathered:', token);
             }
+        } catch (e) {
+            console.log('Error getting push token: ', e);
+            token = 'demo-token-simulator';
         }
     } else {
         console.log('Must use physical device for Push Notifications');
@@ -68,43 +69,51 @@ export async function checkNotificationPermissions() {
     return status === 'granted';
 }
 
-export async function syncFCMToken(apiBaseUrl) {
-    console.log('[Sync] Starting FCM token sync...');
+export async function syncFCMToken(apiBaseUrl, manualToken = null) {
     try {
-        const token = await AsyncStorage.getItem('userToken');
+        const token = manualToken || (await AsyncStorage.getItem('userToken'));
         if (!token) {
-            console.log('[Sync] No userToken found in AsyncStorage, skipping sync.');
+            console.log('[Sync] No user token available for sync. Skipping.');
             return;
         }
 
-        const fcmToken = await registerForPushNotificationsAsync();
-        console.log('[Sync] Token gathered from device:', fcmToken);
-
-        if (fcmToken && typeof fcmToken === 'string' && fcmToken !== 'demo-token-simulator') {
-            const isAPNsRaw = /^[0-9a-fA-F]{64}$/.test(fcmToken);
-            if (isAPNsRaw) {
-                console.warn('⚠️ [Sync] Raw APNs token detected instead of Expo token. Notifications won\'t work in Expo Go. Please ensure projectId is correct in app.json.');
-                return;
+        console.log('[Sync] Requesting fresh FCM token...');
+        let fcmToken = null;
+        
+        // Retry logic for token fetching
+        for (let i = 0; i < 2; i++) {
+            try {
+                fcmToken = await registerForPushNotificationsAsync();
+                if (fcmToken && fcmToken !== 'demo-token-simulator') break;
+            } catch (e) {
+                console.log(`[Sync] Attempt ${i + 1} failed, retrying...`);
+                await new Promise(r => setTimeout(r, 2000));
             }
+        }
 
-            const resp = await fetch(`${apiBaseUrl}/auth/update-fcm-token`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ fcmToken })
-            });
-            const data = await resp.json();
-            if (data.success) {
-                console.log('✅ FCM Token synced with server successfully');
-            } else {
-                console.error('❌ Server failed to update token:', data.message);
-            }
+        if (!fcmToken || fcmToken === 'demo-token-simulator') {
+            console.log('[Sync] Could not get valid FCM token (Permissions might be denied).');
+            return;
+        }
+
+        console.log('[Sync] Syncing token with server:', fcmToken.substring(0, 10) + '...');
+
+        const resp = await fetch(`${apiBaseUrl}/auth/update-fcm-token`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ fcmToken })
+        });
+        
+        const data = await resp.json();
+        if (data.success) {
+            console.log('✅ [Sync] FCM Token synced successfully');
         } else {
-            console.log('[Sync] No valid token to sync (mock or null).');
+            console.error('❌ [Sync] Server rejected token:', data.message);
         }
     } catch (error) {
-        console.log('❌ Error during FCM token sync:', error);
+        console.error('❌ [Sync] Critical error in syncFCMToken:', error);
     }
 }

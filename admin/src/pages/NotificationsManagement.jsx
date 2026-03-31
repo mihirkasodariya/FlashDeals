@@ -9,7 +9,8 @@ import {
     AlertCircle,
     CheckCircle2,
     MessageSquare,
-    Type
+    Type,
+    Link as LinkIcon
 } from 'lucide-react';
 
 const NotificationsManagement = () => {
@@ -17,6 +18,7 @@ const NotificationsManagement = () => {
     const [title, setTitle] = useState('');
     const [body, setBody] = useState('');
     const [audience, setAudience] = useState('all');
+    const [url, setUrl] = useState('');
     const [sending, setSending] = useState(false);
     const [status, setStatus] = useState({ type: '', message: '' });
 
@@ -37,7 +39,8 @@ const NotificationsManagement = () => {
             const resp = await axios.post(`${API_URL}/admin/notifications/send`, {
                 title,
                 body,
-                audience
+                audience,
+                url: url || null
             }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -50,6 +53,7 @@ const NotificationsManagement = () => {
                 });
                 setTitle('');
                 setBody('');
+                setUrl('');
                 setAudience('all');
             }
         } catch (err) {
@@ -97,6 +101,22 @@ const NotificationsManagement = () => {
                                 placeholder="e.g. Hope you have a great day ahead. Check out today's flash deals!"
                                 maxLength={200}
                             />
+                        </div>
+
+                        <div>
+                            <label style={labelStyle}>
+                                <LinkIcon size={14} style={{ marginRight: '6px' }} />
+                                Deep Link / offer URL (optional)
+                            </label>
+                            <input
+                                style={inputStyle}
+                                value={url}
+                                onChange={(e) => setUrl(e.target.value)}
+                                placeholder="offerz://offer/OFFER_ID"
+                            />
+                            <p style={{ fontSize: '10px', color: '#94a3b8', marginTop: '6px', fontWeight: 'bold' }}>
+                                Leave blank to just open the app's home page.
+                            </p>
                         </div>
 
                         <div>
