@@ -59,6 +59,16 @@ const addOffer = async (req, res) => {
             offerData.image = req.file.location;
         }
 
+        // Fetch vendor location from User model
+        const User = require('../models/User');
+        const vendor = await User.findById(req.user.userId);
+        if (vendor && vendor.location && vendor.location.latitude && vendor.location.longitude) {
+            offerData.location = {
+                type: 'Point',
+                coordinates: [parseFloat(vendor.location.longitude), parseFloat(vendor.location.latitude)]
+            };
+        }
+
         const offer = new Offer(offerData);
 
         await offer.save();
@@ -73,72 +83,117 @@ const addOffer = async (req, res) => {
 const getOffers = async (req, res) => {
     try {
         const { lat, lng, radius, category, search, startDate, endDate } = req.query;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
         const now = new Date();
 
-        const query = { status: { $ne: 'draft' } };
+        let pipeline = [];
+
+        // 1. GeoNear Stage (Must be first)
+        if (lat && lng) {
+            pipeline.push({
+                $geoNear: {
+                    near: { type: "Point", coordinates: [parseFloat(lng), parseFloat(lat)] },
+                    distanceField: "distance",
+                    spherical: true,
+                    maxDistance: (parseFloat(radius) || 15) * 1000, // conversion to meters
+                    distanceMultiplier: 0.001 // conversion to km
+                }
+            });
+        }
+
+        // 2. Initial Match Stage
+        let matchQuery = { status: { $ne: 'draft' } };
 
         if (startDate && endDate) {
             const rangeStart = new Date(startDate);
             const rangeEnd = new Date(endDate);
-            query.$and = [
+            matchQuery.$and = [
                 { createdAt: { $lte: rangeEnd } },
                 { endDate: { $gte: rangeStart } },
                 { startDate: { $lte: rangeEnd } }
             ];
         } else {
-            query.endDate = { $gte: now };
+            matchQuery.endDate = { $gte: now };
         }
 
         if (category && category !== 'all') {
-            query.category = category;
+            matchQuery.category = new mongoose.Types.ObjectId(category);
         }
 
         if (search) {
-            query.$or = [
+            matchQuery.$or = [
                 { title: { $regex: search, $options: 'i' } },
                 { description: { $regex: search, $options: 'i' } }
             ];
         }
 
-        let offers = await Offer.find(query)
-            .populate('vendorId', 'storeName name location profileImage storeImage storeAddress')
-            .populate('category')
-            .sort({ createdAt: -1 })
-            .lean();
+        pipeline.push({ $match: matchQuery });
 
-        if (lat && lng) {
-            const userLat = parseFloat(lat);
-            const userLng = parseFloat(lng);
-
-            offers.forEach(offer => {
-                const loc = offer.vendorId && offer.vendorId.location;
-                if (loc && typeof loc.latitude === 'number' && typeof loc.longitude === 'number') {
-                    const dist = getDistanceFromLatLonInKm(userLat, userLng, loc.latitude, loc.longitude);
-                    offer.distance = dist;
-                }
-            });
-
-            offers.sort((a, b) => {
-                const distA = a.distance !== undefined ? a.distance : Infinity;
-                const distB = b.distance !== undefined ? b.distance : Infinity;
-                return distA - distB;
-            });
+        // 3. Sorting (if no geoNear, sort by createdAt)
+        if (!(lat && lng)) {
+            pipeline.push({ $sort: { createdAt: -1 } });
+        } else {
+             // Already sorted by distance from $geoNear, but can add secondary sort
+             pipeline.push({ $sort: { distance: 1, createdAt: -1 } });
         }
 
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
-        const startIndex = (page - 1) * limit;
-        const endIndex = page * limit;
-        const total = offers.length;
-        const paginatedOffers = offers.slice(startIndex, endIndex);
+        // 4. Faceted Search for Metadata and Paginated Results
+        pipeline.push({
+            $facet: {
+                metadata: [{ $count: "total" }],
+                data: [
+                    { $skip: skip },
+                    { $limit: limit },
+                    // Populate equivalent in aggregation
+                    {
+                        $lookup: {
+                            from: 'users',
+                            localField: 'vendorId',
+                            foreignField: '_id',
+                            as: 'vendorId'
+                        }
+                    },
+                    { $unwind: '$vendorId' },
+                    {
+                        $lookup: {
+                            from: 'categories',
+                            localField: 'category',
+                            foreignField: '_id',
+                            as: 'category'
+                        }
+                    },
+                    { $unwind: { path: '$category', preserveNullAndEmptyArrays: true } },
+                    {
+                        $project: {
+                            'vendorId.password': 0,
+                            'vendorId.otp': 0,
+                            'vendorId.loginDevices': 0
+                        }
+                    }
+                ]
+            }
+        });
 
-        if (paginatedOffers.length > 0) {
-            const offerIds = paginatedOffers.map(o => o._id);
+        const results = await Offer.aggregate(pipeline);
+        
+        const offers = results[0].data;
+        const total = results[0].metadata[0]?.total || 0;
+
+        if (offers.length > 0) {
+            const offerIds = offers.map(o => o._id);
             await Offer.updateMany({ _id: { $in: offerIds } }, { $inc: { impressions: 1 } });
         }
 
-        res.json({ success: true, offers: paginatedOffers, total, hasMore: endIndex < total });
+        res.json({ 
+            success: true, 
+            offers, 
+            total, 
+            hasMore: skip + offers.length < total 
+        });
     } catch (error) {
+        console.error("Get Offers Error:", error);
         res.status(500).json({ success: false, message: error.message });
     }
 };
@@ -220,10 +275,22 @@ const editOffer = async (req, res) => {
             if (foundCat) updates.category = foundCat._id;
             else return res.status(400).json({ success: false, message: 'Invalid category' });
         }
+
+        // Sync location on edit just in case
+        const User = require('../models/User');
+        const vendor = await User.findById(req.user.userId);
+        if (vendor && vendor.location && vendor.location.latitude && vendor.location.longitude) {
+            updates.location = {
+                type: 'Point',
+                coordinates: [parseFloat(vendor.location.longitude), parseFloat(vendor.location.latitude)]
+            };
+        }
+
         const offer = await Offer.findOneAndUpdate({ _id: offerId, vendorId: req.user.userId }, updates, { new: true }).populate('category');
         if (!offer) return res.status(404).json({ success: false, message: 'Not found' });
         res.json({ success: true, offer });
     } catch (error) {
+        console.error("Edit Offer Error:", error);
         res.status(500).json({ success: false, message: error.message });
     }
 };
@@ -247,37 +314,68 @@ const getExpiringOffers = async (req, res) => {
         const now = new Date();
         const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
-        let offers = await Offer.find({ 
-            endDate: { $gte: now, $lte: tomorrow },
-            status: { $ne: 'draft' }
-        })
-            .populate('vendorId', 'storeName location profileImage')
-            .populate('category')
-            .sort({ endDate: 1 })
-            .limit(20)
-            .lean();
+        let pipeline = [];
 
         if (lat && lng) {
-            const userLat = parseFloat(lat);
-            const userLng = parseFloat(lng);
-            offers = offers.filter(offer => {
-                const loc = offer.vendorId && offer.vendorId.location;
-                if (loc && loc.latitude) {
-                    const dist = getDistanceFromLatLonInKm(userLat, userLng, loc.latitude, loc.longitude);
-                    offer.distance = dist;
-                    return dist <= radius;
+            pipeline.push({
+                $geoNear: {
+                    near: { type: "Point", coordinates: [parseFloat(lng), parseFloat(lat)] },
+                    distanceField: "distance",
+                    spherical: true,
+                    maxDistance: radius * 1000,
+                    distanceMultiplier: 0.001
                 }
-                return false;
             });
         }
 
-        offers = offers.slice(0, 10);
+        pipeline.push({
+            $match: {
+                endDate: { $gte: now, $lte: tomorrow },
+                status: { $ne: 'draft' }
+            }
+        });
+
+        pipeline.push({ $sort: { endDate: 1 } });
+        pipeline.push({ $limit: 10 });
+
+        // Join User and Category
+        pipeline.push({
+            $lookup: {
+                from: 'users',
+                localField: 'vendorId',
+                foreignField: '_id',
+                as: 'vendorId'
+            }
+        });
+        pipeline.push({ $unwind: '$vendorId' });
+        
+        pipeline.push({
+            $lookup: {
+                from: 'categories',
+                localField: 'category',
+                foreignField: '_id',
+                as: 'category'
+            }
+        });
+        pipeline.push({ $unwind: { path: '$category', preserveNullAndEmptyArrays: true } });
+
+        pipeline.push({
+            $project: {
+                'vendorId.password': 0,
+                'vendorId.otp': 0,
+                'vendorId.loginDevices': 0
+            }
+        });
+
+        const offers = await Offer.aggregate(pipeline);
 
         // Notify Logic
         if (req.user && req.user.userId && offers.length > 0) {
             const userId = req.user.userId;
             const twoHoursLater = new Date(now.getTime() + 2 * 60 * 60 * 1000);
             const veryUrgent = offers.filter(o => new Date(o.endDate) <= twoHoursLater);
+
+            const Notification = require('../models/Notification');
 
             if (veryUrgent.length > 0) {
                 const title2h = 'Only 2 hours left for this offer!';
@@ -297,6 +395,7 @@ const getExpiringOffers = async (req, res) => {
 
         res.json({ success: true, offers });
     } catch (error) {
+        console.error("Get Expiring Offers Error:", error);
         res.status(500).json({ success: false, message: error.message });
     }
 };
@@ -309,24 +408,38 @@ const syncHotDeals = async (req, res) => {
         const title = "Hot deal nearby! Don’t miss it";
         const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0);
         const existing = await Notification.findOne({ userId, title, createdAt: { $gte: startOfToday } });
-        if (existing) return res.json({ success: true });
+        if (existing) return res.json({ success: true, created: false });
 
-        let offers = await Offer.find({ endDate: { $gte: new Date() } }).populate('vendorId', 'location storeName').lean();
+        let pipeline = [];
         if (lat && lng) {
-            const userLat = parseFloat(lat); const userLng = parseFloat(lng);
-            offers = offers.filter(o => {
-                const loc = o.vendorId?.location;
-                return loc?.latitude && getDistanceFromLatLonInKm(userLat, userLng, loc.latitude, loc.longitude) <= 15;
+            pipeline.push({
+                $geoNear: {
+                    near: { type: "Point", coordinates: [parseFloat(lng), parseFloat(lat)] },
+                    distanceField: "distance",
+                    spherical: true,
+                    maxDistance: 15 * 1000,
+                    distanceMultiplier: 0.001
+                }
             });
         }
+        pipeline.push({ $match: { endDate: { $gte: new Date() }, status: { $ne: 'draft' } } });
+        pipeline.push({ $sort: { visits: -1 } });
+        pipeline.push({ $limit: 1 });
+        pipeline.push({ $lookup: { from: 'users', localField: 'vendorId', foreignField: '_id', as: 'vendorId' } });
+        pipeline.push({ $unwind: '$vendorId' });
+
+        const offers = await Offer.aggregate(pipeline);
+
         if (offers.length > 0) {
-            offers.sort((a, b) => (b.visits || 0) - (a.visits || 0));
             const best = offers[0];
             await Notification.create({ userId, title, body: `Trending deal at ${best.vendorId.storeName}! Grab it now.` });
             return res.json({ success: true, created: true, offer: best });
         }
         res.json({ success: true, created: false });
-    } catch (error) { res.status(500).json({ success: false }); }
+    } catch (error) { 
+        console.error("Sync Hot Deals Error:", error);
+        res.status(500).json({ success: false }); 
+    }
 };
 
 const syncTrendingDeals = async (req, res) => {
@@ -337,24 +450,29 @@ const syncTrendingDeals = async (req, res) => {
         const title = "Trending Deals near you 15km";
         const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0);
         const existing = await Notification.findOne({ userId, title, createdAt: { $gte: startOfToday } });
-        if (existing) return res.json({ success: true });
+        if (existing) return res.json({ success: true, created: false });
 
-        let offers = await Offer.find({ endDate: { $gte: new Date() } }).populate('vendorId', 'location').lean();
-        let count = 0;
+        let query = { endDate: { $gte: new Date() }, status: { $ne: 'draft' } };
         if (lat && lng) {
-            const userLat = parseFloat(lat); const userLng = parseFloat(lng);
-            count = offers.filter(o => {
-                const loc = o.vendorId?.location;
-                return loc?.latitude && getDistanceFromLatLonInKm(userLat, userLng, loc.latitude, loc.longitude) <= 15;
-            }).length;
-        } else { count = offers.length; }
+            query.location = {
+                $near: {
+                    $geometry: { type: "Point", coordinates: [parseFloat(lng), parseFloat(lat)] },
+                    $maxDistance: 15 * 1000
+                }
+            };
+        }
+
+        const count = await Offer.countDocuments(query);
 
         if (count > 0) {
             await Notification.create({ userId, title, body: `Morning! You have ${count} trending deals near you.` });
             return res.json({ success: true, created: true, count });
         }
-        res.json({ success: true });
-    } catch (error) { res.status(500).json({ success: false }); }
+        res.json({ success: true, created: false });
+    } catch (error) { 
+        console.error("Sync Trending Deals Error:", error);
+        res.status(500).json({ success: false }); 
+    }
 };
 
 const syncRecommendedDeals = async (req, res) => {
@@ -397,20 +515,21 @@ const syncNewOffers = async (req, res) => {
         const title = "New offers near you";
         const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0);
         const existing = await Notification.findOne({ userId, title, createdAt: { $gte: startOfToday } });
-        if (existing) return res.json({ success: true });
+        if (existing) return res.json({ success: true, created: false });
 
-        // Find offers created in last 24h
         const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
-        let offers = await Offer.find({ createdAt: { $gte: yesterday } }).populate('vendorId', 'location').lean();
-
-        let newCount = 0;
+        let query = { createdAt: { $gte: yesterday }, status: { $ne: 'draft' } };
+        
         if (lat && lng) {
-            const userLat = parseFloat(lat); const userLng = parseFloat(lng);
-            newCount = offers.filter(o => {
-                const loc = o.vendorId?.location;
-                return loc?.latitude && getDistanceFromLatLonInKm(userLat, userLng, loc.latitude, loc.longitude) <= 15;
-            }).length;
-        } else { newCount = offers.length; }
+            query.location = {
+                $near: {
+                    $geometry: { type: "Point", coordinates: [parseFloat(lng), parseFloat(lat)] },
+                    $maxDistance: 15 * 1000
+                }
+            };
+        }
+
+        const newCount = await Offer.countDocuments(query);
 
         if (newCount > 0) {
             await Notification.create({
@@ -421,8 +540,58 @@ const syncNewOffers = async (req, res) => {
             console.log(`[SyncNew] Created morning new-deals alert for ${userId}`);
             return res.json({ success: true, created: true, count: newCount });
         }
-        res.json({ success: true });
-    } catch (error) { res.status(500).json({ success: false }); }
+        res.json({ success: true, created: false });
+    } catch (error) { 
+        console.error("Sync New Offers Error:", error);
+        res.status(500).json({ success: false }); 
+    }
+};
+
+const getHomeInit = async (req, res) => {
+    try {
+        const { lat, lng } = req.query;
+        const userId = req.user?.userId;
+
+        const [categories, unreadRes] = await Promise.all([
+            Category.find({ isActive: true }).lean(),
+            userId ? Notification.countDocuments({ userId, isRead: false }) : Promise.resolve(0)
+        ]);
+
+        res.json({
+            success: true,
+            categories,
+            unreadCount: unreadRes || 0
+        });
+    } catch (error) {
+        console.error("Home Init Error:", error);
+        res.status(500).json({ success: false });
+    }
+};
+
+const getSyncAll = async (req, res) => {
+    try {
+        const { lat, lng } = req.query;
+        if (!req.user?.userId) return res.json({ success: true });
+        const userId = req.user.userId;
+
+        const results = await Promise.allSettled([
+            // Use internal logic or call individual existing sync functions if modified to return
+            // For now, let's just run them as they are but return a combined status
+            // Note: Each might already create notifications
+            syncHotDeals(req, { json: (d) => d }),
+            syncTrendingDeals(req, { json: (d) => d }),
+            syncNewOffers(req, { json: (d) => d }),
+            syncRecommendedDeals(req, { json: (d) => d })
+        ]);
+
+        res.json({
+            success: true,
+            syncResults: results.map(r => r.status === 'fulfilled' ? r.value : { error: r.reason })
+        });
+    } catch (error) {
+        console.error("Sync All Error:", error);
+        res.status(500).json({ success: false });
+    }
 };
 
 module.exports = {
@@ -437,5 +606,7 @@ module.exports = {
     syncHotDeals,
     syncTrendingDeals,
     syncRecommendedDeals,
-    syncNewOffers
+    syncNewOffers,
+    getHomeInit,
+    getSyncAll
 };

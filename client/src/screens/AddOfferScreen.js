@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Text from '../components/CustomText';
-import { View, ScrollView, TextInput, TouchableOpacity, Image, Alert, ActivityIndicator, Platform, Modal, Pressable } from 'react-native';
+import { View, ScrollView, TextInput, TouchableOpacity, Image, Alert, ActivityIndicator, Platform, Modal, Pressable, TouchableWithoutFeedback } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
@@ -228,7 +228,7 @@ const AddOfferScreen = ({ route, navigation }) => {
         setEndDate(new Date(Date.now() + 7 * 86400000));
         setIsSubmitted(false);
 
-        navigation.navigate('VendorOffers');
+        navigation.navigate('Main', { screen: 'Store', params: { screen: 'VendorOffers' } });
     };
 
     return (

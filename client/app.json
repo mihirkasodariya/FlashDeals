@@ -15,7 +15,10 @@
     "ios": {
       "supportsTablet": true,
       "googleServicesFile": "./GoogleService-Info.plist",
-      "bundleIdentifier": "com.offerz.live"
+      "bundleIdentifier": "com.offerz.live",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "versionCode": 3,
@@ -36,10 +39,8 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-
       "@react-native-community/datetimepicker",
       "expo-localization",
-
       [
         "react-native-google-mobile-ads",
         {

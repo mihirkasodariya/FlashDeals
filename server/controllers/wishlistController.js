@@ -38,44 +38,99 @@ function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
 exports.getWishlist = async (req, res) => {
     try {
         const { lat, lng } = req.query;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
         const userId = req.user.userId;
-        const wishlists = await Wishlist.find({ user: userId })
-            .populate({
-                path: 'offer',
-                populate: {
-                    path: 'vendorId',
-                    select: 'name storeName location storeImage'
-                }
-            })
-            .lean(); // Use lean for better performance
 
-        // Filter out any null if offer was deleted
-        let offers = wishlists.map(w => w.offer).filter(Boolean);
+        // 1. Get all wishlisted offer IDs for this user
+        const wishlistItems = await Wishlist.find({ user: userId }).select('offer').lean();
+        const offerIds = wishlistItems.map(w => w.offer);
+
+        if (offerIds.length === 0) {
+            return res.json({ success: true, offers: [], total: 0, hasMore: false });
+        }
+
+        // 2. Aggregate on Offer model to use $geoNear (for spatial sorting)
+        let pipeline = [];
 
         if (lat && lng) {
-            const userLat = parseFloat(lat);
-            const userLng = parseFloat(lng);
-
-            offers.forEach(offer => {
-                const loc = offer.vendorId && offer.vendorId.location;
-                if (loc && typeof loc.latitude === 'number' && typeof loc.longitude === 'number') {
-                    const dist = getDistanceFromLatLonInKm(userLat, userLng, loc.latitude, loc.longitude);
-                    offer.distance = dist;
+            pipeline.push({
+                $geoNear: {
+                    near: { type: "Point", coordinates: [parseFloat(lng), parseFloat(lat)] },
+                    distanceField: "distance",
+                    spherical: true,
+                    distanceMultiplier: 0.001 // Convert m to km
                 }
-            });
-
-            // Sort by distance
-            offers.sort((a, b) => {
-                const distA = a.distance !== undefined ? a.distance : Infinity;
-                const distB = b.distance !== undefined ? b.distance : Infinity;
-                return distA - distB;
             });
         }
 
-        res.status(200).json({ success: true, offers });
+        // Match only wishlisted offers that are not drafts
+        pipeline.push({
+            $match: {
+                _id: { $in: offerIds },
+                status: { $ne: 'draft' }
+            }
+        });
+
+        // Add Category and Vendor details
+        pipeline.push({
+            $lookup: {
+                from: 'users',
+                localField: 'vendorId',
+                foreignField: '_id',
+                as: 'vendorId'
+            }
+        });
+        pipeline.push({ $unwind: '$vendorId' });
+
+        pipeline.push({
+            $lookup: {
+                from: 'categories',
+                localField: 'category',
+                foreignField: '_id',
+                as: 'category'
+            }
+        });
+        pipeline.push({ $unwind: { path: '$category', preserveNullAndEmptyArrays: true } });
+
+        // Project necessary fields
+        pipeline.push({
+            $project: {
+                title: 1,
+                description: 1,
+                image: 1,
+                discount: 1,
+                startDate: 1,
+                endDate: 1,
+                status: 1,
+                location: 1,
+                distance: 1,
+                'vendorId.name': 1,
+                'vendorId.storeName': 1,
+                'vendorId.location': 1,
+                'vendorId.storeImage': 1,
+                'category.name': 1
+            }
+        });
+
+        // Facet for count and pagination
+        pipeline.push({
+            $facet: {
+                metadata: [{ $count: "total" }],
+                data: [{ $skip: skip }, { $limit: limit }]
+            }
+        });
+
+        const result = await Offer.aggregate(pipeline);
+        const offers = result[0].data;
+        const total = result[0].metadata[0]?.total || 0;
+        const hasMore = (skip + offers.length) < total;
+
+        res.status(200).json({ success: true, offers, total, hasMore });
     } catch (error) {
-        console.error('Error fetching wishlist:', error);
-        res.status(500).json({ success: false, message: 'Server error' });
+        console.error('Error fetching optimized wishlist:', error);
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 

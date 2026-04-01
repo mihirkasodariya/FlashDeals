@@ -5,7 +5,9 @@ const { authenticateToken, optionalAuthenticateToken } = require('../middleware/
 const { uploadOfferS3 } = require('../middleware/s3UploadMiddleware');
 
 router.get('/', offerController.getOffers);
+router.get('/init', optionalAuthenticateToken, offerController.getHomeInit);
 router.get('/expiring-soon', optionalAuthenticateToken, offerController.getExpiringOffers);
+router.get('/sync-all', optionalAuthenticateToken, offerController.getSyncAll);
 router.get('/sync-hot-deals', optionalAuthenticateToken, offerController.syncHotDeals);
 router.get('/sync-trending-deals', optionalAuthenticateToken, offerController.syncTrendingDeals);
 router.get('/sync-recommended-deals', optionalAuthenticateToken, offerController.syncRecommendedDeals);

@@ -177,67 +177,32 @@ const HomeScreen = ({ navigation }) => {
     const [showHotBanner, setShowHotBanner] = useState(false);
     const [hotOfferData, setHotOfferData] = useState(null);
 
-    const fetchHotDealsSync = async (passedCoords = null) => {
+    const fetchSyncAll = async (coords) => {
         try {
             const token = await AsyncStorage.getItem('userToken');
-            const lat = passedCoords?.lat || userCoordinates?.lat;
-            const lng = passedCoords?.lng || userCoordinates?.lng;
-
-            let url = `${API_BASE_URL}/offers/sync-hot-deals`;
+            if (!token) return;
+            let url = `${API_BASE_URL}/offers/sync-all`;
+            const lat = coords?.lat || userCoordinates?.lat;
+            const lng = coords?.lng || userCoordinates?.lng;
             if (lat && lng) url += `?lat=${lat}&lng=${lng}`;
-
-            const response = await fetch(url, { headers: token ? { 'Authorization': `Bearer ${token}` } : {} });
+            
+            const response = await fetch(url, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
             const data = await response.json();
-
-            if (data.success && data.created) {
-                setHotOfferData(data.offer);
-                setShowHotBanner(true);
-                // Hide after 8s
-                setTimeout(() => setShowHotBanner(false), 8000);
+            
+            if (data.success && data.syncResults) {
+                // syncResults[0] is Hot Deals
+                const hotDealResult = data.syncResults[0]?.value;
+                if (hotDealResult && hotDealResult.success && hotDealResult.created) {
+                    setHotOfferData(hotDealResult.offer);
+                    setShowHotBanner(true);
+                    setTimeout(() => setShowHotBanner(false), 8000);
+                }
             }
         } catch (error) {
-            console.error("Hot deals sync error:", error);
+            console.error("Sync all fetch error:", error);
         }
-    };
-
-    const fetchNewDealsSync = async (passedCoords = null) => {
-        try {
-            const token = await AsyncStorage.getItem('userToken');
-            const lat = passedCoords?.lat || userCoordinates?.lat;
-            const lng = passedCoords?.lng || userCoordinates?.lng;
-            let url = `${API_BASE_URL}/offers/sync-new-offers`;
-            if (lat && lng) url += `?lat=${lat}&lng=${lng}`;
-            const response = await fetch(url, { headers: token ? { 'Authorization': `Bearer ${token}` } : {} });
-            const data = await response.json();
-            if (data.success && data.created) console.log("[SyncNew] Created morning new-deals alert");
-        } catch (error) { console.error("New deals sync error:", error); }
-    };
-
-
-
-    const fetchRecommendedDealsSync = async () => {
-        try {
-            const token = await AsyncStorage.getItem('userToken');
-            const response = await fetch(`${API_BASE_URL}/offers/sync-recommended-deals`, { headers: token ? { 'Authorization': `Bearer ${token}` } : {} });
-            const data = await response.json();
-            if (data.success && data.created) console.log("[SyncRec] Created morning wishlist-expiry alert");
-        } catch (error) { console.error("Recommended sync error:", error); }
-    };
-
-    const fetchTrendingDealsSync = async (passedCoords = null) => {
-        try {
-            const token = await AsyncStorage.getItem('userToken');
-            const lat = passedCoords?.lat || userCoordinates?.lat;
-            const lng = passedCoords?.lng || userCoordinates?.lng;
-            let url = `${API_BASE_URL}/offers/sync-trending-deals`;
-            if (lat && lng) url += `?lat=${lat}&lng=${lng}`;
-            const response = await fetch(url, { headers: token ? { 'Authorization': `Bearer ${token}` } : {} });
-            const data = await response.json();
-            if (data.success && data.created) {
-                // Not showing banner for trending summary yet, just creating notif
-                console.log("[SyncTrend] Created morning summary");
-            }
-        } catch (error) { console.error("Trending sync error:", error); }
     };
 
     const fetchExpiringOffers = async (passedCoords = null) => {
@@ -280,22 +245,43 @@ const HomeScreen = ({ navigation }) => {
 
     const fetchUnreadCount = async () => {
         try {
-            console.log("[Sync] Checking unread notifications...");
             const token = await AsyncStorage.getItem('userToken');
-            if (!token) {
-                console.warn("[Sync] No token found for unread count");
-                return;
-            }
+            if (!token) return;
             const response = await fetch(`${API_BASE_URL}/auth/notifications/unread-count`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
-            console.log("[Sync] Unread count result:", data);
             if (data.success) {
                 setUnreadCount(data.count);
             }
         } catch (error) {
             console.error("Fetch unread count error:", error);
+        }
+    };
+
+    const fetchHomeInit = async () => {
+        try {
+            const token = await AsyncStorage.getItem('userToken');
+            const response = await fetch(`${API_BASE_URL}/offers/init`, {
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
+            const data = await response.json();
+            if (data.success) {
+                if (data.categories) {
+                    const staticCats = [{ _id: 'all', name: t('categories.all'), isStatic: true }];
+                    const dynamicCats = data.categories || [];
+                    const merged = [...staticCats, ...dynamicCats];
+                    const uniqueCats = merged.filter((item, index, self) =>
+                        item?._id && index === self.findIndex((t) => (t._id === item._id))
+                    );
+                    setCategories(uniqueCats);
+                }
+                if (data.unreadCount !== undefined) {
+                    setUnreadCount(data.unreadCount);
+                }
+            }
+        } catch (error) {
+            console.error("Home Init Fetch Error:", error);
         }
     };
 
@@ -305,7 +291,28 @@ const HomeScreen = ({ navigation }) => {
             const { status } = await Location.requestForegroundPermissionsAsync();
 
             if (status === 'granted') {
-                // Fresh GPS detection
+                // TRY LAST KNOWN POSITION FIRST (INSTANT)
+                const lastLoc = await Location.getLastKnownPositionAsync();
+                if (lastLoc) {
+                    const coords = { lat: lastLoc.coords.latitude, lng: lastLoc.coords.longitude };
+                    // Set these immediately to trigger data fetch
+                    setUserCoordinates(coords);
+                    setLocation('Current Location');
+                    
+                    // Trigger a secondary fresh fetch in background (non-blocking)
+                    Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }).then(async (freshLoc) => {
+                        const freshCoords = { lat: freshLoc.coords.latitude, lng: freshLoc.coords.longitude };
+                        // Only refresh if significant movement (e.g. > 500m)
+                        if (getDistanceFromLatLonInKm(coords.lat, coords.lng, freshCoords.lat, freshCoords.lng) > 0.5) {
+                            setUserCoordinates(freshCoords);
+                            fetchData(1, true, freshCoords);
+                        }
+                    }).catch(err => console.log("Background location error:", err));
+
+                    return coords;
+                }
+
+                // If no last position, fall back to fresh GPS detection
                 const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
                 const coords = { lat: loc.coords.latitude, lng: loc.coords.longitude };
 
@@ -321,7 +328,7 @@ const HomeScreen = ({ navigation }) => {
 
                 // Save for future reference as fallback
                 await AsyncStorage.setItem('userLocation', JSON.stringify({ city, coords }));
-                setLocation('Current Location'); // Use text requested by user
+                setLocation('Current Location'); 
                 setUserCoordinates(coords);
                 return coords;
             }
@@ -428,15 +435,11 @@ const HomeScreen = ({ navigation }) => {
                 }
             }
 
-            // Sync expiring offers ONLY on the first page load/refresh 
-            // once coordsToUse are definitely known.
+            // Sync background events ONLY on the first page load/refresh 
             if (pageNum === 1) {
-                console.log('[Home] Triggering Sync from fetchData page 1');
+                console.log('[Home] Triggering Sync All from fetchData page 1');
                 fetchExpiringOffers(coordsToUse);
-                fetchHotDealsSync(coordsToUse);
-                fetchTrendingDealsSync(coordsToUse);
-                fetchRecommendedDealsSync();
-                fetchNewDealsSync(coordsToUse);
+                fetchSyncAll(coordsToUse);
             }
         } catch (error) {
             console.error("Fetch data error:", error);
@@ -489,10 +492,9 @@ const HomeScreen = ({ navigation }) => {
     };
 
     useEffect(() => {
-        // Initial fetch only - Do not re-fetch on focus to prevent flickering
-        fetchCategories();
+        // Consolidated initial fetch
+        fetchHomeInit();
         fetchData();
-        fetchUnreadCount();
 
         // Add focus listener for unread count and wishlist sync
         const unsubscribe = navigation.addListener('focus', () => {
@@ -517,7 +519,7 @@ const HomeScreen = ({ navigation }) => {
         setPage(1);
         setHasMore(true);
         fetchData(1, true);
-        fetchUnreadCount();
+        // fetchUnreadCount(); // fetchData page 1 already triggers syncs and checks
     };
 
     const onRefresh = () => {

@@ -69,17 +69,24 @@ const WishlistScreen = ({ navigation }) => {
     const [favorites, setFavorites] = useState([]);
     const [loading, setLoading] = useState(true);
     const [userCoordinates, setUserCoordinates] = useState(null);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
 
-    const fetchWishlist = async (coords = null) => {
+    const fetchWishlist = async (pageNum = 1, isRefresh = false, coords = null) => {
         try {
+            if (pageNum === 1 && !isRefresh) setLoading(true);
+            if (pageNum > 1) setLoadingMore(true);
+
             const token = await AsyncStorage.getItem('userToken');
             if (!token) return;
 
             const lat = coords?.lat || userCoordinates?.lat;
             const lng = coords?.lng || userCoordinates?.lng;
 
-            let url = `${API_BASE_URL}/wishlist`;
-            if (lat && lng) url += `?lat=${lat}&lng=${lng}`;
+            let url = `${API_BASE_URL}/wishlist?page=${pageNum}&limit=10`;
+            if (lat && lng) url += `&lat=${lat}&lng=${lng}`;
 
             const response = await fetch(url, {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -87,12 +94,38 @@ const WishlistScreen = ({ navigation }) => {
 
             const data = await response.json();
             if (data.success) {
-                setFavorites(data.offers);
+                const incoming = data.offers || [];
+                if (pageNum === 1) {
+                    setFavorites(incoming);
+                } else {
+                    setFavorites(prev => {
+                        const existingIds = new Set(prev.map(o => o._id));
+                        const uniqueNew = incoming.filter(o => !existingIds.has(o._id));
+                        return [...prev, ...uniqueNew];
+                    });
+                }
+                setHasMore(data.hasMore);
+                setPage(pageNum);
             }
         } catch (error) {
             console.error('Error fetching wishlist:', error);
         } finally {
             setLoading(false);
+            setLoadingMore(false);
+            setRefreshing(false);
+        }
+    };
+
+    const handleRefresh = () => {
+        setRefreshing(true);
+        setPage(1);
+        setHasMore(true);
+        fetchWishlist(1, true);
+    };
+
+    const handleLoadMore = () => {
+        if (!loadingMore && hasMore) {
+            fetchWishlist(page + 1);
         }
     };
 
@@ -102,14 +135,21 @@ const WishlistScreen = ({ navigation }) => {
             try {
                 const { status } = await Location.requestForegroundPermissionsAsync();
                 if (status === 'granted') {
-                    const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-                    coords = { lat: location.coords.latitude, lng: location.coords.longitude };
-                    setUserCoordinates(coords);
+                    // Try last known first for speed
+                    const lastLoc = await Location.getLastKnownPositionAsync();
+                    if (lastLoc) {
+                        coords = { lat: lastLoc.coords.latitude, lng: lastLoc.coords.longitude };
+                        setUserCoordinates(coords);
+                    } else {
+                        const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+                        coords = { lat: location.coords.latitude, lng: location.coords.longitude };
+                        setUserCoordinates(coords);
+                    }
                 }
             } catch (error) {
                 console.error("Location error in Wishlist:", error);
             }
-            fetchWishlist(coords);
+            fetchWishlist(1, false, coords);
         };
 
         // Initial fetch
@@ -171,10 +211,15 @@ const WishlistScreen = ({ navigation }) => {
                     data={favorites}
                     keyExtractor={(item, index) => (item?._id || index).toString() + index}
                     contentContainerStyle={{ padding: 24, paddingBottom: 100 }}
+                    refreshing={refreshing}
+                    onRefresh={handleRefresh}
+                    onEndReached={handleLoadMore}
+                    onEndReachedThreshold={0.5}
+                    ListFooterComponent={loadingMore ? <ActivityIndicator size="small" color={colors.primary} className="py-4" /> : null}
                     renderItem={({ item, index }) => (
                         <>
                             {index > 0 && index % 4 === 0 && (
-                                <View className="mb-6">
+                                <View className="mb-8">
                                     <DummyNativeAd colors={colors} />
                                 </View>
                             )}
@@ -183,7 +228,7 @@ const WishlistScreen = ({ navigation }) => {
                                     offer={item}
                                     isFavorite={true}
                                     onPress={() => navigation.navigate('OfferDetails', { offer: item })}
-                                    onRefresh={fetchWishlist}
+                                    onRefresh={() => fetchWishlist(1, true)}
                                 />
                             </View>
                         </>

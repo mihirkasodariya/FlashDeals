@@ -11,7 +11,12 @@ const offerSchema = new mongoose.Schema({
     status: { type: String, enum: ['active', 'expired', 'scheduled', 'draft'], default: 'active' },
     visits: { type: Number, default: 0 },
     impressions: { type: Number, default: 0 },
-    // You might want to add more fields like discount, stock, etc. later
+    location: {
+        type: { type: String, enum: ['Point'], default: 'Point' },
+        coordinates: { type: [Number] } // [longitude, latitude]
+    }
 }, { timestamps: true });
+
+offerSchema.index({ location: '2dsphere' });
 
 module.exports = mongoose.model('Offer', offerSchema);
