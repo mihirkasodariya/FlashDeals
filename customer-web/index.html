@@ -22,11 +22,35 @@
 </head>
 <body>
 
+<!-- Sticky Header -->
+<nav class="navbar" id="main-nav">
+    <div class="container">
+        <a href="/" class="logo">
+            <i class="fas fa-tags"></i> Offerz
+        </a>
+        <div class="nav-links" id="nav-links">
+            <a href="#features"><i class="fas fa-rocket"></i> Features</a>
+            <a href="#categories"><i class="fas fa-th-large"></i> Categories</a>
+            <a href="#how-it-works"><i class="fas fa-info-circle"></i> How it Works</a>
+            <a href="#why-choose-us"><i class="fas fa-star"></i> Why Us</a>
+            <a href="#faq"><i class="fas fa-question-circle"></i> FAQ</a>
+            <!-- Mobile Only Button -->
+            <a href="#" class="btn-primary mobile-cta-btn"><i class="fas fa-download"></i> Download App</a>
+        </div>
+        <div class="nav-cta">
+            <a href="#" class="btn-primary" style="padding: 10px 22px; font-size: 0.9rem;">Download App</a>
+            <div class="mobile-toggle" id="mobile-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </div>
+</nav>
+
 <!-- Hero Section -->
 <header class="hero">
     <div class="container">
         <div class="hero-grid">
-            <div class="hero-content">
+            <div class="hero-content reveal-left">
                 <div class="badge-red">🔥 Hyperlocal deals</div>
                 <h1>Never pay full price<br>again with <span style="color: var(--primary);">Offerz</span></h1>
                 <p>Discover amazing offers from shops near you — restaurants, grocery, fashion & more. Save up to 60% daily.</p>
@@ -54,27 +78,27 @@
                 </div>
             </div>
             
-            <div class="hero-image">
-                <img src="https://placehold.co/500x600/FFE6E6/ff0000?text=Offerz+App+Mockup&font=poppins" alt="Offerz app preview">
+            <div class="hero-image reveal-right">
+                <img src="assets/img/hero-mockup.png" alt="Offerz app preview" class="floating">
             </div>
         </div>
     </div>
 </header>
 
 <!-- Application Features -->
-<section id="features" style="padding: 70px 0;">
+<section id="features">
     <div class="container">
-        <div class="section-header">
+        <div class="section-header reveal">
             <h2>Everything you need to save & earn</h2>
             <p>Built for shoppers and local businesses alike</p>
         </div>
         <div class="features-grid">
-            <div class="feature-card"><i class="fas fa-map-marker-alt"></i><h3>Nearby deals</h3><p>Real-time offers within 5km radius based on your location.</p></div>
-            <div class="feature-card"><i class="fas fa-clock"></i><h3>Expiring soon</h3><p>Flash deals with countdown – grab before they vanish.</p></div>
-            <div class="feature-card"><i class="fas fa-qrcode"></i><h3>QR redemption</h3><p>Instant digital coupon & easy in-store scan.</p></div>
-            <div class="feature-card"><i class="fas fa-chart-line"></i><h3>Vendor analytics</h3><p>Track impressions, clicks, and redemption performance.</p></div>
-            <div class="feature-card"><i class="fas fa-bell"></i><h3>Smart alerts</h3><p>Personalized notifications for new offers in your category.</p></div>
-            <div class="feature-card"><i class="fas fa-store"></i><h3>Grow your shop</h3><p>Simple dashboard for vendors to create & manage offers.</p></div>
+            <div class="feature-card reveal" style="transition-delay: 0.1s;"><i class="fas fa-map-marker-alt"></i><h3>Nearby deals</h3><p>Real-time offers within 5km radius based on your location.</p></div>
+            <div class="feature-card reveal" style="transition-delay: 0.2s;"><i class="fas fa-clock"></i><h3>Expiring soon</h3><p>Flash deals with countdown – grab before they vanish.</p></div>
+            
+            <div class="feature-card reveal" style="transition-delay: 0.3s;"><i class="fas fa-chart-line"></i><h3>Vendor analytics</h3><p>Track impressions, clicks, and redemption performance.</p></div>
+            <div class="feature-card reveal" style="transition-delay: 0.4s;"><i class="fas fa-bell"></i><h3>Smart alerts</h3><p>Personalized notifications for new offers in your category.</p></div>
+            <div class="feature-card reveal" style="transition-delay: 0.5s;"><i class="fas fa-store"></i><h3>Grow your shop</h3><p>Simple dashboard for vendors to create & manage offers.</p></div>
         </div>
     </div>
 </section>
@@ -82,57 +106,57 @@
 <!-- All Categories Section -->
 <section id="categories" class="categories">
     <div class="container">
-        <div class="section-header">
+        <div class="section-header reveal">
             <h2>Shop by category</h2>
             <p>Discover handpicked offers from your favourite local stores</p>
         </div>
         <div class="category-list">
-            <div class="category-item"><i class="fas fa-utensils"></i> Food</div>
-            <div class="category-item"><i class="fas fa-shopping-cart"></i> Grocery</div>
-            <div class="category-item"><i class="fas fa-mobile-alt"></i> Electronics</div>
-            <div class="category-item"><i class="fas fa-tshirt"></i> Fashion</div>
-            <div class="category-item"><i class="fas fa-heartbeat"></i> Wellness</div>
-            <div class="category-item"><i class="fas fa-paw"></i> Pet Care</div>
-            <div class="category-item"><i class="fas fa-car"></i> Auto Service</div>
-            <div class="category-item"><i class="fas fa-home"></i> Home & Decor</div>
+            <div class="category-item reveal" style="transition-delay: 0.1s;"><i class="fas fa-utensils"></i> Food</div>
+            <div class="category-item reveal" style="transition-delay: 0.2s;"><i class="fas fa-shopping-cart"></i> Grocery</div>
+            <div class="category-item reveal" style="transition-delay: 0.3s;"><i class="fas fa-mobile-alt"></i> Electronics</div>
+            <div class="category-item reveal" style="transition-delay: 0.4s;"><i class="fas fa-tshirt"></i> Fashion</div>
+            <div class="category-item reveal" style="transition-delay: 0.5s;"><i class="fas fa-heartbeat"></i> Wellness</div>
+            <div class="category-item reveal" style="transition-delay: 0.6s;"><i class="fas fa-paw"></i> Pet Care</div>
+            <div class="category-item reveal" style="transition-delay: 0.7s;"><i class="fas fa-car"></i> Auto Service</div>
+            <div class="category-item reveal" style="transition-delay: 0.8s;"><i class="fas fa-home"></i> Home & Decor</div>
         </div>
     </div>
 </section>
 
 <!-- How to use Section -->
-<section id="how-it-works" style="padding: 70px 0;">
+<section id="how-it-works">
     <div class="container">
-        <div class="section-header">
+        <div class="section-header reveal">
             <h2>How Offerz works</h2>
             <p>Save money in 3 simple steps</p>
         </div>
         <div class="steps">
-            <div class="step"><div class="step-number">1</div><h3>Browse & discover</h3><p>Open Offerz and see live deals near you, filtered by category or location.</p></div>
-            <div class="step"><div class="step-number">2</div><h3>Buy the offer</h3><p>Pay securely inside the app and get your unique QR coupon instantly.</p></div>
-            <div class="step"><div class="step-number">3</div><h3>Redeem at store</h3><p>Show QR at vendor shop, enjoy your discount — no extra steps.</p></div>
+            <div class="step reveal-left" style="transition-delay: 0.1s;"><div class="step-number">1</div><h3>Browse & discover</h3><p>Open Offerz and see live deals near you, filtered by category or location.</p></div>
+            <div class="step reveal" style="transition-delay: 0.3s;"><div class="step-number">2</div><h3>Buy the offer</h3><p>Pay securely inside the app and get your unique digital coupon instantly.</p></div>
+            <div class="step reveal-right" style="transition-delay: 0.5s;"><div class="step-number">3</div><h3>Redeem at store</h3><p>Show your coupon at the vendor shop and enjoy your discount — no extra steps.</p></div>
         </div>
     </div>
 </section>
 
 <!-- Additional Section (value props) -->
-<section id="why-choose-us" style="background: var(--gray-bg); padding: 70px 0;">
+<section id="why-choose-us" style="background: var(--gray-bg);">
     <div class="container">
-        <div class="section-header">
+        <div class="section-header reveal">
             <h2>Why choose Offerz?</h2>
             <p>Built to boost local shopping</p>
         </div>
         <div class="additional-grid">
-            <div class="additional-card">
+            <div class="additional-card reveal-left">
                 <i class="fas fa-gem" style="font-size: 2rem; color: var(--primary); margin-bottom: 16px; display: inline-block;"></i>
                 <h3>Verified local vendors</h3>
                 <p>Every shop is manually verified and approved by our team.</p>
             </div>
-            <div class="additional-card">
+            <div class="additional-card reveal">
                 <i class="fas fa-hand-holding-usd" style="font-size: 2rem; color: var(--primary); margin-bottom: 16px;"></i>
                 <h3>Zero hidden costs</h3>
                 <p>What you see is what you pay. No surge, no surprise fees.</p>
             </div>
-            <div class="additional-card">
+            <div class="additional-card reveal-right">
                 <i class="fas fa-headset" style="font-size: 2rem; color: var(--primary); margin-bottom: 16px;"></i>
                 <h3>24/7 customer support</h3>
                 <p>We help both buyers & vendors get the best experience.</p>
@@ -141,42 +165,27 @@
     </div>
 </section>
 
-<!-- Customer Video Reviews -->
-<section id="reviews" style="padding: 70px 0;">
-    <div class="container">
-        <div class="section-header">
-            <h2>Real stories, real savings</h2>
-            <p>Watch how our community saves with Offerz</p>
-        </div>
-        <div class="video-grid">
-            <div class="video-card"><div class="video-thumb"><i class="fas fa-play-circle"></i></div><div style="padding: 16px;"><strong>@foodieRahul</strong><p>“Got 50% off at my favourite cafe!”</p></div></div>
-            <div class="video-card"><div class="video-thumb"><i class="fas fa-play-circle"></i></div><div style="padding: 16px;"><strong>Neha Sharma</strong><p>“Saved ₹1200 on grocery this month.”</p></div></div>
-            <div class="video-card"><div class="video-thumb"><i class="fas fa-play-circle"></i></div><div style="padding: 16px;"><strong>Rajesh Traders</strong><p>“Increased footfall by 40% in a week.”</p></div></div>
-        </div>
-    </div>
-</section>
-
 <!-- Store Reviews Section -->
-<section class="store-reviews" style="padding: 70px 0;">
+<section class="store-reviews">
     <div class="container">
-        <div class="section-header">
+        <div class="section-header reveal">
             <h2>Trusted by thousands</h2>
             <p>What our users say about Offerz</p>
         </div>
         <div class="store-row">
-            <div class="store-card">
+            <div class="store-card reveal" style="transition-delay: 0.1s;">
                 <i class="fab fa-google-play" style="font-size: 2rem; color: #0f9d58;"></i>
                 <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div>
                 <p>“Best local deals app! I use it daily for coffee offers.”</p>
                 <small>— Priya M. ⭐ 4.9</small>
             </div>
-            <div class="store-card">
+            <div class="store-card reveal" style="transition-delay: 0.3s;">
                 <i class="fab fa-apple" style="font-size: 2rem; color: #000;"></i>
                 <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
                 <p>“Vendor side is super intuitive. We sold 100+ deals in 2 days.”</p>
                 <small>— Suresh, shop owner ⭐ 5.0</small>
             </div>
-            <div class="store-card">
+            <div class="store-card reveal" style="transition-delay: 0.5s;">
                 <i class="fab fa-google-play" style="font-size: 2rem; color: #0f9d58;"></i>
                 <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
                 <p>“QR redemption works flawlessly, no more paper coupons.”</p>
@@ -186,47 +195,62 @@
     </div>
 </section>
 
-<!-- Blog Section -->
-<section id="blog" style="padding: 70px 0;">
-    <div class="container">
-        <div class="section-header">
-            <h2>Latest from our blog</h2>
-            <p>Tips, trends, and local business stories</p>
-        </div>
-        <div class="blog-grid">
-            <div class="blog-card"><div class="blog-img" style="background: #fecaca;"></div><div class="blog-content"><span style="color: var(--primary); font-size: 0.8rem;">Marketing</span><h3>5 ways to attract customers with limited-time offers</h3><p>Learn how local shops increased sales by 200%...</p><a href="#" style="color: var(--primary); font-weight: 500;">Read more →</a></div></div>
-            <div class="blog-card"><div class="blog-img" style="background: #fed7aa;"></div><div class="blog-content"><span style="color: var(--primary); font-size: 0.8rem;">Success story</span><h3>How a small bakery sold out in 3 hours</h3><p>Offerz helped them reach nearby customers instantly...</p><a href="#" style="color: var(--primary); font-weight: 500;">Read more →</a></div></div>
-            <div class="blog-card"><div class="blog-img" style="background: #bfdbfe;"></div><div class="blog-content"><span style="color: var(--primary); font-size: 0.8rem;">App update</span><h3>Introducing smart notifications & location filters</h3><p>Get alerts for deals that matter most to you...</p><a href="#" style="color: var(--primary); font-weight: 500;">Read more →</a></div></div>
-        </div>
-    </div>
-</section>
-
 <!-- FAQs Section -->
-<section id="faq" style="background: var(--gray-bg); padding: 70px 0;">
+<section id="faq" style="background: var(--gray-bg);">
     <div class="container">
-        <div class="section-header">
+        <div class="section-header reveal">
             <h2>Frequently asked questions</h2>
             <p>Everything you need to know about Offerz</p>
         </div>
         <div class="faq-grid">
-            <div class="faq-item"><div class="faq-question">Is Offerz free for customers? <i class="fas fa-chevron-down"></i></div><div class="faq-answer">Yes! Downloading and browsing offers is completely free. You only pay for the deals you purchase.</div></div>
-            <div class="faq-item"><div class="faq-question">How do I become a vendor? <i class="fas fa-chevron-down"></i></div><div class="faq-answer">Download the Offerz vendor app, sign up with business details and documents. After admin approval (within 24h), you can start creating offers.</div></div>
-            <div class="faq-item"><div class="faq-question">What if an offer expires before I redeem? <i class="fas fa-chevron-down"></i></div><div class="faq-answer">If you purchased an offer but it expires unused, we’ll automatically refund the amount to your original payment method.</div></div>
-            <div class="faq-item"><div class="faq-question">Can I use Offerz without location permission? <i class="fas fa-chevron-down"></i></div><div class="faq-answer">Yes, you can manually select your city or area to see relevant offers nearby.</div></div>
+            <div class="faq-item reveal"><div class="faq-question">Is Offerz free for customers? <i class="fas fa-chevron-down"></i></div><div class="faq-answer">Yes! Downloading and browsing offers is completely free. You only pay for the deals you purchase.</div></div>
+            <div class="faq-item reveal"><div class="faq-question">How do I become a vendor? <i class="fas fa-chevron-down"></i></div><div class="faq-answer">Download the Offerz vendor app, sign up with business details and documents. After admin approval (within 24h), you can start creating offers.</div></div>
+            <div class="faq-item reveal"><div class="faq-question">What if an offer expires before I redeem? <i class="fas fa-chevron-down"></i></div><div class="faq-answer">If you purchased an offer but it expires unused, we’ll automatically refund the amount to your original payment method.</div></div>
+            <div class="faq-item reveal"><div class="faq-question">Can I use Offerz without location permission? <i class="fas fa-chevron-down"></i></div><div class="faq-answer">Yes, you can manually select your city or area to see relevant offers nearby.</div></div>
         </div>
     </div>
 </section>
 
 <!-- Footer Section -->
-<footer>
+<footer class="reveal">
     <div class="container">
         <div class="footer-grid">
-            <div><h3 style="color: white; margin-bottom: 16px;">Offerz</h3><p>Your daily dose of local deals</p><div class="social-icons" style="margin-top: 16px;"><i class="fab fa-instagram"></i><i class="fab fa-twitter"></i><i class="fab fa-facebook"></i><i class="fab fa-linkedin"></i></div></div>
-            <div class="footer-links"><h4 style="color: white;">Explore</h4><a href="#">Home</a><a href="#">Categories</a><a href="#">Vendor signup</a><a href="#">Blog</a></div>
-            <div class="footer-links"><h4 style="color: white;">Support</h4><a href="#">Help Center</a><a href="#">Privacy Policy</a><a href="#">Terms of Use</a><a href="#">Cookie Policy</a><a href="#">About Developer</a></div>
-            <div class="footer-links"><h4 style="color: white;">Get the App</h4><a href="#"><i class="fab fa-google-play"></i> Google Play</a><a href="#"><i class="fab fa-apple"></i> App Store</a><a href="#">Scan QR code</a></div>
+            <div class="footer-brand">
+                <a href="/" class="logo">
+                    <i class="fas fa-tags"></i> Offerz
+                </a>
+                <p>Your daily dose of local deals. Discover amazing offers from shops near you and save every day.</p>
+                <div class="social-icons">
+                    <a href="#" class="instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="linkedin"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+            <div class="footer-links">
+                <h4>Explore</h4>
+                <a href="#">Home</a>
+                <a href="#features">Features</a>
+                <a href="#categories">Categories</a>
+                <a href="#how-it-works">How it Works</a>
+            </div>
+            <div class="footer-links">
+                <h4>Support</h4>
+                <a href="#">Help Center</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Use</a>
+                <a href="#">Cookie Policy</a>
+            </div>
+            <div class="footer-links">
+                <h4>Get the App</h4>
+                <a href="#"><i class="fab fa-google-play"></i> Google Play</a>
+                <a href="#"><i class="fab fa-apple"></i> App Store</a>
+                <a href="#"><i class="fas fa-qrcode"></i> Scan QR code</a>
+            </div>
         </div>
-        <div style="border-top: 1px solid #334155; padding-top: 24px; text-align: center; font-size: 0.8rem;">&copy; 2025 Offerz – All rights reserved. Made for local shoppers & businesses.</div>
+        <div class="footer-copyright">
+            &copy; 2025 Offerz – All rights reserved. Made for local shoppers & businesses.
+        </div>
     </div>
 </footer>
 
