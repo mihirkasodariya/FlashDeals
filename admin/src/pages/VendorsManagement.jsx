@@ -21,15 +21,17 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
+import { getImageUrl } from '../utils/imageHelper';
+import MapPicker from '../components/MapPicker';
 
 const VendorsManagement = () => {
     const { token, hasPermission } = useAuth();
     const [vendors, setVendors] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [createModal, setCreateModal] = useState({ show: false, name: '', mobile: '', password: '', storeName: '', storeAddress: '' });
+    const [createModal, setCreateModal] = useState({ show: false, name: '', mobile: '', password: '', storeName: '', storeAddress: '', latitude: null, longitude: null });
     const [deleteModal, setDeleteModal] = useState({ show: false, id: null, name: '' });
-    const [editModal, setEditModal] = useState({ show: false, id: null, storeName: '', mobile: '', storeAddress: '' });
+    const [editModal, setEditModal] = useState({ show: false, id: null, storeName: '', mobile: '', storeAddress: '', latitude: null, longitude: null });
     const [deleting, setDeleting] = useState(false);
     const [updating, setUpdating] = useState(false);
 
@@ -63,13 +65,15 @@ const VendorsManagement = () => {
                 mobile: createModal.mobile,
                 password: createModal.password,
                 storeName: createModal.storeName,
-                storeAddress: createModal.storeAddress
+                storeAddress: createModal.storeAddress,
+                latitude: createModal.latitude,
+                longitude: createModal.longitude
             }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (resp.data.success) {
                 setVendors(prev => [resp.data.vendor, ...prev]);
-                setCreateModal({ show: false, name: '', mobile: '', password: '', storeName: '', storeAddress: '' });
+                setCreateModal({ show: false, name: '', mobile: '', password: '', storeName: '', storeAddress: '', latitude: null, longitude: null });
             }
         } catch (err) {
             alert(err.response?.data?.message || 'Failed to create vendor protocol.');
@@ -101,13 +105,15 @@ const VendorsManagement = () => {
             const resp = await axios.put(`${API_URL}/admin/user/${editModal.id}`, {
                 storeName: editModal.storeName,
                 mobile: editModal.mobile,
-                storeAddress: editModal.storeAddress
+                storeAddress: editModal.storeAddress,
+                latitude: editModal.latitude,
+                longitude: editModal.longitude
             }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (resp.data.success) {
                 setVendors(prev => prev.map(v => v._id === editModal.id ? resp.data.user : v));
-                setEditModal({ show: false, id: null, storeName: '', mobile: '', storeAddress: '' });
+                setEditModal({ show: false, id: null, storeName: '', mobile: '', storeAddress: '', latitude: null, longitude: null });
             }
         } catch (err) {
             alert('Failed to update vendor credentials.');
@@ -148,7 +154,7 @@ const VendorsManagement = () => {
                             />
                         </div>
                         <button
-                            onClick={() => setCreateModal({ show: true, name: '', mobile: '', password: '', storeName: '', storeAddress: '' })}
+                            onClick={() => setCreateModal({ show: true, name: '', mobile: '', password: '', storeName: '', storeAddress: '', latitude: null, longitude: null })}
                             className="btn-modern btn-modern-primary"
                             style={{ background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)', color: 'white', display: 'flex', alignItems: 'center', gap: '8px', border: 'none' }}
                         >
@@ -190,7 +196,7 @@ const VendorsManagement = () => {
                                             }}>
                                                 {v.storeImage ? (
                                                     <img
-                                                        src={`https://api.offerz.live${v.storeImage}`}
+                                                        src={getImageUrl(v.storeImage)}
                                                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                                         alt={v.storeName}
                                                     />
@@ -284,7 +290,9 @@ const VendorsManagement = () => {
                                                     id: v._id,
                                                     storeName: v.storeName,
                                                     mobile: v.mobile,
-                                                    storeAddress: v.storeAddress || (typeof v.location === 'object' ? v.location?.address : v.location) || ''
+                                                    storeAddress: v.storeAddress || (typeof v.location === 'object' ? v.location?.address : v.location) || '',
+                                                    latitude: v.location?.latitude || null,
+                                                    longitude: v.location?.longitude || null
                                                 })}
                                                 className="action-btn-modern warning"
                                                 title="edit profile"
@@ -309,8 +317,8 @@ const VendorsManagement = () => {
 
             {/* Create Vendor Modal */}
             {createModal.show && (
-                <div style={modalOverlayStyle} onClick={() => setCreateModal({ show: false })}>
-                    <div className="animate-fade-in" style={{ ...modalContentStyle, maxWidth: '500px' }} onClick={e => e.stopPropagation()}>
+                <div style={modalOverlayStyle}>
+                    <div className="animate-fade-in" style={{ ...modalContentStyle, maxWidth: '500px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                             <h2 style={{ fontSize: '24px', fontWeight: '900', letterSpacing: '-1px' }}>new merchant onboarding</h2>
                             <button onClick={() => setCreateModal({ show: false })} style={closeButtonStyle}>
@@ -356,13 +364,20 @@ const VendorsManagement = () => {
                                 onChange={e => setCreateModal(p => ({ ...p, password: e.target.value }))}
                             />
                         </div>
-                        <div style={{ marginBottom: '24px' }}>
+                        <div style={{ marginBottom: '16px' }}>
                             <label style={{ display: 'block', fontSize: '11px', fontWeight: '800', textTransform: 'lowercase', marginBottom: '6px', color: 'var(--text-muted)' }}>commercial address</label>
                             <textarea
                                 style={{ ...inputModernStyle, height: '80px', padding: '12px 16px', resize: 'none' }}
                                 value={createModal.storeAddress}
                                 placeholder="complete store location details"
                                 onChange={e => setCreateModal(p => ({ ...p, storeAddress: e.target.value }))}
+                            />
+                        </div>
+                        <div style={{ marginBottom: '24px' }}>
+                            <label style={{ display: 'block', fontSize: '11px', fontWeight: '800', textTransform: 'lowercase', marginBottom: '6px', color: 'var(--text-muted)' }}>pin exact store location</label>
+                            <MapPicker
+                                location={{ latitude: createModal.latitude, longitude: createModal.longitude }}
+                                onLocationChange={(loc) => setCreateModal(p => ({ ...p, latitude: loc.latitude, longitude: loc.longitude }))}
                             />
                         </div>
                         <button
@@ -379,8 +394,8 @@ const VendorsManagement = () => {
 
             {/* Edit Modal */}
             {editModal.show && (
-                <div style={modalOverlayStyle} onClick={() => setEditModal({ show: false, id: null, storeName: '', mobile: '', storeAddress: '' })}>
-                    <div className="animate-fade-in" style={{ ...modalContentStyle, maxWidth: '440px' }} onClick={e => e.stopPropagation()}>
+                <div style={modalOverlayStyle}>
+                    <div className="animate-fade-in" style={{ ...modalContentStyle, maxWidth: '440px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                             <h2 style={{ fontSize: '24px', fontWeight: '900', letterSpacing: '-1px' }}>edit vendor profile</h2>
                             <button onClick={() => setEditModal({ show: false, id: null, storeName: '', mobile: '', storeAddress: '' })} style={closeButtonStyle}>
@@ -409,10 +424,18 @@ const VendorsManagement = () => {
                             <div>
                                 <label style={{ display: 'block', fontSize: '11px', fontWeight: '800', textTransform: 'lowercase', marginBottom: '8px', color: 'var(--text-muted)' }}>store address</label>
                                 <textarea
-                                    style={{ ...inputModernStyle, height: '100px', padding: '12px 16px', resize: 'none' }}
+                                    style={{ ...inputModernStyle, height: '80px', padding: '12px 16px', resize: 'none' }}
                                     value={editModal.storeAddress}
                                     onChange={e => setEditModal(p => ({ ...p, storeAddress: e.target.value }))}
                                     placeholder="enter store address"
+                                />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', fontSize: '11px', fontWeight: '800', textTransform: 'lowercase', marginBottom: '8px', color: 'var(--text-muted)' }}>update store location</label>
+                                <MapPicker
+                                    location={{ latitude: editModal.latitude, longitude: editModal.longitude }}
+                                    onLocationChange={(loc) => setEditModal(p => ({ ...p, latitude: loc.latitude, longitude: loc.longitude }))}
+                                    height="200px"
                                 />
                             </div>
                             <button
@@ -430,8 +453,8 @@ const VendorsManagement = () => {
 
             {/* Termination Modal */}
             {deleteModal.show && (
-                <div style={modalOverlayStyle} onClick={() => setDeleteModal({ show: false, id: null, name: '' })}>
-                    <div className="animate-fade-in" style={modalContentStyle} onClick={e => e.stopPropagation()}>
+                <div style={modalOverlayStyle}>
+                    <div className="animate-fade-in" style={modalContentStyle}>
                         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '-10px' }}>
                             <button onClick={() => setDeleteModal({ show: false, id: null, name: '' })} style={closeButtonStyle}>
                                 <X size={20} />
@@ -561,7 +584,9 @@ const modalContentStyle = {
     borderRadius: '32px',
     padding: '32px',
     boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-    border: '1px solid rgba(255,255,255,0.1)'
+    border: '1px solid rgba(255,255,255,0.1)',
+    maxHeight: '90vh',
+    overflowY: 'auto'
 };
 
 const closeButtonStyle = {

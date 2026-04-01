@@ -19,9 +19,9 @@ router.get('/users', authenticateToken, isAdmin, async (req, res) => {
 // Admin Management (Super Admin Only or with manage_admins permission)
 router.get('/admins', authenticateToken, isAdmin, async (req, res) => {
     try {
-        const admins = await User.find({ 
-            role: 'admin', 
-            isDeleted: { $ne: true } 
+        const admins = await User.find({
+            role: 'admin',
+            isDeleted: { $ne: true }
         }).sort({ createdAt: -1 });
         res.json({ success: true, admins });
     } catch (err) {
@@ -72,6 +72,11 @@ router.post('/vendor', authenticateToken, isAdmin, async (req, res) => {
             role: 'vendor',
             storeName,
             storeAddress,
+            location: {
+                latitude: req.body.latitude || 0.00, // Default to Surat center if not provided
+                longitude: req.body.longitude || 0.00,
+                address: storeAddress
+            },
             isVerified: true,
             status: 'approved'
         });
@@ -125,7 +130,7 @@ router.get('/vendor/:id', authenticateToken, isAdmin, async (req, res) => {
     try {
         const vendor = await User.findOne({ _id: req.params.id, isDeleted: { $ne: true } });
         if (!vendor) return res.status(404).json({ success: false, message: 'Vendor not found or deleted' });
-        const offers = await Offer.find({ vendorId: req.params.id }).sort({ createdAt: -1 });
+        const offers = await Offer.find({ vendorId: req.params.id }).populate('category').sort({ createdAt: -1 });
         res.json({ success: true, vendor, offers });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Failed to fetch vendor details' });
@@ -215,6 +220,10 @@ router.post('/vendor/:vendorId/offer', authenticateToken, isAdmin, uploadOfferS3
             else return res.status(400).json({ success: false, message: `Invalid category: ${category}` });
         }
 
+        // Fetch vendor for location data
+        const vendor = await User.findById(vendorId);
+        if (!vendor) return res.status(404).json({ success: false, message: 'Vendor not found' });
+
         const offer = new Offer({
             vendorId,
             title,
@@ -222,7 +231,11 @@ router.post('/vendor/:vendorId/offer', authenticateToken, isAdmin, uploadOfferS3
             category: categoryId,
             image: req.file.location,
             startDate,
-            endDate
+            endDate,
+            location: {
+                type: 'Point',
+                coordinates: [vendor.location?.longitude || 0, vendor.location?.latitude || 0]
+            }
         });
 
         await offer.save();
@@ -262,10 +275,20 @@ router.put('/user/:id', authenticateToken, isAdmin, async (req, res) => {
 
         if (password) updateData.password = password;
         if (storeName !== undefined) updateData.storeName = storeName;
-        if (storeAddress !== undefined) updateData.storeAddress = storeAddress;
+        if (storeAddress !== undefined) {
+            updateData.storeAddress = storeAddress;
+            // Also sync it to the location object for newer systems
+            if (!updateData.location) updateData.location = {};
+            updateData.location.address = storeAddress;
+        }
+        if (req.body.latitude !== undefined || req.body.longitude !== undefined) {
+            if (!updateData.location) updateData.location = {};
+            if (req.body.latitude !== undefined) updateData.location.latitude = req.body.latitude;
+            if (req.body.longitude !== undefined) updateData.location.longitude = req.body.longitude;
+        }
         if (role) updateData.role = role;
 
-        const user = await User.findByIdAndUpdate(req.params.id, updateData, { returnDocument: 'after' });
+        const user = await User.findByIdAndUpdate(req.params.id, { $set: updateData }, { returnDocument: 'after' });
         res.json({ success: true, user });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Failed to update user' });

@@ -280,8 +280,8 @@ const TicketsManagement = () => {
 
             {/* View Ticket Details Modal */}
             {viewModal && (
-                <div style={modalOverlayStyle} onClick={() => setViewModal(null)}>
-                    <div className="animate-fade-in" style={{ ...modalContentStyle, maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+                <div style={modalOverlayStyle}>
+                    <div className="animate-fade-in" style={{ ...modalContentStyle, maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
                             <div>
                                 <h2 style={{ fontSize: '24px', fontWeight: '900', letterSpacing: '-1px' }}>support request</h2>
@@ -464,8 +464,8 @@ const TicketsManagement = () => {
 
             {/* Delete Confirmation */}
             {deleteModal.show && (
-                <div style={modalOverlayStyle} onClick={() => setDeleteModal({ show: false })}>
-                    <div className="animate-fade-in" style={{ ...modalContentStyle, maxWidth: '400px' }} onClick={e => e.stopPropagation()}>
+                <div style={modalOverlayStyle}>
+                    <div className="animate-fade-in" style={{ ...modalContentStyle, maxWidth: '400px' }}>
                         <div style={{ textAlign: 'center', padding: '10px 0' }}>
                             <div style={alertIconWrapperStyle}><Trash2 size={40} color="#ef4444" /></div>
                             <h2 style={{ fontSize: '22px', fontWeight: '900', marginBottom: '12px' }}>purge support node?</h2>

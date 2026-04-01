@@ -19,6 +19,7 @@ import {
     Lock
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { getImageUrl } from '../utils/imageHelper';
 
 const UsersManagement = () => {
     const { token, user: currentUser, hasPermission } = useAuth();
@@ -251,7 +252,7 @@ const UsersManagement = () => {
                                             }}>
                                                 {user.profileImage ? (
                                                     <img
-                                                        src={`https://api.offerz.live${user.profileImage}`}
+                                                        src={getImageUrl(user.profileImage)}
                                                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                                         alt={user.name}
                                                     />
@@ -319,8 +320,8 @@ const UsersManagement = () => {
 
             {/* Create Modal */}
             {createModal.show && (
-                <div style={modalOverlayStyle} onClick={() => setCreateModal({ show: false })}>
-                    <div className="animate-fade-in" style={{ ...modalContentStyle, maxWidth: '560px' }} onClick={e => e.stopPropagation()}>
+                <div style={modalOverlayStyle}>
+                    <div className="animate-fade-in" style={{ ...modalContentStyle, maxWidth: '560px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                             <div>
                                 <h2 style={{ fontSize: '24px', fontWeight: '900', letterSpacing: '-1px' }}>new identity protocol</h2>
@@ -380,8 +381,8 @@ const UsersManagement = () => {
 
             {/* View Modal */}
             {viewModal && (
-                <div style={modalOverlayStyle} onClick={() => setViewModal(null)}>
-                    <div className="animate-fade-in" style={{ ...modalContentStyle, maxWidth: '480px' }} onClick={e => e.stopPropagation()}>
+                <div style={modalOverlayStyle}>
+                    <div className="animate-fade-in" style={{ ...modalContentStyle, maxWidth: '480px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                             <h2 style={{ fontSize: '24px', fontWeight: '900', letterSpacing: '-1px' }}>user identity</h2>
                             <button onClick={() => setViewModal(null)} style={closeButtonStyle}>
@@ -403,7 +404,7 @@ const UsersManagement = () => {
                                 border: '4px solid white'
                             }}>
                                 {viewModal.profileImage ? (
-                                    <img src={`https://api.offerz.live${viewModal.profileImage}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+                                    <img src={getImageUrl(viewModal.profileImage)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
                                 ) : (
                                     <span style={{ fontSize: '32px', color: 'white', fontWeight: '800' }}>{viewModal.name.charAt(0)}</span>
                                 )}
@@ -454,8 +455,8 @@ const UsersManagement = () => {
 
             {/* Edit Modal */}
             {editModal.show && (
-                <div style={modalOverlayStyle} onClick={() => setEditModal({ show: false, id: null, name: '', mobile: '', password: '', role: 'user', permissions: [] })}>
-                    <div className="animate-fade-in" style={{ ...modalContentStyle, maxWidth: '560px' }} onClick={e => e.stopPropagation()}>
+                <div style={modalOverlayStyle}>
+                    <div className="animate-fade-in" style={{ ...modalContentStyle, maxWidth: '560px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                             <div>
                                 <h2 style={{ fontSize: '24px', fontWeight: '900', letterSpacing: '-1px' }}>adjust credentials</h2>
@@ -514,8 +515,8 @@ const UsersManagement = () => {
             {/* Delete Confirmation */}
             {
                 deleteModal.show && (
-                    <div style={modalOverlayStyle} onClick={() => setDeleteModal({ show: false })}>
-                        <div className="animate-fade-in" style={{ ...modalContentStyle, maxWidth: '400px' }} onClick={e => e.stopPropagation()}>
+                    <div style={modalOverlayStyle}>
+                        <div className="animate-fade-in" style={{ ...modalContentStyle, maxWidth: '400px' }}>
                             <div style={{ textAlign: 'center', padding: '10px 0' }}>
                                 <div style={alertIconWrapperStyle}><Trash2 size={40} color="#ef4444" /></div>
                                 <h2 style={{ fontSize: '22px', fontWeight: '900', marginBottom: '12px' }}>terminate account?</h2>

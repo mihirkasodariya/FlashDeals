@@ -15,9 +15,12 @@ import {
     X,
     AlertCircle,
     Calendar,
-    Info
+    Info,
+    Plus
 } from 'lucide-react';
 import { format, isWithinInterval, isBefore } from 'date-fns';
+
+import { getImageUrl } from '../utils/imageHelper';
 
 const API_URL = 'https://api.offerz.live/api';
 
@@ -43,7 +46,7 @@ const modalContentStyle = {
     width: '100%',
     maxWidth: '440px',
     borderRadius: '32px',
-    padding: '24px',
+    padding: '32px',
     boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
     border: '1px solid rgba(255,255,255,0.1)',
     maxHeight: '90vh',
@@ -108,12 +111,26 @@ const OffersManagement = () => {
         preview: null
     });
     const [updating, setUpdating] = useState(false);
+    const [adding, setAdding] = useState(false);
+    const [addModal, setAddModal] = useState({
+        show: false,
+        vendorId: '',
+        title: '',
+        description: '',
+        category: '',
+        startDate: format(new Date(), 'yyyy-MM-dd'),
+        endDate: format(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
+        image: null,
+        preview: null
+    });
 
     const [categories, setCategories] = useState([]);
+    const [vendors, setVendors] = useState([]);
 
     useEffect(() => {
         fetchOffers();
         fetchCategories();
+        fetchVendors();
     }, [token]);
 
     const fetchCategories = async () => {
@@ -121,6 +138,19 @@ const OffersManagement = () => {
             const resp = await axios.get(`${API_URL}/categories?activeOnly=true`);
             if (resp.data.success) {
                 setCategories(resp.data.categories);
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const fetchVendors = async () => {
+        try {
+            const resp = await axios.get(`${API_URL}/admin/vendors`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (resp.data.success) {
+                setVendors(resp.data.vendors);
             }
         } catch (err) {
             console.error(err);
@@ -188,6 +218,48 @@ const OffersManagement = () => {
         }
     };
 
+    const handleAddOffer = async () => {
+        try {
+            if (!addModal.vendorId) return alert('Select a vendor first');
+            if (!addModal.image) return alert('Image is required');
+
+            setAdding(true);
+            const formData = new FormData();
+            formData.append('title', addModal.title);
+            formData.append('description', addModal.description);
+            formData.append('category', addModal.category);
+            formData.append('startDate', addModal.startDate);
+            formData.append('endDate', addModal.endDate);
+            formData.append('image', addModal.image);
+
+            const resp = await axios.post(`${API_URL}/admin/vendor/${addModal.vendorId}/offer`, formData, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+
+            if (resp.data.success) {
+                setOffers([resp.data.offer, ...offers]);
+                setAddModal({
+                    show: false,
+                    vendorId: '',
+                    title: '',
+                    description: '',
+                    category: '',
+                    startDate: format(new Date(), 'yyyy-MM-dd'),
+                    endDate: format(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
+                    image: null,
+                    preview: null
+                });
+            }
+        } catch (err) {
+            alert(err.response?.data?.message || 'Failed to add offer');
+        } finally {
+            setAdding(false);
+        }
+    };
+
     const getOfferStatus = (startDate, endDate) => {
         try {
             const now = new Date();
@@ -226,6 +298,16 @@ const OffersManagement = () => {
                             className="search-input-modern"
                         />
                     </div>
+                    {hasPermission('edit_offer') && (
+                        <button 
+                            onClick={() => setAddModal(p => ({ ...p, show: true }))}
+                            className="btn-modern" 
+                            style={{ background: 'var(--primary)', color: 'white', gap: '8px', padding: '0 24px' }}
+                        >
+                            <Plus size={20} />
+                            <span>Add New Offer</span>
+                        </button>
+                    )}
                 </div>
             </header>
 
@@ -259,7 +341,7 @@ const OffersManagement = () => {
                                                 boxShadow: '0 4px 10px rgba(0,0,0,0.05)'
                                             }}>
                                                 <img
-                                                    src={`https://api.offerz.live${offer.image || '/uploads/offers/default.png'}`}
+                                                    src={getImageUrl(offer.image)}
                                                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                                     alt=""
                                                 />
@@ -322,7 +404,7 @@ const OffersManagement = () => {
                                                         startDate: format(new Date(offer.startDate), 'yyyy-MM-dd'),
                                                         endDate: format(new Date(offer.endDate), 'yyyy-MM-dd'),
                                                         image: null,
-                                                        preview: `https://api.offerz.live${offer.image}`
+                                                        preview: getImageUrl(offer.image)
                                                     })}
                                                     className="action-btn-modern warning"
                                                     title="edit deal"
@@ -350,8 +432,8 @@ const OffersManagement = () => {
 
             {/* Offer Details Modal */}
             {detailsModal && (
-                <div style={modalOverlayStyle} onClick={() => setDetailsModal(null)}>
-                    <div className="animate-fade-in" style={{ ...modalContentStyle, maxWidth: '560px' }} onClick={e => e.stopPropagation()}>
+                <div style={modalOverlayStyle}>
+                    <div className="animate-fade-in" style={{ ...modalContentStyle, maxWidth: '560px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                             <h2 style={{ fontSize: '24px', fontWeight: '900', letterSpacing: '-1px' }}>deal specifications</h2>
                             <button onClick={() => setDetailsModal(null)} style={closeButtonStyle}>
@@ -362,7 +444,7 @@ const OffersManagement = () => {
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '20px', marginBottom: '20px' }}>
                             <div style={{ borderRadius: '24px', overflow: 'hidden', border: '1px solid #e2e8f0', height: '160px' }}>
                                 <img
-                                    src={`https://api.offerz.live${detailsModal.image || '/uploads/offers/default.png'}`}
+                                    src={getImageUrl(detailsModal.image)}
                                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                     alt=""
                                 />
@@ -431,8 +513,8 @@ const OffersManagement = () => {
 
             {/* Edit Offer Modal */}
             {editModal.show && (
-                <div style={modalOverlayStyle} onClick={() => setEditModal(p => ({ ...p, show: false }))}>
-                    <div className="animate-fade-in" style={{ ...modalContentStyle, maxWidth: '520px' }} onClick={e => e.stopPropagation()}>
+                <div style={modalOverlayStyle}>
+                    <div className="animate-fade-in" style={{ ...modalContentStyle, maxWidth: '520px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                             <h2 style={{ fontSize: '22px', fontWeight: '900', letterSpacing: '-1px' }}>edit flash deal</h2>
                             <button onClick={() => setEditModal(p => ({ ...p, show: false }))} style={closeButtonStyle}>
@@ -554,8 +636,8 @@ const OffersManagement = () => {
 
             {/* Deletion Modal */}
             {deleteModal.show && (
-                <div style={modalOverlayStyle} onClick={() => setDeleteModal({ show: false, id: null, title: '' })}>
-                    <div className="animate-fade-in" style={modalContentStyle} onClick={e => e.stopPropagation()}>
+                <div style={modalOverlayStyle}>
+                    <div className="animate-fade-in" style={modalContentStyle}>
                         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '-10px' }}>
                             <button onClick={() => setDeleteModal({ show: false, id: null, title: '' })} style={closeButtonStyle}>
                                 <X size={20} />
@@ -586,6 +668,152 @@ const OffersManagement = () => {
                                 style={{ background: '#ef4444', border: 'none', color: 'white', justifyContent: 'center', padding: '16px', boxShadow: '0 10px 20px rgba(239, 68, 68, 0.2)' }}
                             >
                                 confirm erasure
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Add Offer Modal */}
+            {addModal.show && (
+                <div style={modalOverlayStyle}>
+                    <div className="animate-fade-in" style={{ ...modalContentStyle, maxWidth: '520px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                            <h2 style={{ fontSize: '24px', fontWeight: '900', letterSpacing: '-1px' }}>launch new deal</h2>
+                            <button onClick={() => setAddModal(p => ({ ...p, show: false }))} style={closeButtonStyle}>
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            <div>
+                                <label style={{ display: 'block', fontSize: '10px', fontWeight: '800', textTransform: 'lowercase', marginBottom: '6px', color: 'var(--text-muted)' }}>select vendor</label>
+                                <select
+                                    style={inputModernStyle}
+                                    value={addModal.vendorId}
+                                    onChange={e => setAddModal(p => ({ ...p, vendorId: e.target.value }))}
+                                >
+                                    <option value="">choose merchant...</option>
+                                    {vendors.map(v => (
+                                        <option key={v._id} value={v._id}>
+                                            {v.storeName} ({v.name})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '20px' }}>
+                                <div
+                                    onClick={() => document.getElementById('addOfferImageInput').click()}
+                                    style={{
+                                        width: '120px',
+                                        height: '110px',
+                                        background: '#f8fafc',
+                                        borderRadius: '20px',
+                                        border: '2px dashed #e2e8f0',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        cursor: 'pointer',
+                                        overflow: 'hidden'
+                                    }}
+                                >
+                                    {addModal.preview ? (
+                                        <img src={addModal.preview} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    ) : (
+                                        <>
+                                            <Zap size={20} color="#94a3b8" />
+                                            <span style={{ fontSize: '9px', fontWeight: '800', color: '#94a3b8', marginTop: '6px' }}>UPLOAD IMAGE</span>
+                                        </>
+                                    )}
+                                    <input
+                                        id="addOfferImageInput"
+                                        type="file"
+                                        hidden
+                                        accept="image/*"
+                                        onChange={(e) => {
+                                            const file = e.target.files[0];
+                                            if (file) {
+                                                setAddModal(p => ({
+                                                    ...p,
+                                                    image: file,
+                                                    preview: URL.createObjectURL(file)
+                                                }));
+                                            }
+                                        }}
+                                    />
+                                </div>
+                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '10px', fontWeight: '800', textTransform: 'lowercase', marginBottom: '6px', color: 'var(--text-muted)' }}>offer title</label>
+                                        <input
+                                            style={inputModernStyle}
+                                            placeholder="e.g. up to 60% off"
+                                            value={addModal.title}
+                                            onChange={e => setAddModal(p => ({ ...p, title: e.target.value }))}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '10px', fontWeight: '800', textTransform: 'lowercase', marginBottom: '6px', color: 'var(--text-muted)' }}>category</label>
+                                        <select
+                                            style={inputModernStyle}
+                                            value={addModal.category}
+                                            onChange={e => setAddModal(p => ({ ...p, category: e.target.value }))}
+                                        >
+                                            <option value="">business type...</option>
+                                            {categories.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '10px', fontWeight: '800', textTransform: 'lowercase', marginBottom: '6px', color: 'var(--text-muted)' }}>launch date</label>
+                                    <input
+                                        type="date"
+                                        style={inputModernStyle}
+                                        value={addModal.startDate}
+                                        onChange={e => setAddModal(p => ({ ...p, startDate: e.target.value }))}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '10px', fontWeight: '800', textTransform: 'lowercase', marginBottom: '6px', color: 'var(--text-muted)' }}>expiry date</label>
+                                    <input
+                                        type="date"
+                                        style={inputModernStyle}
+                                        value={addModal.endDate}
+                                        onChange={e => setAddModal(p => ({ ...p, endDate: e.target.value }))}
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label style={{ display: 'block', fontSize: '10px', fontWeight: '800', textTransform: 'lowercase', marginBottom: '6px', color: 'var(--text-muted)' }}>description</label>
+                                <textarea
+                                    style={{ ...inputModernStyle, height: '80px', padding: '12px 16px', resize: 'none' }}
+                                    placeholder="what makes this deal special?"
+                                    value={addModal.description}
+                                    onChange={e => setAddModal(p => ({ ...p, description: e.target.value }))}
+                                />
+                            </div>
+
+                            <button
+                                onClick={handleAddOffer}
+                                disabled={adding}
+                                className="btn-modern"
+                                style={{ 
+                                    width: '100%', 
+                                    background: 'var(--primary)', 
+                                    color: 'white', 
+                                    height: '54px', 
+                                    justifyContent: 'center', 
+                                    marginTop: '8px',
+                                    boxShadow: '0 10px 20px rgba(255, 0, 0, 0.1)'
+                                }}
+                            >
+                                {adding ? 'validating specifications...' : 'launch offer now'}
                             </button>
                         </div>
                     </div>

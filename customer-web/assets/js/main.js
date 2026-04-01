@@ -1,33 +1,25 @@
 // Sticky Navbar Scroll Effect
 const navbar = document.getElementById('main-nav');
-// Throttled Scroll Listener for Navbar
-let scrollTimeout;
 window.addEventListener('scroll', () => {
-    if (!scrollTimeout) {
-        scrollTimeout = setTimeout(() => {
-            if (window.scrollY > 50) {
-                navbar.classList.add('scrolled');
-            } else {
-                navbar.classList.remove('scrolled');
-            }
-            scrollTimeout = null;
-        }, 10);
+    if (window.scrollY > 50) {
+        navbar.classList.add('scrolled');
+    } else {
+        navbar.classList.remove('scrolled');
     }
 });
 
-// Mobile Menu Toggle
+// Mobile Menu Toggle (Modified for new .bar icon)
 const mobileToggle = document.getElementById('mobile-toggle');
 const navLinks = document.getElementById('nav-links');
 
 mobileToggle.addEventListener('click', () => {
     navLinks.classList.toggle('active');
-    const icon = mobileToggle.querySelector('i');
+    mobileToggle.classList.toggle('open'); // For bar animation if added later
+    
     if (navLinks.classList.contains('active')) {
-        icon.classList.replace('fa-bars', 'fa-times');
-        document.body.style.overflow = 'hidden'; // Lock scroll
+        document.body.style.overflow = 'hidden';
     } else {
-        icon.classList.replace('fa-times', 'fa-bars');
-        document.body.style.overflow = ''; // Unlock scroll
+        document.body.style.overflow = '';
     }
 });
 
@@ -44,13 +36,12 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             // Close mobile menu if open
             if (navLinks.classList.contains('active')) {
                 navLinks.classList.remove('active');
-                const icon = mobileToggle.querySelector('i');
-                icon.classList.replace('fa-times', 'fa-bars');
-                document.body.style.overflow = ''; // Unlock scroll
+                mobileToggle.classList.remove('open');
+                document.body.style.overflow = '';
             }
             
-            // Scroll to target (Native CSS smooth scroll will handle the behavior)
             targetElement.scrollIntoView({
+                behavior: 'smooth',
                 block: 'start'
             });
         }
@@ -59,36 +50,34 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 
 // Scroll Reveal Animation (Intersection Observer)
 const revealElements = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
-
 const revealObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
             entry.target.classList.add('active');
-            revealObserver.unobserve(entry.target); // Optimize: stop after reveal
+            // revealObserver.unobserve(entry.target); // Keep observing for continuous scroll effect if desired
         }
     });
 }, {
-    threshold: 0.1, // Trigger earlier
+    threshold: 0.1,
     rootMargin: '0px 0px -50px 0px'
 });
 
 revealElements.forEach(el => revealObserver.observe(el));
 
-// Simple FAQ toggle
-document.querySelectorAll('.faq-question').forEach(q => {
-    q.addEventListener('click', () => {
-        let answer = q.nextElementSibling;
-        if (answer.style.display === 'none' || !answer.style.display) {
-            answer.style.display = 'block';
-            q.querySelector('i').classList.replace('fa-chevron-down', 'fa-chevron-up');
-        } else {
-            answer.style.display = 'none';
-            q.querySelector('i').classList.replace('fa-chevron-up', 'fa-chevron-down');
-        }
+// Premium FAQ Accordion Toggle
+document.querySelectorAll('.faq-card').forEach(card => {
+    const question = card.querySelector('.faq-question');
+    question.addEventListener('click', () => {
+        const isOpen = card.classList.contains('faq-open');
+        
+        // Close all other FAQ cards first
+        document.querySelectorAll('.faq-card').forEach(c => {
+            if (c !== card) {
+                c.classList.remove('faq-open');
+            }
+        });
+        
+        // Toggle the clicked card
+        card.classList.toggle('faq-open');
     });
-
-    // set initial hidden answers
-    if (q.nextElementSibling) {
-        q.nextElementSibling.style.display = 'none';
-    }
 });

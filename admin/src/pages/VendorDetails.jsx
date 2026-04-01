@@ -22,6 +22,7 @@ import {
     Eye
 } from 'lucide-react';
 import { format, isWithinInterval, isBefore, isAfter } from 'date-fns';
+import { getImageUrl } from '../utils/imageHelper';
 
 const API_URL = 'https://api.offerz.live/api';
 
@@ -82,22 +83,30 @@ const VendorDetails = () => {
         show: false,
         title: '',
         description: '',
-        category: 'Groceries',
+        category: '',
         startDate: format(new Date(), 'yyyy-MM-dd'),
         endDate: format(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
         image: null,
         preview: null
     });
 
-    const categories = [
-        'Groceries', 'Electronics', 'Fashion & Lifestyle', 'Footwear',
-        'Home Appliances', 'Beauty & Personal Care', 'Sports & Fitness',
-        'Automotive Accessories', 'Kids & Toys', 'Books & Stationary'
-    ];
+    const [categories, setCategories] = useState([]);
 
     useEffect(() => {
         fetchVendorDetails();
+        fetchCategories();
     }, [id, token]);
+
+    const fetchCategories = async () => {
+        try {
+            const resp = await axios.get(`${API_URL}/categories?activeOnly=true`);
+            if (resp.data.success) {
+                setCategories(resp.data.categories);
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    };
 
     const fetchVendorDetails = async () => {
         try {
@@ -177,7 +186,7 @@ const VendorDetails = () => {
                     show: false,
                     title: '',
                     description: '',
-                    category: 'Groceries',
+                    category: '',
                     startDate: format(new Date(), 'yyyy-MM-dd'),
                     endDate: format(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
                     image: null,
@@ -240,7 +249,7 @@ const VendorDetails = () => {
                             }}>
                                 {vendor.storeImage ? (
                                     <img
-                                        src={`https://api.offerz.live${vendor.storeImage}`}
+                                        src={getImageUrl(vendor.storeImage)}
                                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                         alt={vendor.storeName}
                                     />
@@ -332,7 +341,7 @@ const VendorDetails = () => {
                                     return (
                                         <div key={offer._id} style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '20px', background: '#fdfdfe', border: '1.5px solid #f1f5f9', borderRadius: '24px' }}>
                                             <div style={{ width: '64px', height: '64px', borderRadius: '16px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
-                                                <img src={`https://api.offerz.live${offer.image || '/uploads/offers/default.png'}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                <img src={getImageUrl(offer.image)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                             </div>
                                             <div style={{ flex: 1 }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -340,7 +349,7 @@ const VendorDetails = () => {
                                                     <span className={`badge-modern badge-${status.type}`} style={{ fontSize: '9px', padding: '2px 6px' }}>{status.label}</span>
                                                 </div>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-                                                    <span className="badge-modern badge-info">{offer.category}</span>
+                                                    <span className="badge-modern badge-info">{offer.category?.name || offer.category}</span>
                                                     <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700' }}>{format(new Date(offer.startDate), 'dd MMM')} live.</span>
                                                     <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700' }}>{format(new Date(offer.endDate), 'dd MMM')} exp.</span>
                                                 </div>
@@ -384,8 +393,8 @@ const VendorDetails = () => {
 
             {/* Manual Offer Creation Modal */}
             {addOfferModal.show && (
-                <div style={modalOverlayStyle} onClick={() => setAddOfferModal(p => ({ ...p, show: false }))}>
-                    <div className="animate-fade-in" style={{ ...modalContentStyle, maxWidth: '520px' }} onClick={e => e.stopPropagation()}>
+                <div style={modalOverlayStyle}>
+                    <div className="animate-fade-in" style={{ ...modalContentStyle, maxWidth: '520px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                             <h2 style={{ fontSize: '22px', fontWeight: '900', letterSpacing: '-1px' }}>deploy new merchant offer</h2>
                             <button onClick={() => setAddOfferModal(p => ({ ...p, show: false }))} style={closeButtonStyle}>
@@ -454,7 +463,8 @@ const VendorDetails = () => {
                                             value={addOfferModal.category}
                                             onChange={e => setAddOfferModal(p => ({ ...p, category: e.target.value }))}
                                         >
-                                            {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                                            <option value="">Select Category</option>
+                                            {categories.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
                                         </select>
                                     </div>
                                 </div>
@@ -506,8 +516,8 @@ const VendorDetails = () => {
 
             {/* Offer Details Modal */}
             {detailsModal && (
-                <div style={modalOverlayStyle} onClick={() => setDetailsModal(null)}>
-                    <div className="animate-fade-in" style={{ ...modalContentStyle, maxWidth: '560px', animation: 'fadeIn 0.3s ease forwards' }} onClick={e => e.stopPropagation()}>
+                <div style={modalOverlayStyle}>
+                    <div className="animate-fade-in" style={{ ...modalContentStyle, maxWidth: '560px', animation: 'fadeIn 0.3s ease forwards' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                             <h2 style={{ fontSize: '24px', fontWeight: '900', letterSpacing: '-1px' }}>deal specifications</h2>
                             <button onClick={() => setDetailsModal(null)} style={closeButtonStyle}>
@@ -518,7 +528,7 @@ const VendorDetails = () => {
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '20px', marginBottom: '20px' }}>
                             <div style={{ borderRadius: '24px', overflow: 'hidden', border: '1px solid #e2e8f0', height: '160px' }}>
                                 <img
-                                    src={`https://api.offerz.live${detailsModal.image || '/uploads/offers/default.png'}`}
+                                    src={getImageUrl(detailsModal.image)}
                                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                     alt=""
                                 />
@@ -531,7 +541,7 @@ const VendorDetails = () => {
                                 <div style={{ display: 'flex', gap: '16px' }}>
                                     <div>
                                         <p style={{ fontSize: '10px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'lowercase', marginBottom: '4px' }}>category</p>
-                                        <span className="badge-modern badge-info">{detailsModal.category}</span>
+                                        <span className="badge-modern badge-info">{detailsModal.category?.name || detailsModal.category}</span>
                                     </div>
                                     <div>
                                         <p style={{ fontSize: '10px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'lowercase', marginBottom: '4px' }}>status</p>

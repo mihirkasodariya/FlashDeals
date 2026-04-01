@@ -15,6 +15,7 @@ import {
     AlertTriangle
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { getImageUrl } from '../utils/imageHelper';
 
 const CategoriesManagement = () => {
     const { token, hasPermission } = useAuth();
@@ -163,7 +164,7 @@ const CategoriesManagement = () => {
                                 border: '1px solid #e2e8f0'
                             }}>
                                 <img
-                                    src={`https://api.offerz.live${cat.image}`}
+                                    src={getImageUrl(cat.image)}
                                     alt={cat.name}
                                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                 />
@@ -181,7 +182,7 @@ const CategoriesManagement = () => {
                                             id: cat._id,
                                             name: cat.name,
                                             image: null,
-                                            preview: `https://api.offerz.live${cat.image}`,
+                                            preview: getImageUrl(cat.image),
                                             isActive: cat.isActive
                                         })}
                                         className="action-btn-modern info"
@@ -224,8 +225,8 @@ const CategoriesManagement = () => {
 
             {/* Add/Edit Modal */}
             {modal.show && (
-                <div style={modalOverlayStyle} onClick={() => setModal({ ...modal, show: false })}>
-                    <div className="animate-fade-in" style={{ ...modalContentStyle, maxWidth: '480px' }} onClick={e => e.stopPropagation()}>
+                <div style={modalOverlayStyle}>
+                    <div className="animate-fade-in" style={{ ...modalContentStyle, maxWidth: '480px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
                             <h2 style={{ fontSize: '24px', fontWeight: '900', letterSpacing: '-1px' }}>
                                 {modal.mode === 'add' ? 'add classification' : 'update classification'}
@@ -339,8 +340,8 @@ const CategoriesManagement = () => {
 
             {/* Confirmation Modal */}
             {confirmModal.show && (
-                <div style={modalOverlayStyle} onClick={() => setConfirmModal({ show: false, cat: null })}>
-                    <div className="animate-fade-in" style={{ ...modalContentStyle, maxWidth: '400px', textAlign: 'center' }} onClick={e => e.stopPropagation()}>
+                <div style={modalOverlayStyle}>
+                    <div className="animate-fade-in" style={{ ...modalContentStyle, maxWidth: '400px', textAlign: 'center' }}>
                         <div style={{
                             width: '72px',
                             height: '72px',
