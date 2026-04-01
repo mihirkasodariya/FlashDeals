@@ -82,19 +82,34 @@ document.querySelectorAll('.faq-card').forEach(card => {
     });
 });
 
-// Smart OS App Store Redirection
+// Smart OS App Store Button Visibility + Redirection
 const androidLink = "https://play.google.com/store/apps/details?id=com.offerz.app";
-const iosLink = "https://apps.apple.com/us/app/offerz/id123456789"; 
+const iosLink = "https://apps.apple.com/us/app/offerz/id123456789";
 
-document.querySelectorAll('.app-dl-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-        const isAndroid = /android/i.test(userAgent);
-        const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
-        
-        if (isAndroid || isIOS) {
-            e.preventDefault(); // Prevent standard target route on mobile
-            window.location.href = isAndroid ? androidLink : iosLink;
-        }
+(function applyStoreButtonLogic() {
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    const isAndroid = /android/i.test(userAgent);
+    const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
+
+    if (isAndroid || isIOS) {
+        // On mobile: hide the wrong platform's button
+        document.querySelectorAll('[data-store]').forEach(btn => {
+            const store = btn.getAttribute('data-store');
+            if (isAndroid && store === 'ios') {
+                btn.style.display = 'none'; // Android → hide App Store
+            } else if (isIOS && store === 'android') {
+                btn.style.display = 'none'; // iOS → hide Google Play
+            }
+        });
+    }
+
+    // Click handler: redirect to the correct store
+    document.querySelectorAll('.app-dl-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            if (isAndroid || isIOS) {
+                e.preventDefault();
+                window.location.href = isAndroid ? androidLink : iosLink;
+            }
+        });
     });
-});
+})();
