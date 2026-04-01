@@ -81,3 +81,20 @@ document.querySelectorAll('.faq-card').forEach(card => {
         card.classList.toggle('faq-open');
     });
 });
+
+// Smart OS App Store Redirection
+const androidLink = "https://play.google.com/store/apps/details?id=com.offerz.app";
+const iosLink = "https://apps.apple.com/us/app/offerz/id123456789"; 
+
+document.querySelectorAll('.app-dl-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+        const isAndroid = /android/i.test(userAgent);
+        const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
+        
+        if (isAndroid || isIOS) {
+            e.preventDefault(); // Prevent standard target route on mobile
+            window.location.href = isAndroid ? androidLink : iosLink;
+        }
+    });
+});

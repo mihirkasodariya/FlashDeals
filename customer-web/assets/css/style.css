@@ -1,7 +1,7 @@
 :root {
-    --primary: #FF3B30;
+    --primary: #FF0000;
     /* Vibrant modern red */
-    --primary-dark: #D70015;
+    --primary-dark: #FF0000;
     --primary-light: #FFF1F0;
     --accent: #FF9500;
     /* Contrast orange for highlights */
@@ -369,10 +369,7 @@ body {
 }
 
 .text-gradient {
-    background: linear-gradient(to right, var(--primary), #FF7043);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #FF0000;
 }
 
 .hero-content p {
@@ -488,30 +485,8 @@ body {
 .mockup-container img {
     width: 100%;
     border-radius: 40px;
-    box-shadow: 0 50px 100px rgba(0, 0, 0, 0.15);
-}
-
-.mockup-accent-1 {
-    position: absolute;
-    width: 500px;
-    height: 500px;
-    background: radial-gradient(circle, rgba(255, 59, 48, 0.08) 0%, transparent 70%);
-    top: 50%;
-    left: 50%;
-    translate: -50% -50%;
-    z-index: 1;
-}
-
-.mockup-accent-2 {
-    position: absolute;
-    width: 100px;
-    height: 100px;
-    background: var(--accent);
-    filter: blur(40px);
-    opacity: 0.2;
-    top: 10%;
-    right: 10%;
-    z-index: 1;
+    transform: scale(1.2) translateX(25px);
+    transform-origin: center right;
 }
 
 @media (max-width: 992px) {
@@ -604,11 +579,16 @@ body {
     }
 
     .hero-qr {
-        margin: 0 auto;
+        display: none !important;
     }
 
     .mockup-container {
-        max-width: 550px;
+        max-width: 500px;
+    }
+
+    .mockup-container img {
+        transform: scale(1) translateX(0);
+        transform-origin: center center;
     }
 }
 
@@ -1026,7 +1006,7 @@ body {
 }
 
 .stars {
-    color: var(--accent);
+    color: #FF0000;
     margin-bottom: 16px;
     font-size: 0.9rem;
 }
@@ -1167,6 +1147,10 @@ body {
     margin-bottom: 60px;
 }
 
+.footer-brand .logo img {
+    height: 60px;
+}
+
 .footer-brand p {
     color: #A1A1A6;
     margin: 24px 0 32px;
@@ -1247,6 +1231,26 @@ body {
         gap: 60px;
     }
 
+    /* Footer logo & brand center on tablet + mobile */
+    .footer-brand {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .footer-brand p {
+        margin: 16px auto;
+    }
+
+    .social-links {
+        justify-content: center;
+    }
+
+    .footer-links-group {
+        text-align: center;
+    }
+
     .footer-cta h2 {
         font-size: 2rem;
     }
@@ -1267,6 +1271,20 @@ body {
 
     .footer-cta-btns {
         flex-direction: column;
+    }
+
+    /* Footer Mobile Polish */
+    .footer {
+        padding: 50px 0 30px;
+    }
+
+    .footer-main {
+        gap: 40px;
+        margin-bottom: 30px;
+    }
+
+    .footer-links-group {
+        gap: 30px;
     }
 
     /* Global Section Spacing for Mobile */
@@ -1326,19 +1344,7 @@ body {
         font-size: 1.8rem;
     }
 
-    /* Footer centering on phones */
-    .footer-main {
-        text-align: center;
-    }
-
-    .footer-brand p {
-        margin: 16px auto;
-    }
-
-    .social-links {
-        justify-content: center;
-        margin-top: 20px;
-    }
+    /* Footer centering on phones - already handled at 992px */
 
     /* FAQ Mobile Layout Polish */
     .faq-question {
