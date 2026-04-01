@@ -123,3 +123,26 @@ const iosLink = "https://apps.apple.com/us/app/offerz/id123456789";
         });
     });
 })();
+
+// Shop by Category: Show More Toggle (Mobile/Tablet/Desktop)
+document.getElementById('show-more-cats')?.addEventListener('click', function() {
+    const grid = document.querySelector('.category-grid');
+    const container = this.parentElement;
+    
+    if (grid && container) {
+        // Clear transition delays for hidden items so they appear instantly
+        const hiddenItems = grid.querySelectorAll('.category-card');
+        hiddenItems.forEach(item => {
+            // Only clear for items that were hidden (beyond 10 on mobile, 21 on desktop)
+            item.style.transitionDelay = '0s';
+        });
+
+        grid.classList.add('show-all');
+        container.classList.add('hidden'); // Hide the button after use
+        
+        // Refresh reveal animations for newly shown items
+        if (typeof ScrollReveal !== 'undefined') {
+            ScrollReveal().sync();
+        }
+    }
+});
