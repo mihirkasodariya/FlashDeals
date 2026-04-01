@@ -1,0 +1,27 @@
+[
+    {
+        "icon": "fas fa-utensils",
+        "name": "Food & Dining",
+        "delay": "0.1s"
+    },
+    {
+        "icon": "fas fa-tshirt",
+        "name": "Fashion",
+        "delay": "0.2s"
+    },
+    {
+        "icon": "fas fa-spa",
+        "name": "Beauty & Spa",
+        "delay": "0.3s"
+    },
+    {
+        "icon": "fas fa-shopping-cart",
+        "name": "Grocery",
+        "delay": "0.4s"
+    },
+    {
+        "icon": "fas fa-laptop",
+        "name": "Electronics",
+        "delay": "0.5s"
+    }
+]

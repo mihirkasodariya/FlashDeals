@@ -1,0 +1,20 @@
+[
+    {
+        "icon": "fas fa-gem",
+        "title": "Verified Local Vendors",
+        "description": "Every shop is manually verified and approved by our team to ensure the best quality deals.",
+        "delay": "left"
+    },
+    {
+        "icon": "fas fa-hand-holding-usd",
+        "title": "Zero Hidden Costs",
+        "description": "What you see is what you pay. No surge, no surprise fees, just honest local savings.",
+        "delay": "none"
+    },
+    {
+        "icon": "fas fa-headset",
+        "title": "24/7 Priority Support",
+        "description": "We help both customers & vendors get the smoothest hyperlocal shopping experience.",
+        "delay": "right"
+    }
+]

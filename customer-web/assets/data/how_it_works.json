@@ -1,0 +1,20 @@
+[
+    {
+        "number": 1,
+        "title": "Browse & discover",
+        "description": "Open OfferZ and see live deals near you, filtered by category or location.",
+        "delay": "0.1s"
+    },
+    {
+        "number": 2,
+        "title": "Buy the offer",
+        "description": "Pay securely inside the app and get your unique digital coupon instantly.",
+        "delay": "0.3s"
+    },
+    {
+        "number": 3,
+        "title": "Redeem at store",
+        "description": "Show your coupon at the vendor shop and enjoy your discount — no extra steps.",
+        "delay": "0.5s"
+    }
+]

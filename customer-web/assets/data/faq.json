@@ -1,0 +1,22 @@
+[
+    {
+        "id": 1,
+        "question": "Is OfferZ free for customers?",
+        "answer": "Yes! Downloading and browsing offers is completely free. You only pay for the exclusive deals you decide to purchase through the app."
+    },
+    {
+        "id": 2,
+        "question": "How do I become an OfferZ vendor?",
+        "answer": "Download the OfferZ Vendor app, sign up with your business details and GST documentation. Our team will verify your account within 24 hours."
+    },
+    {
+        "id": 3,
+        "question": "What happens if an offer expires?",
+        "answer": "If you've purchased a deal but couldn't use it before it expired, OfferZ will automatically initiate a points-refund or original method refund based on store policy."
+    },
+    {
+        "id": 4,
+        "question": "Can I use OfferZ without location?",
+        "answer": "Yes, while the best experience is with GPS, you can manually enter your area (like Vesara or Adajan) to see relevant deals in your neighborhood."
+    }
+]

@@ -1,0 +1,32 @@
+[
+    {
+        "icon": "fas fa-map-marker-alt",
+        "title": "Nearby deals",
+        "description": "Real-time offers within 5km radius based on your location.",
+        "delay": "0.1s"
+    },
+    {
+        "icon": "fas fa-clock",
+        "title": "Expiring soon",
+        "description": "Flash deals with countdown – grab before they vanish.",
+        "delay": "0.2s"
+    },
+    {
+        "icon": "fas fa-chart-line",
+        "title": "Vendor analytics",
+        "description": "Track impressions, clicks, and redemption performance.",
+        "delay": "0.3s"
+    },
+    {
+        "icon": "fas fa-bell",
+        "title": "Smart alerts",
+        "description": "Personalized notifications for new offers in your category.",
+        "delay": "0.4s"
+    },
+    {
+        "icon": "fas fa-store",
+        "title": "Grow your shop",
+        "description": "Simple dashboard for vendors to create & manage offers.",
+        "delay": "0.5s"
+    }
+]

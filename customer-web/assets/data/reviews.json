@@ -1,0 +1,29 @@
+[
+    {
+        "name": "Priya Mehta",
+        "role": "Daily Shopper",
+        "avatar": "https://randomuser.me/api/portraits/women/68.jpg",
+        "stars": 5,
+        "platform": "fab fa-google-play",
+        "quote": "“Best local deals app! I use it daily for coffee and lunch offers. The UI is super smooth.”",
+        "delay": "0.1s"
+    },
+    {
+        "name": "Suresh Patel",
+        "role": "Shop Owner",
+        "avatar": "https://randomuser.me/api/portraits/men/32.jpg",
+        "stars": 5,
+        "platform": "fab fa-apple",
+        "quote": "“Vendor dashboard is super intuitive. We sold out our weekend boutique collection within a day.”",
+        "delay": "0.3s"
+    },
+    {
+        "name": "Kiran J.",
+        "role": "Explorer",
+        "avatar": "https://randomuser.me/api/portraits/women/45.jpg",
+        "stars": 5,
+        "platform": "fab fa-google-play",
+        "quote": "“The QR redemption works flawlessly across all stores in Vesara. No more paper coupons!”",
+        "delay": "0.5s"
+    }
+]

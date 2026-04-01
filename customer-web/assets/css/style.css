@@ -678,37 +678,44 @@ body {
 }
 
 .category-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 24px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
 }
 
 .category-card {
-    background: var(--card-bg);
-    padding: 32px 24px;
-    border-radius: var(--card-radius);
-    text-align: center;
-    transition: var(--transition);
+    background: white;
+    padding: 12px 28px;
+    border-radius: 50px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border: 1px solid var(--border-light);
-    box-shadow: var(--card-shadow);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
     cursor: pointer;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
+    gap: 12px;
 }
 
 .category-card:hover {
-    transform: translateY(-10px);
-    box-shadow: var(--card-shadow-hover);
+    transform: translateY(-5px);
+    background: var(--primary);
     border-color: var(--primary);
+    box-shadow: 0 10px 20px rgba(255, 0, 0, 0.15);
+}
+
+.category-card:hover span, 
+.category-card:hover .cat-icon {
+    color: white;
 }
 
 .cat-icon {
-    width: 50px;
-    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: var(--primary);
-    font-size: 1.5rem;
-    margin-bottom: 16px;
+    font-size: 1.1rem;
     transition: var(--transition);
 }
 
@@ -717,38 +724,15 @@ body {
 }
 
 .category-card span {
-    display: block;
-    font-weight: 800;
-    font-size: 1.1rem;
+    font-weight: 700;
+    font-size: 1rem;
     color: var(--text-main);
-    margin-bottom: 6px;
+    white-space: nowrap;
 }
 
-.category-card p {
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    font-weight: 600;
-}
 
-@media (max-width: 1200px) {
-    .feature-card {
-        max-width: calc(33.33% - 20px);
-    }
 
-    .category-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-@media (max-width: 900px) {
-    .feature-card {
-        max-width: calc(50% - 15px);
-    }
-
-    .category-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
+/* Media queries for categories removed as flexbox handles wrapping naturally */
 
 @media (max-width: 600px) {
     .feature-card {

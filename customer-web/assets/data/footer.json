@@ -1,0 +1,27 @@
+{
+    "description": "Bringing Surat's local businesses closer to you through instant, hyperlocal digital offers.",
+    "social_links": [
+        { "platform": "instagram", "icon": "fab fa-instagram", "url": "#" },
+        { "platform": "facebook", "icon": "fab fa-facebook-f", "url": "#" },
+        { "platform": "twitter", "icon": "fab fa-twitter", "url": "#" }
+    ],
+    "menus": {
+        "explore": [
+            { "name": "Home", "url": "#" },
+            { "name": "Features", "url": "#features" },
+            { "name": "Categories", "url": "#categories" },
+            { "name": "How it Works", "url": "#how-it-works" }
+        ],
+        "support": [
+            { "name": "Help Center", "url": "#" },
+            { "name": "Privacy Policy", "url": "#" },
+            { "name": "Terms of Use", "url": "#" }
+        ],
+        "get_the_app": [
+            { "name": "Google Play", "store": "android", "url": "#" },
+            { "name": "App Store", "store": "ios", "url": "#" },
+            { "name": "Scan QR code", "url": "#", "icon": "fas fa-qrcode" }
+        ]
+    },
+    "copyright": "© 2026 OfferZ. Built with ❤️ for India."
+}
