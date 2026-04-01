@@ -1,10 +1,17 @@
 // Sticky Navbar Scroll Effect
 const navbar = document.getElementById('main-nav');
+// Throttled Scroll Listener for Navbar
+let scrollTimeout;
 window.addEventListener('scroll', () => {
-    if (window.scrollY > 50) {
-        navbar.classList.add('scrolled');
-    } else {
-        navbar.classList.remove('scrolled');
+    if (!scrollTimeout) {
+        scrollTimeout = setTimeout(() => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+            scrollTimeout = null;
+        }, 10);
     }
 });
 
@@ -24,13 +31,29 @@ mobileToggle.addEventListener('click', () => {
     }
 });
 
-// Auto-close mobile menu on link click
-document.querySelectorAll('.nav-links a').forEach(link => {
-    link.addEventListener('click', () => {
-        navLinks.classList.remove('active');
-        const icon = mobileToggle.querySelector('i');
-        icon.classList.replace('fa-times', 'fa-bars');
-        document.body.style.overflow = ''; // Unlock scroll
+// Smooth Scrolling for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        const targetId = this.getAttribute('href');
+        if (targetId === '#') return;
+        
+        const targetElement = document.querySelector(targetId);
+        if (targetElement) {
+            e.preventDefault();
+            
+            // Close mobile menu if open
+            if (navLinks.classList.contains('active')) {
+                navLinks.classList.remove('active');
+                const icon = mobileToggle.querySelector('i');
+                icon.classList.replace('fa-times', 'fa-bars');
+                document.body.style.overflow = ''; // Unlock scroll
+            }
+            
+            // Scroll to target (Native CSS smooth scroll will handle the behavior)
+            targetElement.scrollIntoView({
+                block: 'start'
+            });
+        }
     });
 });
 
@@ -41,10 +64,12 @@ const revealObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
             entry.target.classList.add('active');
+            revealObserver.unobserve(entry.target); // Optimize: stop after reveal
         }
     });
 }, {
-    threshold: 0.15 // Trigger when 15% of element is visible
+    threshold: 0.1, // Trigger earlier
+    rootMargin: '0px 0px -50px 0px'
 });
 
 revealElements.forEach(el => revealObserver.observe(el));
