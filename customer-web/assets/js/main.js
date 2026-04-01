@@ -69,17 +69,27 @@ document.querySelectorAll('.faq-card').forEach(card => {
     const question = card.querySelector('.faq-question');
     question.addEventListener('click', () => {
         const isOpen = card.classList.contains('faq-open');
-        
-        // Close all other FAQ cards first
+
+        // Close ALL cards first (including current)
         document.querySelectorAll('.faq-card').forEach(c => {
-            if (c !== card) {
-                c.classList.remove('faq-open');
-            }
+            c.classList.remove('faq-open');
         });
-        
-        // Toggle the clicked card
-        card.classList.toggle('faq-open');
+
+        // Only re-open if it was NOT already open (acts as toggle)
+        if (!isOpen) {
+            card.classList.add('faq-open');
+        }
     });
+});
+
+// Default open first FAQ on Mobile/Tablet load
+window.addEventListener('load', () => {
+    if (window.innerWidth <= 992) {
+        const firstFaq = document.querySelector('.faq-card');
+        if (firstFaq && !document.querySelector('.faq-card.faq-open')) {
+            firstFaq.classList.add('faq-open');
+        }
+    }
 });
 
 // Smart OS App Store Button Visibility + Redirection

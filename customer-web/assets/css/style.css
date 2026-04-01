@@ -540,7 +540,7 @@ body {
         display: block !important;
         margin: 24px auto;
         width: calc(100% - 48px);
-        background: var(--text-main);
+        background: #FF0000;
         color: white !important;
         border-radius: 12px;
         padding: 14px;
@@ -1028,8 +1028,8 @@ body {
 .faq-container {
     max-width: 800px;
     margin: 0 auto;
-    min-height: 400px;
-    /* Reduced min-height for a tighter UI */
+    min-height: 500px;
+    isolation: isolate;
 }
 
 .faq-card {
@@ -1253,6 +1253,11 @@ body {
 
     .footer-cta h2 {
         font-size: 2rem;
+    }
+
+    /* Prevent FAQ layout shift on mobile/tablet */
+    .faq-container {
+        min-height: 620px;
     }
 }
 
